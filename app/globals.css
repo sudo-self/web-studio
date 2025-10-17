@@ -1,0 +1,187 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+/* Global Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background-color: #1e1e2e;
+  color: #cdd6f4;
+  overflow: hidden;
+}
+
+/* Container */
+.container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  gap: 10px;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Panels */
+.panel {
+  background-color: #313244;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Components Panel */
+.components-panel {
+  width: 250px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  border-right: 1px solid #45475a;
+  padding: 15px;
+  min-width: 250px;
+}
+
+/* Editor Panel */
+.editor-panel {
+  flex: 2 1 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  padding: 15px;
+}
+
+/* Editor textarea fills panel */
+.editor-panel textarea {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  background: #1e1e2e;
+  color: #cdd6f4;
+  border: none;
+  border-radius: 6px;
+  padding: 10px;
+  font-family: monospace;
+  font-size: 14px;
+  resize: none;
+  overflow: auto;
+}
+
+/* Preview Panel */
+.preview-panel {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  padding: 15px;
+}
+
+/* Preview container fills panel */
+.preview-panel .preview-container {
+  flex: 1 1 auto;
+  min-height: 0;
+  border: 1px solid #45475a;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.preview-panel iframe {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  border: none;
+  background: white;
+}
+
+/* Panel Header */
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #45475a;
+}
+
+/* Components List */
+.components-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.component-item {
+  padding: 8px;
+  background: #45475a;
+  border-radius: 6px;
+  cursor: grab;
+  transition: background 0.2s;
+}
+
+.component-item:hover {
+  background: #585b70;
+}
+
+/* Status Bar */
+.status-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  background: #11111b;
+  padding: 6px 12px;
+  font-size: 13px;
+  border-top: 1px solid #45475a;
+  z-index: 50;
+}
+
+/* Scrollbars */
+.components-panel::-webkit-scrollbar,
+.editor-panel textarea::-webkit-scrollbar,
+.preview-panel .preview-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.components-panel::-webkit-scrollbar-thumb,
+.editor-panel textarea::-webkit-scrollbar-thumb,
+.preview-panel .preview-container::-webkit-scrollbar-thumb {
+  background-color: #585b70;
+  border-radius: 4px;
+}
+
+/* Prevent horizontal scroll */
+.components-panel,
+.editor-panel,
+.preview-panel {
+  overflow-x: hidden;
+}
+
+
