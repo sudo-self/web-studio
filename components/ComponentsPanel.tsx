@@ -33,7 +33,7 @@ export default function ComponentsPanel({
     </nav>
   </div>
 </header>`,
-    
+
     hero: `<!-- Hero Section -->
 <section style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 4rem 2rem; text-align: center;">
   <div style="max-width: 800px; margin: 0 auto;">
@@ -42,7 +42,7 @@ export default function ComponentsPanel({
     <button style="background: white; color: #333; border: none; padding: 12px 30px; font-size: 1rem; border-radius: 5px; cursor: pointer;">Get Started</button>
   </div>
 </section>`,
-    
+
     about: `<!-- About Section -->
 <section style="padding: 4rem 2rem; background-color: #f9f9f9;">
   <div style="max-width: 800px; margin: 0 auto;">
@@ -51,7 +51,7 @@ export default function ComponentsPanel({
     <p style="line-height: 1.6; color: #666;">Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.</p>
   </div>
 </section>`,
-    
+
     services: `<!-- Services Section -->
 <section style="padding: 4rem 2rem; background-color: white;">
   <div style="max-width: 1200px; margin: 0 auto;">
@@ -68,7 +68,7 @@ export default function ComponentsPanel({
     </div>
   </div>
 </section>`,
-    
+
     contact: `<!-- Contact Form -->
 <section style="padding: 4rem 2rem; background-color: #f9f9f9;">
   <div style="max-width: 600px; margin: 0 auto;">
@@ -86,7 +86,7 @@ export default function ComponentsPanel({
     </form>
   </div>
 </section>`,
-    
+
     footer: `<!-- Footer -->
 <footer style="background-color: #333; color: white; padding: 2rem; text-align: center;">
   <div style="max-width: 1200px; margin: 0 auto;">
@@ -97,7 +97,7 @@ export default function ComponentsPanel({
     </div>
   </div>
 </footer>`,
-    
+
     card: `<!-- Card Component -->
 <div style="background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; max-width: 300px; margin: 0 auto;">
   <img src="https://via.placeholder.com/300x200" alt="Card Image" style="width: 100%; height: auto;">
@@ -107,7 +107,7 @@ export default function ComponentsPanel({
     <button style="background: #333; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Learn More</button>
   </div>
 </div>`,
-    
+
     gallery: `<!-- Image Gallery -->
 <section style="padding: 2rem; background-color: white;">
   <div style="max-width: 1200px; margin: 0 auto;">
@@ -119,7 +119,6 @@ export default function ComponentsPanel({
   </div>
 </section>`,
 
-    // NEW SEO COMPONENTS
     seo: `<!-- SEO Meta Tags -->
 <head>
   <meta charset="UTF-8">
@@ -153,7 +152,6 @@ export default function ComponentsPanel({
 }
 </script>`,
 
-    // NEW ICONS COMPONENTS
     "social-icons": `<!-- Social Media Icons -->
 <div style="display: flex; gap: 15px; justify-content: center; padding: 2rem;">
   <a href="#" style="color: #333; text-decoration: none; font-size: 24px;">📘</a>
@@ -190,13 +188,29 @@ export default function ComponentsPanel({
     "font-icons": `<!-- Font Awesome Icons (CDN) -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-<!-- Example Usage -->
 <div style="display: flex; gap: 20px; justify-content: center; padding: 2rem;">
   <i class="fas fa-home" style="font-size: 24px; color: #333;"></i>
   <i class="fas fa-envelope" style="font-size: 24px; color: #333;"></i>
   <i class="fas fa-phone" style="font-size: 24px; color: #333;"></i>
   <i class="fas fa-share-alt" style="font-size: 24px; color: #333;"></i>
 </div>`
+  };
+
+  const componentCategories = {
+    "Layout": ["header", "hero", "about", "services", "contact", "footer"],
+    "Content": ["card", "gallery"],
+    "SEO": ["seo", "seo-schema"],
+    "Icons": ["social-icons", "feature-icons", "font-icons"]
+  };
+
+  const getComponentIcon = (componentKey: string) => {
+    const icons: { [key: string]: string } = {
+      header: "📄", hero: "🌟", about: "ℹ️", services: "🛠️",
+      contact: "📞", footer: "⬇️", card: "🃏", gallery: "🖼️",
+      seo: "🔍", "seo-schema": "🏷️", "social-icons": "👥",
+      "feature-icons": "⭐", "font-icons": "🔤"
+    };
+    return icons[componentKey] || "📦";
   };
 
   const askAi = async () => {
@@ -259,145 +273,121 @@ export default function ComponentsPanel({
     }
   };
 
-  // Group components by category
-  const componentCategories = {
-    "Layout": ["header", "hero", "about", "services", "contact", "footer"],
-    "Content": ["card", "gallery"],
-    "SEO": ["seo", "seo-schema"],
-    "Icons": ["social-icons", "feature-icons", "font-icons"]
-  };
-
-  const getComponentIcon = (componentKey: string) => {
-    const icons: { [key: string]: string } = {
-      header: "📄",
-      hero: "🌟",
-      about: "ℹ️",
-      services: "🛠️",
-      contact: "📞",
-      footer: "⬇️",
-      card: "🃏",
-      gallery: "🖼️",
-      seo: "🔍",
-      "seo-schema": "🏷️",
-      "social-icons": "👥",
-      "feature-icons": "⭐",
-      "font-icons": "🔤"
-    };
-    return icons[componentKey] || "📦";
-  };
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div className="panel-header">
-        <h2>Components</h2>
-      </div>
-      
-      <div className="components-list">
-        {Object.entries(componentCategories).map(([category, componentKeys]) => (
-          <div key={category} style={{ marginBottom: '20px' }}>
-            <h4 style={{ 
-              marginBottom: '8px', 
-              color: '#89b4fa', 
-              fontSize: '14px',
-              fontWeight: '600',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px'
-            }}>
-              {category}
-            </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              {componentKeys.map((key) => (
-                <div
-                  key={key}
-                  className="component-item"
-                  onClick={() => onInsert(components[key as keyof typeof components])}
-                  style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-                >
-                  <span style={{ fontSize: '16px' }}>
-                    {getComponentIcon(key)}
-                  </span>
-                  <span>
-                    {key.split('-').map(word => 
-                      word.charAt(0).toUpperCase() + word.slice(1)
-                    ).join(' ')}
-                  </span>
-                </div>
-              ))}
-            </div>
+    <div style={{
+      display: "flex",
+      flexDirection: "column",
+      height: "100vh",
+      overflow: "hidden",
+    }}>
+      {/* Components List */}
+      <div style={{
+        flex: 1,
+        overflowY: "auto",
+        padding: "1rem",
+      }}>
+        {Object.entries(componentCategories).map(([category, keys]) => (
+          <div key={category} style={{ marginBottom: "1.5rem" }}>
+            <h4 style={{
+              color: "#89b4fa",
+              fontWeight: 600,
+              marginBottom: "0.5rem",
+              textTransform: "uppercase"
+            }}>{category}</h4>
+            {keys.map((key) => (
+              <div
+                key={key}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  cursor: "pointer",
+                  marginBottom: "0.25rem"
+                }}
+                onClick={() => onInsert(components[key as keyof typeof components])}
+              >
+                <span>{getComponentIcon(key)}</span>
+                <span>{key.split("-").map(w => w[0].toUpperCase() + w.slice(1)).join(" ")}</span>
+              </div>
+            ))}
           </div>
         ))}
       </div>
 
-      {/* AI Assistant Section */}
-      <div className="ai-section">
+      {/* AI Section */}
+      <div style={{
+        flexShrink: 0,
+        padding: "1rem",
+        borderTop: "1px solid #ddd",
+        display: "flex",
+        flexDirection: "column",
+        gap: "0.5rem",
+        maxHeight: "50%",
+        overflowY: "auto",
+      }}>
         <h3>AI Assistant</h3>
 
         {/* Mode Switch */}
-        <div className="mode-switch">
+        <div style={{ display: "flex", gap: "1rem" }}>
           <label>
-            <input
-              type="radio"
-              name="mode"
-              value="response"
-              checked={mode === "response"}
-              onChange={() => setMode("response")}
-            />
-            Stateless
+            <input type="radio" value="response" checked={mode === "response"} onChange={() => setMode("response")} /> Stateless
           </label>
           <label>
-            <input
-              type="radio"
-              name="mode"
-              value="chat"
-              checked={mode === "chat"}
-              onChange={() => setMode("chat")}
-            />
-            Chat
+            <input type="radio" value="chat" checked={mode === "chat"} onChange={() => setMode("chat")} /> Chat
           </label>
         </div>
 
-        {/* Prompt Input */}
+        {/* Prompt */}
         <textarea
-          className="ai-prompt"
           placeholder="Ask AI to generate or modify code..."
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-              askAi();
-            }
+            if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) askAi();
           }}
+          style={{ width: "100%", minHeight: "60px", padding: "0.5rem" }}
         />
-        
-        <button 
-          onClick={askAi} 
-          disabled={loading} 
-          style={{ 
-            background: '#cba6f7', 
-            color: '#1e1e2e', 
-            border: 'none', 
-            padding: '10px 20px', 
-            borderRadius: '5px', 
-            cursor: loading ? 'not-allowed' : 'pointer',
-            fontWeight: '600',
-            width: '100%',
-            opacity: loading ? 0.7 : 1
+
+        {/* Ask AI Button */}
+        <button
+          onClick={askAi}
+          disabled={loading}
+          style={{
+            width: "100%",
+            padding: "0.5rem",
+            background: "#cba6f7",
+            color: "#1e1e2e",
+            fontWeight: 600,
+            border: "none",
+            borderRadius: "4px",
+            cursor: loading ? "not-allowed" : "pointer",
           }}
         >
           {loading ? "🤖 Asking AI..." : "🤖 Ask AI"}
         </button>
 
         {/* AI Response */}
-        <div className="ai-response">
-          {response}
-        </div>
+        <pre style={{
+          background: "#f4f4f4",
+          padding: "0.5rem",
+          minHeight: "60px",
+          overflowX: "auto",
+          whiteSpace: "pre-wrap",
+          wordWrap: "break-word"
+        }}>
+          {response || "AI responses will appear here..."}
+        </pre>
 
         {/* Chat History */}
         {mode === "chat" && chatHistory.length > 0 && (
-          <div className="chat-history">
+          <div style={{ marginTop: "0.5rem", maxHeight: "150px", overflowY: "auto" }}>
             <strong>Chat History:</strong>
             {chatHistory.map((msg, i) => (
-              <div key={i} className={`chat-message ${msg.role}`}>
+              <div key={i} style={{
+                fontSize: "0.85rem",
+                color: msg.role === "user" ? "#333" : "#666",
+                marginTop: "0.25rem"
+              }}>
                 <b>{msg.role}:</b> {msg.content}
               </div>
             ))}
