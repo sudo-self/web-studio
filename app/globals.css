@@ -24,32 +24,34 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
   background-color: #1e1e2e;
   color: #cdd6f4;
   overflow: hidden;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Main Container */
+/* Container */
 .container {
   display: flex;
   height: 100vh;
   width: 100vw;
-  gap: 0;
+  gap: 10px;
   padding: 0;
   overflow: hidden;
 }
 
-/* Panels - Fixed spacing */
+/* Panels */
 .panel {
   background-color: #313244;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  height: 100%;
 }
 
 /* Components Panel */
@@ -57,6 +59,9 @@ body {
   width: 280px;
   min-width: 280px;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
   border-right: 1px solid #45475a;
   padding: 15px;
 }
@@ -65,15 +70,62 @@ body {
 .editor-panel {
   flex: 2;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   padding: 15px;
   border-right: 1px solid #45475a;
+}
+
+/* Editor textarea fills panel */
+.editor-panel textarea {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  background: #1e1e2e;
+  color: #cdd6f4;
+  border: 1px solid #45475a;
+  border-radius: 6px;
+  padding: 15px;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: none;
+  overflow: auto;
+}
+
+.editor-panel textarea:focus {
+  outline: none;
+  border-color: #89b4fa;
 }
 
 /* Preview Panel */
 .preview-panel {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   padding: 15px;
+}
+
+/* Preview container fills panel */
+.preview-panel .preview-container {
+  flex: 1 1 auto;
+  min-height: 0;
+  border: 1px solid #45475a;
+  border-radius: 6px;
+  overflow: hidden;
+  background: white;
+  width: 100%;
+  height: 100%;
+}
+
+.preview-panel iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
 }
 
 /* Panel Header */
@@ -81,8 +133,8 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
-  padding-bottom: 10px;
+  margin-bottom: 10px;
+  padding-bottom: 5px;
   border-bottom: 1px solid #45475a;
 }
 
@@ -112,42 +164,6 @@ body {
 
 .component-item:hover {
   background: #585b70;
-}
-
-/* Editor Textarea */
-.editor-panel textarea {
-  flex: 1;
-  width: 100%;
-  background: #1e1e2e;
-  color: #cdd6f4;
-  border: 1px solid #45475a;
-  border-radius: 6px;
-  padding: 15px;
-  font-family: 'Courier New', monospace;
-  font-size: 14px;
-  line-height: 1.5;
-  resize: none;
-  min-height: 200px;
-}
-
-.editor-panel textarea:focus {
-  outline: none;
-  border-color: #89b4fa;
-}
-
-/* Preview Container */
-.preview-container {
-  flex: 1;
-  border: 1px solid #45475a;
-  border-radius: 6px;
-  overflow: hidden;
-  background: white;
-}
-
-.preview-panel iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
 }
 
 /* Toolbar */
@@ -232,7 +248,8 @@ body {
   position: fixed;
   bottom: 0;
   left: 0;
-  width: 100%;
+  right: 0;
+  width: 100vw;
   display: flex;
   justify-content: space-between;
   background: #11111b;
@@ -240,6 +257,8 @@ body {
   font-size: 12px;
   border-top: 1px solid #45475a;
   z-index: 50;
+  height: 40px;
+  box-sizing: border-box;
 }
 
 /* Scrollbars */
