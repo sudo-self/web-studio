@@ -13,6 +13,8 @@ interface EditorPanelProps {
   code: string;
   setCode: (val: string) => void;
   runCode: () => void;
+  formatCode: () => void;
+  onResizeStart?: (e: React.MouseEvent) => void;
 }
 
 const highlightCode = (code: string) => {
@@ -23,7 +25,7 @@ const highlightCode = (code: string) => {
   }
 };
 
-export default function EditorPanel({ code, setCode, runCode }: EditorPanelProps) {
+export default function EditorPanel({ code, setCode, runCode, formatCode, onResizeStart }: EditorPanelProps) {
   const [formatting, setFormatting] = useState(false);
 
   const handleRunCode = () => runCode();
@@ -74,7 +76,15 @@ export default function EditorPanel({ code, setCode, runCode }: EditorPanelProps
   }, [code]);
 
   return (
-    <div className="flex flex-col h-full bg-panel-bg text-foreground rounded-lg overflow-hidden">
+    <div className="flex flex-col h-full bg-panel-bg text-foreground rounded-lg overflow-hidden relative">
+      {/* Resize Handle on the right side */}
+      {onResizeStart && (
+        <div
+          className="absolute -right-2 top-0 bottom-0 w-4 cursor-col-resize z-20 hover:bg-accent-color hover:bg-opacity-50 transition-colors"
+          onMouseDown={onResizeStart}
+        />
+      )}
+
       {/* Header */}
       <div className="panel-header flex justify-between items-center gap-2 flex-wrap p-3 border-b border-panel-border bg-panel-header">
         <h2 className="m-0 text-sm font-semibold">Code Editor</h2>
@@ -89,14 +99,14 @@ export default function EditorPanel({ code, setCode, runCode }: EditorPanelProps
           >
             {formatting ? "Formatting..." : "Format Code"}
           </button>
+          <button className="btn btn-secondary" onClick={handleCopyCode}>
+            Copy
+          </button>
           <button className="btn btn-danger" onClick={handleClearCode}>
             Clear
           </button>
           <button className="btn btn-warning" onClick={handleExportCode}>
             Export
-          </button>
-          <button className="btn btn-secondary" onClick={handleCopyCode}>
-            Copy
           </button>
         </div>
       </div>
@@ -129,7 +139,7 @@ export default function EditorPanel({ code, setCode, runCode }: EditorPanelProps
             minHeight: "100%",
             lineHeight: 1.5,
             flex: 1,
-            paddingLeft: 5, // 👈 adds a bit of space after gutter
+            paddingLeft: 5,
           }}
           textareaClassName="editor-textarea"
           preClassName="editor-pre"
