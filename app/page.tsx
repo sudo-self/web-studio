@@ -1,5 +1,3 @@
-// --- app/page.tsx ---
-
 "use client";
 
 import { useState } from "react";
@@ -17,12 +15,10 @@ export default function Home() {
 </div>`);
 
   const runCode = () => {
-    // This will be handled by the real-time preview
     console.log("Code updated:", code);
   };
 
   const formatCode = () => {
-    // Simple formatting - add line breaks after tags
     const formatted = code.replace(/(>)(<)/g, '$1\n$2');
     setCode(formatted);
   };
@@ -36,7 +32,14 @@ export default function Home() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', margin: 0, padding: 0 }}>
+    <div style={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      height: '100vh', 
+      width: '100vw', 
+      margin: 0, 
+      padding: 0 
+    }}>
       {/* Main Content Area */}
       <div style={{
         display: 'flex',
@@ -49,7 +52,10 @@ export default function Home() {
       }}>
         {/* Components Panel */}
         <div className="panel components-panel" style={{ height: '100%' }}>
-          <ComponentsPanel onInsert={insertComponent} onAiInsert={insertAiCode} />
+          <ComponentsPanel 
+            onInsert={insertComponent} 
+            onAiInsert={insertAiCode} 
+          />
         </div>
 
         {/* Editor Panel */}
