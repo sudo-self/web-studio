@@ -1,18 +1,18 @@
-// --- components/EditorPanel.tsx ---
-
 "use client";
+
+interface EditorPanelProps {
+  code: string;
+  setCode: (val: string) => void;
+  runCode: () => void;
+  formatCode: () => void;
+}
 
 export default function EditorPanel({
   code,
   setCode,
   runCode,
   formatCode,
-}: {
-  code: string;
-  setCode: (val: string) => void;
-  runCode: () => void;
-  formatCode: () => void;
-}) {
+}: EditorPanelProps) {
   const handleRunCode = () => {
     console.log("Running code:", code);
     runCode();
@@ -30,7 +30,11 @@ export default function EditorPanel({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div style={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      height: '100%' 
+    }}>
       {/* All buttons in header row */}
       <div className="panel-header" style={{ 
         gap: '10px', 
@@ -103,7 +107,14 @@ export default function EditorPanel({
         style={{
           flex: 1,
           minHeight: '200px',
-          margin: 0
+          margin: 0,
+          fontFamily: 'monospace',
+          fontSize: '14px',
+          lineHeight: '1.5',
+          padding: '15px',
+          border: '1px solid #ccc',
+          borderRadius: '4px',
+          resize: 'none'
         }}
       />
     </div>
