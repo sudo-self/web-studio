@@ -1,4 +1,5 @@
 // --- components/EditorPanel.tsx ---
+
 "use client";
 
 export default function EditorPanel({
@@ -12,14 +13,39 @@ export default function EditorPanel({
   runCode: () => void;
   formatCode: () => void;
 }) {
+  const handleRunCode = () => {
+    console.log("Running code:", code);
+    runCode();
+  };
+
+  const handleFormatCode = () => {
+    console.log("Formatting code");
+    formatCode();
+  };
+
+  const handleClearCode = () => {
+    if (confirm('Are you sure you want to clear the editor?')) {
+      setCode("");
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* All buttons in header row */}
-      <div className="panel-header" style={{ gap: '10px', flexWrap: 'wrap' }}>
-        <h2 style={{ marginRight: 'auto' }}>Code Editor</h2>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+      <div className="panel-header" style={{ 
+        gap: '10px', 
+        flexWrap: 'wrap',
+        alignItems: 'center'
+      }}>
+        <h2 style={{ marginRight: 'auto', margin: 0 }}>Code Editor</h2>
+        <div style={{ 
+          display: 'flex', 
+          gap: '10px', 
+          alignItems: 'center',
+          flexWrap: 'wrap'
+        }}>
           <button
-            onClick={runCode}
+            onClick={handleRunCode}
             style={{
               background: '#89b4fa',
               color: '#1e1e2e',
@@ -28,13 +54,14 @@ export default function EditorPanel({
               borderRadius: '5px',
               cursor: 'pointer',
               fontWeight: '600',
-              fontSize: '14px'
+              fontSize: '14px',
+              minWidth: '100px'
             }}
           >
             Run Code
           </button>
           <button
-            onClick={formatCode}
+            onClick={handleFormatCode}
             style={{
               background: '#a6e3a1',
               color: '#1e1e2e',
@@ -43,17 +70,14 @@ export default function EditorPanel({
               borderRadius: '5px',
               cursor: 'pointer',
               fontWeight: '600',
-              fontSize: '14px'
+              fontSize: '14px',
+              minWidth: '100px'
             }}
           >
             Format Code
           </button>
           <button
-            onClick={() => {
-              if (confirm('Are you sure you want to clear the editor?')) {
-                setCode("");
-              }
-            }}
+            onClick={handleClearCode}
             style={{
               background: '#f38ba8',
               color: '#1e1e2e',
@@ -62,7 +86,8 @@ export default function EditorPanel({
               borderRadius: '5px',
               cursor: 'pointer',
               fontWeight: '600',
-              fontSize: '14px'
+              fontSize: '14px',
+              minWidth: '100px'
             }}
           >
             Clear
@@ -77,7 +102,8 @@ export default function EditorPanel({
         placeholder="Start coding here or use components from the left..."
         style={{
           flex: 1,
-          minHeight: '200px'
+          minHeight: '200px',
+          margin: 0
         }}
       />
     </div>
