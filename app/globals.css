@@ -1,39 +1,48 @@
 @import "tailwindcss";
 
+
+/* === Theme Variables === */
 :root {
   --background: #ffffff;
   --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --font-mono: 'Courier New', monospace;
+  --panel-bg: #313244;
+  --panel-border: #45475a;
+  --component-bg: #45475a;
+  --component-hover: #585b70;
+  --button-bg: #89b4fa;
+  --button-hover: #74c7ec;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --panel-bg: #313244;
+    --panel-border: #45475a;
+    --component-bg: #45475a;
+    --component-hover: #585b70;
+    --button-bg: #89b4fa;
+    --button-hover: #74c7ec;
   }
 }
 
-/* Global Reset */
+/* === Global Reset === */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
-  background-color: #1e1e2e;
-  color: #cdd6f4;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
   overflow: hidden;
 }
 
-/* Container */
+/* === Container === */
 .container {
   display: flex;
   height: 100vh;
@@ -43,9 +52,9 @@ body {
   overflow: hidden;
 }
 
-/* Panels */
+/* === Panels === */
 .panel {
-  background-color: #313244;
+  background-color: var(--panel-bg);
   border-radius: 10px;
   padding: 15px;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
@@ -54,19 +63,43 @@ body {
   overflow: hidden;
 }
 
-/* Components Panel */
+/* === Components Panel === */
 .components-panel {
   width: 280px;
   min-width: 280px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-  border-right: 1px solid #45475a;
+  border-right: 1px solid var(--panel-border);
   padding: 15px;
+  overflow: hidden;
 }
 
-/* Editor Panel */
+/* Components List */
+.components-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 15px;
+}
+
+.component-item {
+  padding: 12px;
+  background: var(--component-bg);
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid #585b70;
+  transition: background 0.2s;
+  user-select: none;
+}
+
+.component-item:hover {
+  background: var(--component-hover);
+}
+
+/* === Editor Panel === */
 .editor-panel {
   flex: 2;
   min-width: 0;
@@ -74,20 +107,19 @@ body {
   flex-direction: column;
   overflow: hidden;
   padding: 15px;
-  border-right: 1px solid #45475a;
+  border-right: 1px solid var(--panel-border);
 }
 
-/* Editor textarea fills panel */
 .editor-panel textarea {
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
-  background: #1e1e2e;
-  color: #cdd6f4;
-  border: 1px solid #45475a;
+  background: var(--background);
+  color: var(--foreground);
+  border: 1px solid var(--panel-border);
   border-radius: 6px;
   padding: 15px;
-  font-family: 'Courier New', monospace;
+  font-family: var(--font-mono);
   font-size: 14px;
   line-height: 1.5;
   resize: none;
@@ -99,7 +131,7 @@ body {
   border-color: #89b4fa;
 }
 
-/* Preview Panel */
+/* === Preview Panel === */
 .preview-panel {
   flex: 1;
   min-width: 0;
@@ -109,11 +141,10 @@ body {
   padding: 15px;
 }
 
-/* Preview container fills panel */
 .preview-panel .preview-container {
   flex: 1 1 auto;
   min-height: 0;
-  border: 1px solid #45475a;
+  border: 1px solid var(--panel-border);
   border-radius: 6px;
   overflow: hidden;
   background: white;
@@ -128,14 +159,14 @@ body {
   display: block;
 }
 
-/* Panel Header */
+/* === Panel Header === */
 .panel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
   padding-bottom: 5px;
-  border-bottom: 1px solid #45475a;
+  border-bottom: 1px solid var(--panel-border);
 }
 
 .panel-header h2 {
@@ -143,30 +174,7 @@ body {
   font-weight: 600;
 }
 
-/* Components List */
-.components-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex: 1;
-  overflow-y: auto;
-}
-
-.component-item {
-  padding: 12px;
-  background: #45475a;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.2s;
-  border: 1px solid #585b70;
-  user-select: none;
-}
-
-.component-item:hover {
-  background: #585b70;
-}
-
-/* Toolbar */
+/* === Toolbar === */
 .toolbar {
   display: flex;
   gap: 10px;
@@ -174,8 +182,8 @@ body {
 }
 
 .toolbar button {
-  background-color: #89b4fa;
-  color: #1e1e2e;
+  background-color: var(--button-bg);
+  color: var(--background);
   border: none;
   padding: 8px 16px;
   border-radius: 5px;
@@ -185,28 +193,33 @@ body {
 }
 
 .toolbar button:hover {
-  background-color: #74c7ec;
+  background-color: var(--button-hover);
 }
 
-/* AI Section */
+/* === AI Section === */
 .ai-section {
-  margin-top: 20px;
+  margin-top: auto;
   padding-top: 15px;
-  border-top: 1px solid #45475a;
+  border-top: 1px solid var(--panel-border);
+  max-height: 50vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .ai-section h3 {
   margin-bottom: 10px;
   font-size: 16px;
+  flex-shrink: 0;
 }
 
 .ai-prompt {
   width: 100%;
-  background: #45475a;
+  background: var(--component-bg);
   border: 1px solid #585b70;
   border-radius: 5px;
   padding: 10px;
-  color: #cdd6f4;
+  color: var(--foreground);
   margin-bottom: 10px;
   resize: vertical;
   min-height: 80px;
@@ -219,17 +232,41 @@ body {
 }
 
 .ai-response {
-  background: #313244;
+  background: var(--panel-bg);
   border-radius: 5px;
   padding: 10px;
   margin-top: 10px;
-  max-height: 150px;
+  max-height: 120px;
   overflow-y: auto;
   font-size: 14px;
-  border: 1px solid #45475a;
+  border: 1px solid var(--panel-border);
+  flex-shrink: 0;
 }
 
-/* Mode Switch */
+/* === Chat History === */
+.chat-history {
+  margin-top: 12px;
+  max-height: 100px;
+  overflow-y: auto;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.chat-message {
+  margin-top: 4px;
+  padding: 4px;
+  border-radius: 3px;
+}
+
+.chat-message.user {
+  background: var(--component-bg);
+}
+
+.chat-message.assistant {
+  background: var(--panel-bg);
+}
+
+/* === Mode Switch === */
 .mode-switch {
   display: flex;
   gap: 15px;
@@ -243,7 +280,7 @@ body {
   cursor: pointer;
 }
 
-/* Status Bar */
+/* === Status Bar === */
 .status-bar {
   position: fixed;
   bottom: 0;
@@ -255,45 +292,24 @@ body {
   background: #11111b;
   padding: 8px 15px;
   font-size: 12px;
-  border-top: 1px solid #45475a;
+  border-top: 1px solid var(--panel-border);
   z-index: 50;
   height: 40px;
   box-sizing: border-box;
 }
 
-/* Scrollbars */
+/* === Scrollbars === */
 .components-list::-webkit-scrollbar,
 .editor-panel textarea::-webkit-scrollbar,
-.ai-response::-webkit-scrollbar {
+.ai-response::-webkit-scrollbar,
+.chat-history::-webkit-scrollbar {
   width: 6px;
 }
 
 .components-list::-webkit-scrollbar-thumb,
 .editor-panel textarea::-webkit-scrollbar-thumb,
-.ai-response::-webkit-scrollbar-thumb {
+.ai-response::-webkit-scrollbar-thumb,
+.chat-history::-webkit-scrollbar-thumb {
   background-color: #585b70;
   border-radius: 3px;
 }
-
-/* Chat History */
-.chat-history {
-  margin-top: 12px;
-  max-height: 150px;
-  overflow-y: auto;
-  font-size: 12px;
-}
-
-.chat-message {
-  margin-top: 4px;
-  padding: 4px;
-  border-radius: 3px;
-}
-
-.chat-message.user {
-  background: #45475a;
-}
-
-.chat-message.assistant {
-  background: #313244;
-}
-
