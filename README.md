@@ -3,6 +3,7 @@
 A modern, open-source web development environment designed to streamline the creation of responsive websites using a visual interface.
 
 ---
+<img width="1512" height="857" alt="Screenshot 2025-10-18 at 15 38 52" src="https://github.com/user-attachments/assets/048ae487-4e0b-437d-8bb1-c064fe99eb7e" />
 
 ## 🚀 Features
 
