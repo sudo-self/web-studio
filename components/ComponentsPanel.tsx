@@ -2,32 +2,10 @@
 
 import { useState } from "react";
 import {
-  FileText,       // header
-  Sparkles,       // hero
-  Info,           // about
-  Wrench,         // services
-  Phone,          // contact
-  SquareStack,    // footer
-  CreditCard,     // card
-  Image,          // gallery
-  Search,         // seo
-  Tag,            // seo-schema
-  Users,          // social-icons
-  Stars,          // feature-icons
-  Type,           // font-icons
-  Bot,            // AI assistant
-  Zap,            // feature icon
-  Shield,
-  Smartphone,
-  Home,
-  Mail,
-  Share2,
-  Facebook,
-  Twitter,
-  Instagram,
-  Linkedin,
-  Youtube
+  FileText, Sparkles, Info, Wrench, Phone, SquareStack,
+  CreditCard, Image, Search, Tag, Users, Stars, Type, Bot, Settings
 } from "lucide-react";
+import { useSettings } from "@/contexts/SettingsContext";
 
 type AiMode = "response" | "chat";
 
@@ -39,13 +17,20 @@ interface ComponentCategories {
   [key: string]: string[];
 }
 
+interface ComponentsPanelProps {
+  onInsert: (code: string) => void;
+  onAiInsert: (code: string) => void;
+  onOpenSettings: () => void;
+  onResizeStart?: (e: React.MouseEvent) => void;
+}
+
 export default function ComponentsPanel({
   onInsert,
   onAiInsert,
-}: {
-  onInsert: (code: string) => void;
-  onAiInsert: (code: string) => void;
-}) {
+  onOpenSettings,
+  onResizeStart,
+}: ComponentsPanelProps) {
+  const { settings } = useSettings();
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState("");
@@ -271,123 +256,116 @@ export default function ComponentsPanel({
     return icons[componentKey] || <FileText size={16} />;
   };
 
-    const askAi = async () => {
-      if (!prompt.trim()) return;
-      setLoading(true);
-      setResponse("Thinking...");
+  const askAi = async () => {
+    if (!prompt.trim()) return;
+    setLoading(true);
+    setResponse("Thinking...");
 
-      try {
-        let aiText = "";
+    try {
+      let aiText = "";
 
-        if (mode === "response") {
-          const res = await fetch("http://10.0.0.20:1234/v1/responses", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              model: "default",
-              input: `Generate HTML code for: ${prompt}. Return only the HTML code without explanations.`,
-            }),
-          });
-          const data = await res.json();
-          aiText = data.output_text || data.output?.[0]?.content?.[0]?.text || "No response";
-        } else {
-          const updatedHistory = [
-            ...chatHistory,
-            { role: "user", content: prompt },
-          ];
-          const res = await fetch("http://10.0.0.20:1234/v1/chat/completions", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              model: "default",
-              messages: [
-                {
-                  role: "system",
-                  content: "You are a web development assistant. Return only HTML/CSS/JavaScript code without explanations."
-                },
-                ...updatedHistory
-              ],
-            }),
-          });
-          const data = await res.json();
-          aiText = data.choices?.[0]?.message?.content?.trim() || "No response";
+      const baseUrl = settings.aiEndpoint;
 
-          setChatHistory([
-            ...updatedHistory,
-            { role: "assistant", content: aiText },
-          ]);
-        }
+      if (mode === "response") {
+        const res = await fetch(`${baseUrl}/v1/responses`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: "default",
+            input: `Generate clean, ready-to-use HTML/CSS/JS code for: ${prompt}. 
+Return only code. No explanations, comments, or extra text. Do not output markdown instructions.`,
+          }),
+        });
 
-        // Clean up the response by removing code block formatting
-        let cleanedText = aiText
-          .replace(/^```html\s*/i, '')  // Remove starting ```html
-          .replace(/^```\s*/i, '')      // Remove starting ```
-          .replace(/\s*```$/i, '')      // Remove ending ```
-          .trim();
+        if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+        const data = await res.json();
+        aiText = String(data.output_text || data.output?.[0]?.content?.[0]?.text || "");
+      } else {
+        const updatedHistory = [...chatHistory, { role: "user", content: prompt }];
+        const res = await fetch(`${baseUrl}/v1/chat/completions`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: "default",
+            messages: [
+              {
+                role: "system",
+                content: "You are a professional web development assistant. Return only HTML/CSS/JS code. Do not include explanations, instructions, or markdown wrappers."
+              },
+              ...updatedHistory
+            ],
+          }),
+        });
 
-        setResponse(cleanedText);
-        if (cleanedText && !cleanedText.includes("No response")) {
-          onAiInsert(`\n<!-- AI Generated -->\n${cleanedText}\n`);
-        }
-      } catch (err) {
-        console.error(err);
-        setResponse("Error connecting to AI server. Make sure LM Studio is running.");
-      } finally {
-        setLoading(false);
-        setPrompt("");
+        if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+        const data = await res.json();
+        aiText = String(data.choices?.[0]?.message?.content || "");
+
+        setChatHistory([...updatedHistory, { role: "assistant", content: aiText }]);
       }
-    };
 
-    return (
-      <div style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100vh",
-        overflow: "hidden",
-      }}>
-        {/* Components List */}
-        <div style={{
-          flex: 1,
-          overflowY: "auto",
-          padding: "1rem",
-        }}>
+      // Strip code block formatting
+      const cleanedText = aiText
+        .replace(/^```(?:html|js|css)?\s*/i, "")
+        .replace(/\s*```$/i, "")
+        .trim();
+
+      setResponse(cleanedText);
+
+      if (cleanedText) {
+        onAiInsert(`\n<!-- AI Generated -->\n${cleanedText}\n`);
+      }
+    } catch (err) {
+      console.error(err);
+      setResponse(
+        `Error connecting to AI server at ${settings.aiEndpoint}. Make sure LM Studio is running and the endpoint is correct.`
+      );
+    } finally {
+      setLoading(false);
+      setPrompt("");
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-full overflow-hidden relative">
+      {/* Resize Handle on the right side */}
+      {onResizeStart && (
+        <div
+          className="absolute -right-2 top-0 bottom-0 w-4 cursor-col-resize z-20 hover:bg-accent-color hover:bg-opacity-50 transition-colors"
+          onMouseDown={onResizeStart}
+        />
+      )}
+
+      {/* Components List Header with Settings Button */}
+      <div className="panel-header">
+        <div className="flex items-center justify-between w-full">
+          <h3>Components</h3>
+          <button
+            onClick={onOpenSettings}
+            className="btn btn-secondary btn-sm"
+            title="Settings"
+          >
+            <Settings size={14} />
+          </button>
+        </div>
+      </div>
+      
+      {/* Components List */}
+      <div className="flex-1 overflow-auto min-h-0">
+        <div className="components-list">
           {Object.entries(componentCategories).map(([category, keys]) => (
-            <div key={category} style={{ marginBottom: "1.5rem" }}>
-              <h4 style={{
-                color: "#89b4fa",
-                fontWeight: 600,
-                marginBottom: "0.5rem",
-                textTransform: "uppercase",
-                fontSize: "0.875rem",
-                letterSpacing: "0.05em"
-              }}>
-                {category}
-              </h4>
+            <div key={category} className="component-category">
+              <div className="category-title">{category}</div>
               {keys.map((key) => (
                 <div
                   key={key}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                    cursor: "pointer",
-                    marginBottom: "0.5rem",
-                    padding: "0.5rem",
-                    borderRadius: "4px",
-                    transition: "background-color 0.2s",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "rgba(137, 180, 250, 0.1)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "transparent";
-                  }}
+                  className="component-item"
                   onClick={() => onInsert(components[key])}
                 >
-                  <div style={{ color: "#89b4fa", display: "flex", alignItems: "center" }}>
+                  <div className="component-icon">
                     {getComponentIcon(key)}
                   </div>
-                  <span style={{ fontSize: "0.875rem", color: "var(--foreground)" }}>
+                  <span className="component-name">
                     {key.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ")}
                   </span>
                 </div>
@@ -395,195 +373,92 @@ export default function ComponentsPanel({
             </div>
           ))}
         </div>
+      </div>
 
-        {/* AI Section */}
-        <div style={{
-          flexShrink: 0,
-          height: "50%",
-          minHeight: "300px",
-          display: "flex",
-          flexDirection: "column",
-          borderTop: "1px solid var(--panel-border)",
-        }}>
-          <div style={{
-            padding: "1rem",
-            borderBottom: "1px solid var(--panel-border)",
-            flexShrink: 0,
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <Bot size={18} style={{ color: "#89b4fa" }} />
-              <h3 style={{ margin: 0, fontSize: "1rem", fontWeight: 600 }}>AI Assistant</h3>
+      {/* AI Section Header with Endpoint Indicator */}
+      <div className="ai-section">
+        <div className="panel-header">
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-2">
+              <Bot size={18} style={{ color: "var(--accent-color)" }} />
+              <h3>AI Assistant</h3>
             </div>
-          </div>
-
-          {/* Scrollable AI Content */}
-          <div style={{
-            flex: 1,
-            overflowY: "auto",
-            padding: "1rem",
-            display: "flex",
-            flexDirection: "column",
-            gap: "0.75rem",
-          }}>
-            {/* Mode Switch */}
-            <div style={{
-              display: "flex",
-              gap: "1rem",
-              fontSize: "0.875rem"
-            }}>
-              <label style={{ display: "flex", alignItems: "center", gap: "0.25rem", cursor: "pointer" }}>
-                <input
-                  type="radio"
-                  value="response"
-                  checked={mode === "response"}
-                  onChange={() => setMode("response")}
-                />
-                Stateless
-              </label>
-              <label style={{ display: "flex", alignItems: "center", gap: "0.25rem", cursor: "pointer" }}>
-                <input
-                  type="radio"
-                  value="chat"
-                  checked={mode === "chat"}
-                  onChange={() => setMode("chat")}
-                />
-                Chat
-              </label>
+            <div className="text-xs text-text-muted bg-component-bg px-2 py-1 rounded">
+              {settings.aiEndpoint.replace('http://', '')}
             </div>
-
-            {/* Prompt */}
-            <textarea
-              placeholder="Ask AI to generate or modify code..."
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) askAi();
-              }}
-              style={{
-                width: "100%",
-                minHeight: "80px",
-                padding: "0.75rem",
-                borderRadius: "6px",
-                border: "1px solid var(--panel-border)",
-                backgroundColor: "var(--component-bg)",
-                color: "var(--foreground)",
-                fontSize: "0.875rem",
-                resize: "vertical",
-                fontFamily: "inherit"
-              }}
-            />
-
-            {/* Ask AI Button */}
-            <button
-              onClick={askAi}
-              disabled={loading}
-              style={{
-                width: "100%",
-                padding: "0.75rem",
-                background: loading ? "#a6a6a6" : "#cba6f7",
-                color: "#1e1e2e",
-                fontWeight: 600,
-                border: "none",
-                borderRadius: "6px",
-                cursor: loading ? "not-allowed" : "pointer",
-                fontSize: "0.875rem",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "0.5rem",
-                transition: "background-color 0.2s",
-                flexShrink: 0,
-              }}
-            >
-              <Bot size={16} />
-              {loading ? "Asking AI..." : "Ask AI"}
-            </button>
-
-            {/* AI Response */}
-            {response && (
-              <div style={{
-                background: "var(--panel-bg)",
-                padding: "0.75rem",
-                borderRadius: "6px",
-                border: "1px solid var(--panel-border)",
-                flexShrink: 0,
-              }}>
-                <div style={{
-                  fontSize: "0.75rem",
-                  color: "#89b4fa",
-                  fontWeight: 600,
-                  marginBottom: "0.5rem"
-                }}>
-                  AI RESPONSE:
-                </div>
-                <pre style={{
-                  margin: 0,
-                  fontSize: "0.75rem",
-                  overflowX: "auto",
-                  whiteSpace: "pre-wrap",
-                  wordWrap: "break-word",
-                  color: "var(--foreground)",
-                  fontFamily: "var(--font-mono)",
-                  lineHeight: "1.4",
-                  maxHeight: "200px",
-                  overflowY: "auto",
-                }}>
-                  {response}
-                </pre>
-              </div>
-            )}
-
-            {/* Chat History */}
-            {mode === "chat" && chatHistory.length > 0 && (
-              <div style={{
-                fontSize: "0.75rem",
-                flexShrink: 0,
-              }}>
-                <div style={{
-                  color: "#89b4fa",
-                  fontWeight: 600,
-                  marginBottom: "0.5rem"
-                }}>
-                  CHAT HISTORY:
-                </div>
-                <div style={{
-                  maxHeight: "150px",
-                  overflowY: "auto",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "0.25rem"
-                }}>
-                  {chatHistory.map((msg, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        padding: "0.5rem",
-                        borderRadius: "4px",
-                        backgroundColor: msg.role === "user" ? "var(--component-bg)" : "var(--panel-bg)",
-                        border: "1px solid var(--panel-border)",
-                      }}
-                    >
-                      <div style={{
-                        fontWeight: 600,
-                        fontSize: "0.7rem",
-                        color: msg.role === "user" ? "#89b4fa" : "#cba6f7",
-                        marginBottom: "0.25rem"
-                      }}>
-                        {msg.role.toUpperCase()}:
-                      </div>
-                      <div style={{
-                        fontSize: "0.7rem",
-                        lineHeight: "1.3",
-                        color: "var(--foreground)"
-                      }}>
-                        {msg.content}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </div>
+
+        {/* Mode Toggle */}
+        <div className="mode-toggle">
+          <label className="mode-option">
+            <input
+              type="radio"
+              value="response"
+              checked={mode === "response"}
+              onChange={() => setMode("response")}
+            />
+            Stateless
+          </label>
+          <label className="mode-option">
+            <input
+              type="radio"
+              value="chat"
+              checked={mode === "chat"}
+              onChange={() => setMode("chat")}
+            />
+            Chat
+          </label>
+        </div>
+
+        {/* Prompt Input */}
+        <textarea
+          className="prompt-textarea"
+          placeholder="Ask AI to generate or modify code..."
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) askAi();
+          }}
+        />
+
+        {/* Ask AI Button */}
+        <button
+          className="btn btn-accent"
+          onClick={askAi}
+          disabled={loading}
+        >
+          <Bot size={16} />
+          {loading ? "Asking AI..." : "Ask AI"}
+        </button>
+
+        {/* AI Response */}
+        {response && (
+          <div>
+            <div className="response-label">AI Response</div>
+            <div className="ai-response">
+              {response}
+            </div>
+          </div>
+        )}
+
+        {/* Chat History */}
+        {mode === "chat" && chatHistory.length > 0 && (
+          <div>
+            <div className="response-label">Chat History</div>
+            <div className="chat-history">
+              {chatHistory.map((msg, i) => (
+                <div key={i} className={`chat-message ${msg.role}`}>
+                  <div className={`message-role ${msg.role}`}>
+                    {msg.role.toUpperCase()}
+                  </div>
+                  <div>{msg.content}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-    );
+    </div>
+  );
+}
