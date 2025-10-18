@@ -6,6 +6,7 @@ import {
   CreditCard, Image, Search, Tag, Users, Stars, Type, Bot, Settings
 } from "lucide-react";
 import { useSettings } from "@/contexts/SettingsContext";
+import type { ReactElement } from "react";
 
 type AiMode = "response" | "chat";
 
@@ -237,8 +238,8 @@ export default function ComponentsPanel({
     "Icons": ["social-icons", "feature-icons", "font-icons"]
   };
 
-  const getComponentIcon = (componentKey: string): JSX.Element => {
-    const icons: { [key: string]: JSX.Element } = {
+  const getComponentIcon = (componentKey: string): ReactElement => {
+    const icons: { [key: string]: ReactElement } = {
       header: <FileText size={16} />,
       hero: <Sparkles size={16} />,
       about: <Info size={16} />,
