@@ -1,5 +1,4 @@
 // --- components/ComponentsPanel.tsx ---
-
 "use client";
 
 import { useState } from "react";
@@ -117,7 +116,86 @@ export default function ComponentsPanel({
       <img src="https://via.placeholder.com/200" alt="Gallery Image" style="width: 100%; height: auto; border-radius: 8px;">
     </div>
   </div>
-</section>`
+</section>`,
+
+    // NEW SEO COMPONENTS
+    seo: `<!-- SEO Meta Tags -->
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Website Title</title>
+  <meta name="description" content="Your website description for SEO">
+  <meta name="keywords" content="your, keywords, here">
+  <meta name="author" content="Your Name">
+  <meta property="og:title" content="Your Website Title">
+  <meta property="og:description" content="Your website description">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yourwebsite.com">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Your Website Title">
+  <meta name="twitter:description" content="Your website description">
+  <link rel="canonical" href="https://yourwebsite.com">
+</head>`,
+
+    "seo-schema": `<!-- Schema.org Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Your Website Name",
+  "url": "https://yourwebsite.com",
+  "description": "Your website description",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Your Organization"
+  }
+}
+</script>`,
+
+    // NEW ICONS COMPONENTS
+    "social-icons": `<!-- Social Media Icons -->
+<div style="display: flex; gap: 15px; justify-content: center; padding: 2rem;">
+  <a href="#" style="color: #333; text-decoration: none; font-size: 24px;">📘</a>
+  <a href="#" style="color: #333; text-decoration: none; font-size: 24px;">🐦</a>
+  <a href="#" style="color: #333; text-decoration: none; font-size: 24px;">📷</a>
+  <a href="#" style="color: #333; text-decoration: none; font-size: 24px;">💼</a>
+  <a href="#" style="color: #333; text-decoration: none; font-size: 24px;">📺</a>
+</div>`,
+
+    "feature-icons": `<!-- Feature Icons Section -->
+<section style="padding: 4rem 2rem; background-color: #f8fafc;">
+  <div style="max-width: 1200px; margin: 0 auto;">
+    <h2 style="text-align: center; margin-bottom: 3rem; color: #333;">Our Features</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+      <div style="text-align: center;">
+        <div style="font-size: 48px; margin-bottom: 1rem;">⚡</div>
+        <h3 style="color: #333; margin-bottom: 1rem;">Fast Performance</h3>
+        <p style="color: #666;">Lightning fast loading times and smooth interactions.</p>
+      </div>
+      <div style="text-align: center;">
+        <div style="font-size: 48px; margin-bottom: 1rem;">🔒</div>
+        <h3 style="color: #333; margin-bottom: 1rem;">Secure</h3>
+        <p style="color: #666;">Enterprise-grade security for your peace of mind.</p>
+      </div>
+      <div style="text-align: center;">
+        <div style="font-size: 48px; margin-bottom: 1rem;">📱</div>
+        <h3 style="color: #333; margin-bottom: 1rem;">Responsive</h3>
+        <p style="color: #666;">Looks great on all devices and screen sizes.</p>
+      </div>
+    </div>
+  </div>
+</section>`,
+
+    "font-icons": `<!-- Font Awesome Icons (CDN) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<!-- Example Usage -->
+<div style="display: flex; gap: 20px; justify-content: center; padding: 2rem;">
+  <i class="fas fa-home" style="font-size: 24px; color: #333;"></i>
+  <i class="fas fa-envelope" style="font-size: 24px; color: #333;"></i>
+  <i class="fas fa-phone" style="font-size: 24px; color: #333;"></i>
+  <i class="fas fa-share-alt" style="font-size: 24px; color: #333;"></i>
+</div>`
   };
 
   const askAi = async () => {
@@ -180,6 +258,33 @@ export default function ComponentsPanel({
     }
   };
 
+  // Group components by category
+  const componentCategories = {
+    "Layout": ["header", "hero", "about", "services", "contact", "footer"],
+    "Content": ["card", "gallery"],
+    "SEO": ["seo", "seo-schema"],
+    "Icons": ["social-icons", "feature-icons", "font-icons"]
+  };
+
+  const getComponentIcon = (componentKey: string) => {
+    const icons: { [key: string]: string } = {
+      header: "📄",
+      hero: "🌟",
+      about: "ℹ️",
+      services: "🛠️",
+      contact: "📞",
+      footer: "⬇️",
+      card: "🃏",
+      gallery: "🖼️",
+      seo: "🔍",
+      "seo-schema": "🏷️",
+      "social-icons": "👥",
+      "feature-icons": "⭐",
+      "font-icons": "🔤"
+    };
+    return icons[componentKey] || "📦";
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div className="panel-header">
@@ -187,13 +292,37 @@ export default function ComponentsPanel({
       </div>
       
       <div className="components-list">
-        {Object.entries(components).map(([key, html]) => (
-          <div
-            key={key}
-            className="component-item"
-            onClick={() => onInsert(html)}
-          >
-            {key.charAt(0).toUpperCase() + key.slice(1)}
+        {Object.entries(componentCategories).map(([category, componentKeys]) => (
+          <div key={category} style={{ marginBottom: '20px' }}>
+            <h4 style={{ 
+              marginBottom: '8px', 
+              color: '#89b4fa', 
+              fontSize: '14px',
+              fontWeight: '600',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px'
+            }}>
+              {category}
+            </h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              {componentKeys.map((key) => (
+                <div
+                  key={key}
+                  className="component-item"
+                  onClick={() => onInsert(components[key as keyof typeof components])}
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                >
+                  <span style={{ fontSize: '16px' }}>
+                    {getComponentIcon(key)}
+                  </span>
+                  <span>
+                    {key.split('-').map(word => 
+                      word.charAt(0).toUpperCase() + word.slice(1)
+                    ).join(' ')}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         ))}
       </div>
@@ -232,6 +361,11 @@ export default function ComponentsPanel({
           placeholder="Ask AI to generate or modify code..."
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+              askAi();
+            }
+          }}
         />
         
         <button 
@@ -241,13 +375,15 @@ export default function ComponentsPanel({
             background: '#cba6f7', 
             color: '#1e1e2e', 
             border: 'none', 
-            padding: '8px 16px', 
+            padding: '10px 20px', 
             borderRadius: '5px', 
-            cursor: 'pointer',
-            fontWeight: '600'
+            cursor: loading ? 'not-allowed' : 'pointer',
+            fontWeight: '600',
+            width: '100%',
+            opacity: loading ? 0.7 : 1
           }}
         >
-          {loading ? "Asking AI..." : "Ask AI"}
+          {loading ? "🤖 Asking AI..." : "🤖 Ask AI"}
         </button>
 
         {/* AI Response */}
