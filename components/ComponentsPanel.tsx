@@ -9,6 +9,7 @@ import { useSettings } from "@/contexts/SettingsContext";
 import type { ReactElement } from "react";
 
 type AiMode = "response" | "chat";
+type ChatRole = "user" | "assistant";
 
 interface Component {
   [key: string]: string;
@@ -25,6 +26,11 @@ interface ComponentsPanelProps {
   onResizeStart?: (e: React.MouseEvent) => void;
 }
 
+interface ChatMessage {
+  role: ChatRole;
+  content: string;
+}
+
 export default function ComponentsPanel({
   onInsert,
   onAiInsert,
@@ -36,9 +42,7 @@ export default function ComponentsPanel({
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState("");
   const [mode, setMode] = useState<AiMode>("response");
-  const [chatHistory, setChatHistory] = useState<
-    { role: "user" | "assistant"; content: string }[]
-  >([]);
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
 
   const components: Component = {
     header: `<!-- Header Component -->
@@ -282,7 +286,7 @@ Return only code. No explanations, comments, or extra text. Do not output markdo
         const data = await res.json();
         aiText = String(data.output_text || data.output?.[0]?.content?.[0]?.text || "");
       } else {
-        const updatedHistory = [...chatHistory, { role: "user", content: prompt }];
+        const updatedHistory = [...chatHistory, { role: "user" as ChatRole, content: prompt }];
         const res = await fetch(`${baseUrl}/v1/chat/completions`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -302,7 +306,7 @@ Return only code. No explanations, comments, or extra text. Do not output markdo
         const data = await res.json();
         aiText = String(data.choices?.[0]?.message?.content || "");
 
-        setChatHistory([...updatedHistory, { role: "assistant", content: aiText }]);
+        setChatHistory([...updatedHistory, { role: "assistant" as ChatRole, content: aiText }]);
       }
 
       // Strip code block formatting
