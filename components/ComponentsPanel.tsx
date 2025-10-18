@@ -1,10 +1,16 @@
-// --- components/ComponentsPanel.tsx ---
-
 "use client";
 
 import { useState } from "react";
 
 type AiMode = "response" | "chat";
+
+interface Component {
+  [key: string]: string;
+}
+
+interface ComponentCategories {
+  [key: string]: string[];
+}
 
 export default function ComponentsPanel({
   onInsert,
@@ -21,7 +27,7 @@ export default function ComponentsPanel({
     { role: "user" | "assistant"; content: string }[]
   >([]);
 
-  const components = {
+  const components: Component = {
     header: `<!-- Header Component -->
 <header style="background-color: #333; color: white; padding: 1rem;">
   <div style="display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto;">
@@ -196,19 +202,19 @@ export default function ComponentsPanel({
 </div>`
   };
 
-  const componentCategories = {
+  const componentCategories: ComponentCategories = {
     "Layout": ["header", "hero", "about", "services", "contact", "footer"],
     "Content": ["card", "gallery"],
     "SEO": ["seo", "seo-schema"],
     "Icons": ["social-icons", "feature-icons", "font-icons"]
   };
 
-  const getComponentIcon = (componentKey: string) => {
+  const getComponentIcon = (componentKey: string): string => {
     const icons: { [key: string]: string } = {
       header: "📄", hero: "🌟", about: "ℹ️", services: "🛠️",
       contact: "📞", footer: "⬇️", card: "🃏", gallery: "🖼️",
       seo: "🔍", "seo-schema": "🏷️", "social-icons": "👥",
-      "feature-icons": "⭐", "font-icons": "🔤"
+      "feature-icons": "✨", "font-icons": "🖹"
     };
     return icons[componentKey] || "📦";
   };
@@ -304,7 +310,7 @@ export default function ComponentsPanel({
                   cursor: "pointer",
                   marginBottom: "0.25rem"
                 }}
-                onClick={() => onInsert(components[key as keyof typeof components])}
+                onClick={() => onInsert(components[key])}
               >
                 <span>{getComponentIcon(key)}</span>
                 <span>{key.split("-").map(w => w[0].toUpperCase() + w.slice(1)).join(" ")}</span>
@@ -330,10 +336,20 @@ export default function ComponentsPanel({
         {/* Mode Switch */}
         <div style={{ display: "flex", gap: "1rem" }}>
           <label>
-            <input type="radio" value="response" checked={mode === "response"} onChange={() => setMode("response")} /> Stateless
+            <input 
+              type="radio" 
+              value="response" 
+              checked={mode === "response"} 
+              onChange={() => setMode("response")} 
+            /> Stateless
           </label>
           <label>
-            <input type="radio" value="chat" checked={mode === "chat"} onChange={() => setMode("chat")} /> Chat
+            <input 
+              type="radio" 
+              value="chat" 
+              checked={mode === "chat"} 
+              onChange={() => setMode("chat")} 
+            /> Chat
           </label>
         </div>
 
@@ -345,7 +361,13 @@ export default function ComponentsPanel({
           onKeyDown={(e) => {
             if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) askAi();
           }}
-          style={{ width: "100%", minHeight: "60px", padding: "0.5rem" }}
+          style={{ 
+            width: "100%", 
+            minHeight: "60px", 
+            padding: "0.5rem",
+            borderRadius: "4px",
+            border: "1px solid #ccc"
+          }}
         />
 
         {/* Ask AI Button */}
@@ -373,20 +395,29 @@ export default function ComponentsPanel({
           minHeight: "60px",
           overflowX: "auto",
           whiteSpace: "pre-wrap",
-          wordWrap: "break-word"
+          wordWrap: "break-word",
+          borderRadius: "4px",
+          fontSize: "12px"
         }}>
           {response || "AI responses will appear here..."}
         </pre>
 
         {/* Chat History */}
         {mode === "chat" && chatHistory.length > 0 && (
-          <div style={{ marginTop: "0.5rem", maxHeight: "150px", overflowY: "auto" }}>
+          <div style={{ 
+            marginTop: "0.5rem", 
+            maxHeight: "150px", 
+            overflowY: "auto",
+            fontSize: "12px"
+          }}>
             <strong>Chat History:</strong>
             {chatHistory.map((msg, i) => (
               <div key={i} style={{
-                fontSize: "0.85rem",
                 color: msg.role === "user" ? "#333" : "#666",
-                marginTop: "0.25rem"
+                marginTop: "0.25rem",
+                padding: "0.25rem",
+                backgroundColor: msg.role === "user" ? "#f0f0f0" : "#f8f8f8",
+                borderRadius: "3px"
               }}>
                 <b>{msg.role}:</b> {msg.content}
               </div>
