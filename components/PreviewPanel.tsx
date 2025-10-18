@@ -1,10 +1,12 @@
-// --- components/PreviewPanel.tsx ---
-
 "use client";
 
 import { useEffect, useRef } from "react";
 
-export default function PreviewPanel({ code }: { code: string }) {
+interface PreviewPanelProps {
+  code: string;
+}
+
+export default function PreviewPanel({ code }: PreviewPanelProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
@@ -33,32 +35,39 @@ export default function PreviewPanel({ code }: { code: string }) {
     }
   }, [code]);
 
+  const handleRefresh = () => {
+    if (iframeRef.current) {
+      const htmlDoc = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <style>
+              body { 
+                font-family: Arial, sans-serif; 
+                margin: 0; 
+                padding: 0; 
+                min-height: 100vh;
+              }
+            </style>
+          </head>
+          <body>${code}</body>
+        </html>
+      `;
+      iframeRef.current.srcdoc = htmlDoc;
+    }
+  };
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
+    <div style={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      height: '100%', 
+      width: '100%' 
+    }}>
       <div className="panel-header">
         <h2>Preview</h2>
         <button
-          onClick={() => {
-            if (iframeRef.current) {
-              const htmlDoc = `
-                <!DOCTYPE html>
-                <html>
-                  <head>
-                    <style>
-                      body { 
-                        font-family: Arial, sans-serif; 
-                        margin: 0; 
-                        padding: 0; 
-                        min-height: 100vh;
-                      }
-                    </style>
-                  </head>
-                  <body>${code}</body>
-                </html>
-              `;
-              iframeRef.current.srcdoc = htmlDoc;
-            }
-          }}
+          onClick={handleRefresh}
           style={{
             background: '#89b4fa',
             color: '#1e1e2e',
@@ -83,6 +92,7 @@ export default function PreviewPanel({ code }: { code: string }) {
             border: 'none',
             display: 'block'
           }}
+          title="Preview"
         />
       </div>
     </div>
