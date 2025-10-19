@@ -13,14 +13,13 @@ interface SettingsContextType {
 
 
 const defaultSettings: Settings = {
-  aiEndpoint: "http://lms.jessejesse.com"  
+  aiEndpoint: "http://10.0.0.20:1234" 
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = useState<Settings>(defaultSettings);
-
 
   useEffect(() => {
     const saved = localStorage.getItem('website-builder-settings');
