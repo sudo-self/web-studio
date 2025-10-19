@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Settings, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Settings, X, Wifi, WifiOff, Cloud } from "lucide-react";
 import { useSettings } from "@/contexts/SettingsContext";
 
 interface SettingsPanelProps {
@@ -12,6 +12,8 @@ interface SettingsPanelProps {
 export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
   const { settings, updateSettings } = useSettings();
   const [aiEndpoint, setAiEndpoint] = useState(settings.aiEndpoint);
+  const [testing, setTesting] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'unknown'>('unknown');
 
   const handleSave = () => {
     updateSettings({ aiEndpoint });
@@ -19,21 +21,37 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
   };
 
   const handleTestConnection = async () => {
+    setTesting(true);
     try {
       const response = await fetch(`${aiEndpoint}/v1/models`, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
       });
       
       if (response.ok) {
-        alert('✅ Connection successful! AI server is reachable.');
+        setConnectionStatus('connected');
+        alert('✅ Cloudflare tunnel connection successful! AI server is reachable.');
       } else {
+        setConnectionStatus('disconnected');
         alert('❌ Connection failed. Server responded with error.');
       }
     } catch (error) {
-      alert('❌ Connection failed. Make sure LM Studio is running and the endpoint is correct.');
+      setConnectionStatus('disconnected');
+      alert('❌ Cloudflare tunnel connection failed. Make sure LM Studio is running and the tunnel is active.');
+    } finally {
+      setTesting(false);
     }
   };
+
+  // Test connection when panel opens
+  useEffect(() => {
+    if (isOpen) {
+      handleTestConnection();
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -70,8 +88,8 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             margin: 0,
             color: 'var(--foreground)'
           }}>
-            <Settings size={20} />
-            Settings
+            <Cloud size={20} />
+            AI Settings (Cloudflare Tunnel)
           </h2>
           <button
             onClick={onClose}
@@ -96,36 +114,49 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               marginBottom: '8px',
               color: 'var(--foreground)'
             }}>
-              AI Server Endpoint
+              Cloudflare Tunnel Endpoint
             </label>
-            <input
-              type="text"
-              value={aiEndpoint}
-              onChange={(e) => setAiEndpoint(e.target.value)}
-              placeholder="http://localhost:1234"
-              style={{
-                width: '100%',
-                padding: '8px 12px',
-                border: '1px solid var(--panel-border)',
-                borderRadius: '6px',
-                backgroundColor: 'var(--component-bg)',
-                color: 'var(--foreground)',
-                outline: 'none'
-              }}
-            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <input
+                type="text"
+                value={aiEndpoint}
+                onChange={(e) => setAiEndpoint(e.target.value)}
+                placeholder="http://lms.jessejesse.com"
+                style={{
+                  flex: 1,
+                  padding: '8px 12px',
+                  border: '1px solid var(--panel-border)',
+                  borderRadius: '6px',
+                  backgroundColor: 'var(--component-bg)',
+                  color: 'var(--foreground)',
+                  outline: 'none'
+                }}
+              />
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                color: connectionStatus === 'connected' ? 'var(--button-success)' : 
+                      connectionStatus === 'disconnected' ? 'var(--button-danger)' : 'var(--text-muted)'
+              }}>
+                {connectionStatus === 'connected' ? <Wifi size={16} /> : <WifiOff size={16} />}
+                <Cloud size={16} />
+              </div>
+            </div>
             <p style={{
               fontSize: '12px',
               color: 'var(--text-muted)',
               marginTop: '4px',
               marginBottom: 0
             }}>
-              Enter the IP and port where LM Studio is running
+              Your Cloudflare tunnel endpoint: lms.jessejesse.com
             </p>
           </div>
 
           <div style={{ display: 'flex', gap: '8px' }}>
             <button
               onClick={handleTestConnection}
+              disabled={testing}
               style={{
                 flex: 1,
                 background: 'var(--button-secondary)',
@@ -133,14 +164,15 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                 border: 'none',
                 padding: '8px 16px',
                 borderRadius: '6px',
-                cursor: 'pointer',
-                fontWeight: 500
+                cursor: testing ? 'not-allowed' : 'pointer',
+                fontWeight: 500,
+                opacity: testing ? 0.6 : 1
               }}
             >
-              Test Connection
+              {testing ? 'Testing Tunnel...' : 'Test Tunnel Connection'}
             </button>
             <button
-              onClick={() => setAiEndpoint("http://10.0.0.20:1234")}
+              onClick={() => setAiEndpoint("http://lms.jessejesse.com")}
               style={{
                 flex: 1,
                 background: 'var(--button-warning)',
@@ -152,8 +184,22 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                 fontWeight: 500
               }}
             >
-              Reset to Default
+              Use Tunnel URL
             </button>
+          </div>
+
+          <div style={{ 
+            backgroundColor: 'var(--panel-bg)',
+            border: '1px solid var(--panel-border)',
+            borderRadius: '6px',
+            padding: '12px',
+            fontSize: '12px',
+            color: 'var(--text-muted)'
+          }}>
+            <strong>Cloudflare Tunnel Status:</strong>
+            <div style={{ marginTop: '4px' }}>
+              • Tunnel: lms.jessejesse.com → http://10.0.0.20:1234
+            </div>
           </div>
 
           <div style={{ display: 'flex', gap: '8px', paddingTop: '8px' }}>
