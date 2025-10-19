@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { ReactElement } from "react";
 import {
   FileText,
@@ -25,6 +25,8 @@ import {
   HelpCircle,
   TrendingUp,
   Clock,
+  Star,
+  StarOff,
 } from "lucide-react";
 
 import { useSettings } from "@/contexts/SettingsContext";
@@ -64,6 +66,55 @@ export default function ComponentsPanel({
   const [response, setResponse] = useState("");
   const [mode, setMode] = useState<AiMode>("response");
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+
+  // Load favorites from localStorage on component mount
+  useEffect(() => {
+    const savedFavorites = localStorage.getItem('component-favorites');
+    if (savedFavorites) {
+      try {
+        setFavorites(new Set(JSON.parse(savedFavorites)));
+      } catch (e) {
+        console.error('Failed to load favorites:', e);
+      }
+    }
+  }, []);
+
+  // Save favorites to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('component-favorites', JSON.stringify(Array.from(favorites)));
+  }, [favorites]);
+
+  // Filter components based on search
+  const filteredComponents = useMemo(() => {
+    if (!searchTerm) return componentCategories;
+    
+    const filtered: ComponentCategories = {};
+    Object.entries(componentCategories).forEach(([category, comps]) => {
+      const filteredComps = comps.filter(compKey => 
+        compKey.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        components[compKey].toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      if (filteredComps.length > 0) {
+        filtered[category] = filteredComps;
+      }
+    });
+    return filtered;
+  }, [searchTerm]);
+
+  const toggleFavorite = (componentKey: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setFavorites(prev => {
+      const newFavorites = new Set(prev);
+      if (newFavorites.has(componentKey)) {
+        newFavorites.delete(componentKey);
+      } else {
+        newFavorites.add(componentKey);
+      }
+      return newFavorites;
+    });
+  };
 
   const components: Component = {
     header: `<!-- Header Component -->
@@ -645,30 +696,109 @@ Return only code. No explanations, comments, or extra text. Do not output markdo
             <Settings size={14} />
           </button>
         </div>
+        
+        {/* Search Bar */}
+        <div className="relative mt-2">
+          <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted" />
+          <input
+            type="text"
+            placeholder="Search components..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 bg-component-bg border border-panel-border rounded-lg text-sm focus:outline-none focus:border-accent-color text-foreground"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-muted hover:text-foreground"
+            >
+              ×
+            </button>
+          )}
+        </div>
       </div>
       
       {/* Components List */}
       <div className="flex-1 overflow-auto min-h-0">
         <div className="components-list">
-          {Object.entries(componentCategories).map(([category, keys]) => (
-            <div key={category} className="component-category">
-              <div className="category-title">{category}</div>
-              {keys.map((key) => (
+          {/* Favorites Section */}
+          {favorites.size > 0 && (
+            <div className="component-category">
+              <div className="category-title flex items-center gap-2">
+                <Star size={14} className="text-yellow-500" />
+                Favorites ({favorites.size})
+              </div>
+              {Array.from(favorites).map((key) => (
                 <div
                   key={key}
-                  className="component-item"
+                  className="component-item group"
                   onClick={() => onInsert(components[key])}
                 >
                   <div className="component-icon">
                     {getComponentIcon(key)}
                   </div>
-                  <span className="component-name">
+                  <span className="component-name flex-1">
                     {key.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ")}
                   </span>
+                  <button
+                    onClick={(e) => toggleFavorite(key, e)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Remove from favorites"
+                  >
+                    <StarOff size={14} className="text-yellow-500" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Regular Categories */}
+          {Object.entries(filteredComponents).map(([category, keys]) => (
+            <div key={category} className="component-category">
+              <div className="category-title">{category}</div>
+              {keys.map((key) => (
+                <div
+                  key={key}
+                  className="component-item group"
+                  onClick={() => onInsert(components[key])}
+                >
+                  <div className="component-icon">
+                    {getComponentIcon(key)}
+                  </div>
+                  <span className="component-name flex-1">
+                    {key.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ")}
+                  </span>
+                  <button
+                    onClick={(e) => toggleFavorite(key, e)}
+                    className={`transition-opacity ${
+                      favorites.has(key) ? "opacity-100 text-yellow-500" : "opacity-0 group-hover:opacity-100 text-text-muted"
+                    }`}
+                    title={favorites.has(key) ? "Remove from favorites" : "Add to favorites"}
+                  >
+                    {favorites.has(key) ? (
+                      <Star size={14} className="fill-yellow-500" />
+                    ) : (
+                      <Star size={14} />
+                    )}
+                  </button>
                 </div>
               ))}
             </div>
           ))}
+
+          {/* No Results Message */}
+          {searchTerm && Object.keys(filteredComponents).length === 0 && (
+            <div className="text-center py-8 text-text-muted">
+              <Search size={32} className="mx-auto mb-2 opacity-50" />
+              <p>No components found for "{searchTerm}"</p>
+              <button
+                onClick={() => setSearchTerm("")}
+                className="btn btn-secondary btn-sm mt-2"
+              >
+                Clear Search
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -759,4 +889,30 @@ Return only code. No explanations, comments, or extra text. Do not output markdo
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
