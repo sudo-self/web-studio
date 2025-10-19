@@ -13,7 +13,7 @@ interface SettingsContextType {
 
 // Use localhost as default since that's where LM Studio usually runs
 const defaultSettings: Settings = {
-  aiEndpoint: "http://10.0.20:1234"  // Changed from 10.0.0.20 to localhost
+  aiEndpoint: "http://10.10.20:1234"  // Changed from 10.0.0.20 to localhost
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
