@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Settings, X, Wifi, WifiOff, Cloud, Cpu } from "lucide-react";
+import { Settings, X, Wifi, WifiOff, Cloud, Cpu, Shield, AlertTriangle } from "lucide-react";
 import { useSettings } from "@/contexts/SettingsContext";
 
 interface SettingsPanelProps {
@@ -13,18 +13,38 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
   const { settings, updateSettings } = useSettings();
   const [aiEndpoint, setAiEndpoint] = useState(settings.aiEndpoint);
   const [testing, setTesting] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'unknown'>('unknown');
+  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'mixed-content' | 'unknown'>('unknown');
   const [availableModels, setAvailableModels] = useState<string[]>([]);
   const [currentModel, setCurrentModel] = useState<string>('');
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   const handleSave = () => {
-    updateSettings({ aiEndpoint });
+    // Auto-convert to HTTPS if needed
+    let endpointToSave = aiEndpoint;
+    if (endpointToSave.startsWith('http://') && typeof window !== 'undefined' && window.location.protocol === 'https:') {
+      endpointToSave = endpointToSave.replace('http://', 'https://');
+    }
+    
+    updateSettings({ aiEndpoint: endpointToSave });
     onClose();
   };
 
   const handleTestConnection = async () => {
     setTesting(true);
+    setErrorMessage('');
+    
     try {
+      // Check if we're in HTTPS context and trying to use HTTP
+      const isHttpsContext = typeof window !== 'undefined' && window.location.protocol === 'https:';
+      const isHttpEndpoint = aiEndpoint.startsWith('http://');
+      
+      if (isHttpsContext && isHttpEndpoint) {
+        setConnectionStatus('mixed-content');
+        setErrorMessage('Mixed Content Error: Cannot use HTTP endpoint from HTTPS site.');
+        alert('❌ Mixed Content Error: Your Vercel app uses HTTPS but your AI endpoint uses HTTP. Please use HTTPS or run locally.');
+        return;
+      }
+
       const response = await fetch(`${aiEndpoint}/v1/models`, {
         method: 'GET',
         headers: { 
@@ -54,13 +74,28 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
         setConnectionStatus('disconnected');
         setAvailableModels([]);
         setCurrentModel('');
+        setErrorMessage(`Server responded with ${response.status}`);
         alert('❌ Connection failed. Server responded with error.');
       }
     } catch (error) {
       setConnectionStatus('disconnected');
       setAvailableModels([]);
       setCurrentModel('');
-      alert('❌ Cloudflare tunnel connection failed. Make sure LM Studio is running and the tunnel is active.');
+      
+      if (error instanceof TypeError) {
+        if (error.message.includes('mixed content')) {
+          setConnectionStatus('mixed-content');
+          setErrorMessage('Mixed Content Blocked: HTTPS site cannot access HTTP resources');
+        } else if (error.message.includes('Failed to fetch')) {
+          setErrorMessage('Network Error: Cannot reach the server. Check if LM Studio is running.');
+        } else {
+          setErrorMessage(`Network Error: ${error.message}`);
+        }
+      } else {
+        setErrorMessage('Unknown error occurred');
+      }
+      
+      alert('❌ Connection failed. Make sure LM Studio is running and the tunnel is active.');
     } finally {
       setTesting(false);
     }
@@ -73,7 +108,23 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
     }
   }, [isOpen]);
 
+  // Auto-detect if we need HTTPS
+  useEffect(() => {
+    if (isOpen && typeof window !== 'undefined') {
+      const isHttps = window.location.protocol === 'https:';
+      const isHttpEndpoint = aiEndpoint.startsWith('http://');
+      
+      if (isHttps && isHttpEndpoint) {
+        setConnectionStatus('mixed-content');
+        setErrorMessage('Mixed Content: Change to HTTPS or run locally');
+      }
+    }
+  }, [isOpen, aiEndpoint]);
+
   if (!isOpen) return null;
+
+  const isHttpsContext = typeof window !== 'undefined' && window.location.protocol === 'https:';
+  const isHttpEndpoint = aiEndpoint.startsWith('http://');
 
   return (
     <div style={{
@@ -89,7 +140,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
         backgroundColor: 'var(--panel-bg)',
         borderRadius: '8px',
         padding: '24px',
-        width: '420px',
+        width: '440px',
         maxWidth: '100%',
         margin: '0 16px'
       }}>
@@ -110,6 +161,9 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
           }}>
             <Cloud size={20} />
             AI Settings
+            {isHttpsContext && (
+              <Shield size={16} style={{ color: 'var(--button-success)' }} title="HTTPS Secure Context" />
+            )}
           </h2>
           <button
             onClick={onClose}
@@ -126,6 +180,33 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* Security Warning */}
+          {isHttpsContext && isHttpEndpoint && (
+            <div style={{ 
+              backgroundColor: 'var(--button-warning)',
+              color: '#1e1e2e',
+              borderRadius: '6px',
+              padding: '12px',
+              fontSize: '13px',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '8px'
+            }}>
+              <AlertTriangle size={16} style={{ flexShrink: 0, marginTop: '1px' }} />
+              <div>
+                <strong>Mixed Content Warning</strong>
+                <div style={{ fontSize: '12px', marginTop: '4px' }}>
+                  Your Vercel app uses HTTPS but your endpoint uses HTTP. 
+                  Browsers will block this connection. 
+                  <br />
+                  <strong>Solutions:</strong>
+                  <br />• Use HTTPS endpoint: https://lms.jessejesse.com
+                  <br />• Run locally with HTTP
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Endpoint Configuration */}
           <div>
             <label style={{
@@ -142,11 +223,16 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                 type="text"
                 value={aiEndpoint}
                 onChange={(e) => setAiEndpoint(e.target.value)}
-                placeholder="http://lms.jessejesse.com"
+                placeholder={isHttpsContext ? "https://lms.jessejesse.com" : "http://lms.jessejesse.com"}
                 style={{
                   flex: 1,
                   padding: '8px 12px',
-                  border: '1px solid var(--panel-border)',
+                  border: `1px solid ${
+                    connectionStatus === 'mixed-content' ? 'var(--button-warning)' : 
+                    connectionStatus === 'connected' ? 'var(--button-success)' : 
+                    connectionStatus === 'disconnected' ? 'var(--button-danger)' : 
+                    'var(--panel-border)'
+                  }`,
                   borderRadius: '6px',
                   backgroundColor: 'var(--component-bg)',
                   color: 'var(--foreground)',
@@ -158,9 +244,12 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                 alignItems: 'center',
                 gap: '4px',
                 color: connectionStatus === 'connected' ? 'var(--button-success)' : 
+                      connectionStatus === 'mixed-content' ? 'var(--button-warning)' :
                       connectionStatus === 'disconnected' ? 'var(--button-danger)' : 'var(--text-muted)'
               }}>
-                {connectionStatus === 'connected' ? <Wifi size={16} /> : <WifiOff size={16} />}
+                {connectionStatus === 'connected' ? <Wifi size={16} /> : 
+                 connectionStatus === 'mixed-content' ? <AlertTriangle size={16} /> : 
+                 <WifiOff size={16} />}
               </div>
             </div>
             <p style={{
@@ -169,7 +258,10 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               marginTop: '4px',
               marginBottom: 0
             }}>
-              Cloudflare tunnel: http://10.0.0.20:1234
+              {isHttpsContext 
+                ? '⚠️ HTTPS required for Vercel deployment' 
+                : 'Cloudflare tunnel: http://10.0.0.20:1234'
+              }
             </p>
           </div>
 
@@ -177,7 +269,11 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
           {connectionStatus !== 'unknown' && (
             <div style={{ 
               backgroundColor: 'var(--panel-bg)',
-              border: `1px solid ${connectionStatus === 'connected' ? 'var(--button-success)' : 'var(--button-danger)'}`,
+              border: `1px solid ${
+                connectionStatus === 'connected' ? 'var(--button-success)' : 
+                connectionStatus === 'mixed-content' ? 'var(--button-warning)' :
+                'var(--button-danger)'
+              }`,
               borderRadius: '6px',
               padding: '12px',
               fontSize: '13px'
@@ -186,14 +282,26 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                 display: 'flex', 
                 alignItems: 'center', 
                 gap: '8px',
-                color: connectionStatus === 'connected' ? 'var(--button-success)' : 'var(--button-danger)',
+                color: connectionStatus === 'connected' ? 'var(--button-success)' : 
+                      connectionStatus === 'mixed-content' ? 'var(--button-warning)' :
+                      'var(--button-danger)',
                 marginBottom: '8px'
               }}>
-                {connectionStatus === 'connected' ? <Wifi size={16} /> : <WifiOff size={16} />}
+                {connectionStatus === 'connected' ? <Wifi size={16} /> : 
+                 connectionStatus === 'mixed-content' ? <AlertTriangle size={16} /> : 
+                 <WifiOff size={16} />}
                 <strong>
-                  {connectionStatus === 'connected' ? 'Connected to AI Server' : 'Connection Failed'}
+                  {connectionStatus === 'connected' ? 'Connected to AI Server' : 
+                   connectionStatus === 'mixed-content' ? 'Mixed Content Blocked' : 
+                   'Connection Failed'}
                 </strong>
               </div>
+              
+              {errorMessage && (
+                <div style={{ color: 'var(--text-muted)', fontSize: '12px', marginBottom: '8px' }}>
+                  {errorMessage}
+                </div>
+              )}
               
               {connectionStatus === 'connected' && currentModel && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)' }}>
@@ -232,23 +340,25 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
           <div style={{ display: 'flex', gap: '8px' }}>
             <button
               onClick={handleTestConnection}
-              disabled={testing}
+              disabled={testing || connectionStatus === 'mixed-content'}
               style={{
                 flex: 1,
-                background: 'var(--button-secondary)',
+                background: connectionStatus === 'mixed-content' ? 'var(--button-warning)' : 'var(--button-secondary)',
                 color: 'white',
                 border: 'none',
                 padding: '8px 16px',
                 borderRadius: '6px',
-                cursor: testing ? 'not-allowed' : 'pointer',
+                cursor: (testing || connectionStatus === 'mixed-content') ? 'not-allowed' : 'pointer',
                 fontWeight: 500,
-                opacity: testing ? 0.6 : 1
+                opacity: (testing || connectionStatus === 'mixed-content') ? 0.6 : 1
               }}
             >
-              {testing ? 'Testing...' : 'Test Connection'}
+              {testing ? 'Testing...' : 
+               connectionStatus === 'mixed-content' ? 'Fix HTTPS First' : 
+               'Test Connection'}
             </button>
             <button
-              onClick={() => setAiEndpoint("http://lms.jessejesse.com")}
+              onClick={() => setAiEndpoint(isHttpsContext ? "https://lms.jessejesse.com" : "http://lms.jessejesse.com")}
               style={{
                 flex: 1,
                 background: 'var(--button-warning)',
@@ -260,7 +370,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                 fontWeight: 500
               }}
             >
-              Reset to Tunnel
+              Use {isHttpsContext ? 'HTTPS' : 'Tunnel'} URL
             </button>
           </div>
 
