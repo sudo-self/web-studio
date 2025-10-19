@@ -1,11 +1,28 @@
 "use client";
 
 import { useState } from "react";
+import { ReactElement } from "react";
 import {
-  FileText, Sparkles, Info, Wrench, Phone, SquareStack,
-  CreditCard, Image, Search, Tag, Users, Stars, Type, Bot, Settings,
-  Layout, Navigation, FormInput, Sidebar, Palette, Grid3X3
+  FileText,
+  Info,
+  Wrench,
+  Phone,
+  SquareStack,
+  CreditCard,
+  Image,
+  Search,
+  Tag,
+  Users,
+  Type,
+  Navigation,
+  Sidebar,
+  BarChart3,
+  Mail,
+  HelpCircle,
+  TrendingUp,
+  Clock,
 } from "lucide-react";
+
 import { useSettings } from "@/contexts/SettingsContext";
 import type { ReactElement } from "react";
 
@@ -491,48 +508,50 @@ export default function ComponentsPanel({
 </div>`
   };
 
-  const componentCategories: ComponentCategories = {
-    "Layout": ["header", "hero", "about", "services", "contact", "footer", "sidebar"],
-    "Navigation": ["navbar", "breadcrumb"],
-    "Content": ["card", "gallery", "team", "testimonials", "stats", "timeline", "faq"],
-    "Forms": ["contact", "login-form", "newsletter"],
-    "UI Components": ["modal", "progress", "pricing"],
-    "SEO": ["seo", "seo-schema"],
-    "Icons": ["social-icons", "feature-icons", "font-icons"]
-  };
 
-  const getComponentIcon = (componentKey: string): ReactElement => {
-    const icons: { [key: string]: ReactElement } = {
-      header: <FileText size={16} />,
-      hero: <Sparkles size={16} />,
-      about: <Info size={16} />,
-      services: <Wrench size={16} />,
-      contact: <Phone size={16} />,
-      footer: <SquareStack size={16} />,
-      card: <CreditCard size={16} />,
-      gallery: <Image size={16} />,
-      seo: <Search size={16} />,
-      "seo-schema": <Tag size={16} />,
-      "social-icons": <Users size={16} />,
-      "feature-icons": <Stars size={16} />,
-      "font-icons": <Type size={16} />,
-      // New icons
-      "navbar": <Navigation size={16} />,
-      "sidebar": <Sidebar size={16} />,
-      "pricing": <CreditCard size={16} />,
-      "testimonials": <Users size={16} />,
-      "stats": <BarChart3 size={16} />,
-      "login-form": <FormInput size={16} />,
-      "newsletter": <Mail size={16} />,
-      "team": <Users size={16} />,
-      "faq": <HelpCircle size={16} />,
-      "breadcrumb": <Navigation size={16} />,
-      "modal": <SquareStack size={16} />,
-      "progress": <TrendingUp size={16} />,
-      "timeline": <Clock size={16} />,
-    };
-    return icons[componentKey] || <FileText size={16} />;
+
+const componentCategories: ComponentCategories = {
+  Layout: ["header", "hero", "about", "services", "contact", "footer", "sidebar"],
+  Navigation: ["navbar", "breadcrumb"],
+  Content: ["card", "gallery", "team", "testimonials", "stats", "timeline", "faq"],
+  Forms: ["contact", "login-form", "newsletter"],
+  "UI Components": ["modal", "progress", "pricing"],
+  SEO: ["seo", "seo-schema"],
+  Icons: ["social-icons", "feature-icons", "font-icons"],
+};
+
+const getComponentIcon = (componentKey: string): ReactElement => {
+  const icons: { [key: string]: ReactElement } = {
+    header: <FileText size={16} />,
+    hero: <FileText size={16} />, 
+    about: <Info size={16} />,
+    services: <Wrench size={16} />,
+    contact: <Phone size={16} />,
+    footer: <SquareStack size={16} />,
+    card: <CreditCard size={16} />,
+    gallery: <Image size={16} />,
+    seo: <Search size={16} />,
+    "seo-schema": <Tag size={16} />,
+    "social-icons": <Users size={16} />,
+    "feature-icons": <Users size={16} />, 
+    "font-icons": <Type size={16} />,
+    navbar: <Navigation size={16} />,
+    sidebar: <Sidebar size={16} />,
+    pricing: <CreditCard size={16} />,
+    testimonials: <Users size={16} />,
+    stats: <BarChart3 size={16} />,
+    "login-form": <Mail size={16} />,
+    newsletter: <Mail size={16} />,
+    team: <Users size={16} />,
+    faq: <HelpCircle size={16} />,
+    breadcrumb: <Navigation size={16} />,
+    modal: <SquareStack size={16} />,
+    progress: <TrendingUp size={16} />,
+    timeline: <Clock size={16} />,
   };
+  return icons[componentKey] || <FileText size={16} />;
+};
+
 
   const askAi = async () => {
     if (!prompt.trim()) return;
@@ -741,9 +760,3 @@ Return only code. No explanations, comments, or extra text. Do not output markdo
   );
 }
 
-// Add missing Lucide icons
-function BarChart3(props: any) { return <div>📊</div> }
-function Mail(props: any) { return <div>✉️</div> }
-function HelpCircle(props: any) { return <div>❓</div> }
-function TrendingUp(props: any) { return <div>📈</div> }
-function Clock(props: any) { return <div>⏰</div> }
