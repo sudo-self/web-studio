@@ -859,7 +859,6 @@ Return only code. No explanations, comments, or extra text. Do not output markdo
       {/* Components List Header with Settings Button */}
       <div className="panel-header">
         <div className="flex items-center justify-between w-full">
-          <h3>Components</h3>
           <button
             onClick={onOpenSettings}
             className="btn btn-secondary btn-sm"
@@ -874,7 +873,7 @@ Return only code. No explanations, comments, or extra text. Do not output markdo
           <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted" />
           <input
             type="text"
-            placeholder="Search components..."
+            placeholder="Search..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-component-bg border border-panel-border rounded-lg text-sm focus:outline-none focus:border-accent-color text-foreground"
