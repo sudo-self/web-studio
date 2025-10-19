@@ -1,26 +1,27 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Settings } from '@/types';
 
-const defaultSettings: Settings = {
-  aiEndpoint: "http://lam.jessejesse.com",
-  theme: 'auto',
-  fontSize: 14,
-  autoFormat: true
-};
+interface Settings {
+  aiEndpoint: string;
+}
 
 interface SettingsContextType {
   settings: Settings;
   updateSettings: (newSettings: Partial<Settings>) => void;
-  resetSettings: () => void;
 }
+
+// Use localhost as default since that's where LM Studio usually runs
+const defaultSettings: Settings = {
+  aiEndpoint: "http://10.0.20:1234"  // Changed from 10.0.0.20 to localhost
+};
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = useState<Settings>(defaultSettings);
 
+  // Load settings from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem('website-builder-settings');
     if (saved) {
@@ -38,13 +39,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('website-builder-settings', JSON.stringify(updated));
   };
 
-  const resetSettings = () => {
-    setSettings(defaultSettings);
-    localStorage.setItem('website-builder-settings', JSON.stringify(defaultSettings));
-  };
-
   return (
-    <SettingsContext.Provider value={{ settings, updateSettings, resetSettings }}>
+    <SettingsContext.Provider value={{ settings, updateSettings }}>
       {children}
     </SettingsContext.Provider>
   );
