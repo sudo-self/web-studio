@@ -162,7 +162,9 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             <Cloud size={20} />
             AI Settings
             {isHttpsContext && (
-              <Shield size={16} style={{ color: 'var(--button-success)' }} title="HTTPS Secure Context" />
+              <div style={{ position: 'relative' }} title="HTTPS Secure Context">
+                <Shield size={16} style={{ color: 'var(--button-success)' }} />
+              </div>
             )}
           </h2>
           <button
