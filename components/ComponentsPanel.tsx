@@ -845,49 +845,65 @@ Return only code. No explanations, comments, or extra text. Do not output markdo
       setPrompt("");
     }
   };
+return (
+  <div className="flex flex-col h-full overflow-hidden relative">
+    {/* Resize Handle on the right side */}
+    {onResizeStart && (
+      <div
+        className="absolute -right-2 top-0 bottom-0 w-4 cursor-col-resize z-20 hover:bg-accent-color hover:bg-opacity-50 transition-colors"
+        onMouseDown={onResizeStart}
+      />
+    )}
 
-  return (
-    <div className="flex flex-col h-full overflow-hidden relative">
-      {/* Resize Handle on the right side */}
-      {onResizeStart && (
-        <div
-          className="absolute -right-2 top-0 bottom-0 w-4 cursor-col-resize z-20 hover:bg-accent-color hover:bg-opacity-50 transition-colors"
-          onMouseDown={onResizeStart}
-        />
-      )}
-
-      {/* Components List Header with Settings Button */}
-      <div className="panel-header">
-        <div className="flex items-center justify-between w-full">
-          <button
-            onClick={onOpenSettings}
-            className="btn btn-secondary btn-sm"
-            title="Settings"
-          >
-            <Settings size={14} />
-          </button>
+    {/* Minimal Icon-Based Header */}
+    <div className="!p-2 border-b border-panel-border">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1 text-xs font-medium text-text-secondary">
+          <SquareStack size={12} />
+          <span>Components</span>
         </div>
         
-        {/* Search Bar */}
-        <div className="relative mt-2">
-          <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted" />
-          <input
-            type="text"
-            placeholder="Search..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-component-bg border border-panel-border rounded-lg text-sm focus:outline-none focus:border-accent-color text-foreground"
-          />
-          {searchTerm && (
-            <button
-              onClick={() => setSearchTerm("")}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-muted hover:text-foreground"
-            >
-              ×
-            </button>
-          )}
+        <div className="flex items-center gap-1">
+          {/* Search Toggle */}
+          <button
+            onClick={() => setSearchTerm(searchTerm ? '' : ' ')}
+            className="!p-1.5 hover:bg-component-hover rounded transition-colors"
+            title="Search"
+          >
+            <Search size={12} />
+          </button>
+          
+          {/* Settings */}
+          <button
+            onClick={onOpenSettings}
+            className="!p-1.5 hover:bg-component-hover rounded transition-colors"
+            title="Settings"
+          >
+            <Settings size={12} />
+          </button>
         </div>
       </div>
+      
+      {/* Search Bar - Appears only when active */}
+      {searchTerm !== null && (
+        <div className="mt-2 relative">
+          <input
+            type="text"
+            placeholder="Type to search components..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-2 pr-6 py-1 bg-component-bg border border-panel-border rounded text-xs focus:outline-none focus:border-accent-color text-foreground"
+            autoFocus
+          />
+          <button
+            onClick={() => setSearchTerm(null)}
+            className="absolute right-1 top-1/2 transform -translate-y-1/2 text-text-muted hover:text-foreground text-xs"
+          >
+            ×
+          </button>
+        </div>
+      )}
+    </div>
       
       {/* Components List */}
       <div className="flex-1 overflow-auto min-h-0">
