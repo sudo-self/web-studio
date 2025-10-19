@@ -855,7 +855,7 @@ return (
       />
     )}
 
-    {/* Minimal Icon-Based Header */}
+    {/* Compact Header */}
     <div className="!p-2 border-b border-panel-border">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1 text-xs font-medium text-text-secondary">
@@ -884,8 +884,8 @@ return (
         </div>
       </div>
       
-      {/* Search Bar - Appears only when active */}
-      {searchTerm !== null && (
+      {/* Search Bar - Appears only when search is active */}
+      {searchTerm !== '' && (
         <div className="mt-2 relative">
           <input
             type="text"
@@ -896,7 +896,7 @@ return (
             autoFocus
           />
           <button
-            onClick={() => setSearchTerm(null)}
+            onClick={() => setSearchTerm('')}
             className="absolute right-1 top-1/2 transform -translate-y-1/2 text-text-muted hover:text-foreground text-xs"
           >
             ×
