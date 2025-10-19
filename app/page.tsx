@@ -18,7 +18,7 @@ export default function Home() {
   const [panelWidths, setPanelWidths] = useState({
     components: 280,
     editor: 600,
-    preview: 400
+    preview: 400,
   });
   const [resizingPanel, setResizingPanel] = useState<string | null>(null);
 
@@ -27,11 +27,6 @@ export default function Home() {
 
   const runCode = () => {
     console.log("Code updated:", code);
-  };
-
-  const formatCode = () => {
-    const formatted = code.replace(/(>)(<)/g, '$1\n$2');
-    setCode(formatted);
   };
 
   const insertComponent = (html: string) => {
@@ -47,9 +42,9 @@ export default function Home() {
     setResizingPanel(panel);
     startXRef.current = e.clientX;
     startWidthsRef.current = { ...panelWidths };
-    
-    document.body.style.cursor = 'col-resize';
-    document.body.style.userSelect = 'none';
+
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
   };
 
   useEffect(() => {
@@ -57,36 +52,40 @@ export default function Home() {
 
     const handleMouseMove = (e: MouseEvent) => {
       const deltaX = e.clientX - startXRef.current;
-      
-      setPanelWidths(prev => {
+
+      setPanelWidths((prev) => {
         const newWidths = { ...prev };
-        
-        if (resizingPanel === 'components') {
-          const newWidth = Math.max(200, Math.min(500, startWidthsRef.current.components + deltaX));
+
+        if (resizingPanel === "components") {
+          const newWidth = Math.max(
+            200,
+            Math.min(500, startWidthsRef.current.components + deltaX)
+          );
           newWidths.components = newWidth;
-        }
-        else if (resizingPanel === 'editor') {
-          const newWidth = Math.max(300, Math.min(800, startWidthsRef.current.editor + deltaX));
+        } else if (resizingPanel === "editor") {
+          const newWidth = Math.max(
+            300,
+            Math.min(800, startWidthsRef.current.editor + deltaX)
+          );
           newWidths.editor = newWidth;
         }
-        // Preview panel resizes automatically based on available space
-        
+
         return newWidths;
       });
     };
 
     const handleMouseUp = () => {
       setResizingPanel(null);
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
     };
   }, [resizingPanel]);
 
@@ -95,28 +94,28 @@ export default function Home() {
       <div className="app-container">
         {/* Main Content Area */}
         <div className="main-content">
-          {/* Components Panel with resize handle */}
+          {/* Components Panel */}
           <div
             className="panel components-panel"
             style={{
               width: `${panelWidths.components}px`,
-              minWidth: '200px',
-              maxWidth: '500px',
-              flex: '0 0 auto'
+              minWidth: "200px",
+              maxWidth: "500px",
+              flex: "0 0 auto",
             }}
           >
             <ComponentsPanel
               onInsert={insertComponent}
               onAiInsert={insertAiCode}
               onOpenSettings={() => setIsSettingsOpen(true)}
-              onResizeStart={(e) => handleResizeStart('components', e)}
+              onResizeStart={(e) => handleResizeStart("components", e)}
             />
           </div>
 
           {/* Resize handle between components and editor */}
           <div
             className="w-2 cursor-col-resize bg-panel-border hover:bg-accent-color transition-colors"
-            onMouseDown={(e) => handleResizeStart('components', e)}
+            onMouseDown={(e) => handleResizeStart("components", e)}
           />
 
           {/* Editor Panel */}
@@ -124,28 +123,30 @@ export default function Home() {
             className="panel editor-panel"
             style={{
               width: `${panelWidths.editor}px`,
-              minWidth: '300px',
-              maxWidth: '800px',
-              flex: '0 0 auto'
+              minWidth: "300px",
+              maxWidth: "800px",
+              flex: "0 0 auto",
             }}
           >
             <EditorPanel
               code={code}
               setCode={setCode}
               runCode={runCode}
-              formatCode={formatCode}
-              onResizeStart={(e) => handleResizeStart('editor', e)}
+              onResizeStart={(e) => handleResizeStart("editor", e)}
             />
           </div>
 
           {/* Resize handle between editor and preview */}
           <div
             className="w-2 cursor-col-resize bg-panel-border hover:bg-accent-color transition-colors"
-            onMouseDown={(e) => handleResizeStart('editor', e)}
+            onMouseDown={(e) => handleResizeStart("editor", e)}
           />
 
-          {/* Preview Panel - takes remaining space */}
-          <div className="panel preview-panel" style={{ flex: 1, minWidth: '300px' }}>
+          {/* Preview Panel */}
+          <div
+            className="panel preview-panel"
+            style={{ flex: 1, minWidth: "300px" }}
+          >
             <PreviewPanel code={code} />
           </div>
         </div>
@@ -161,9 +162,14 @@ export default function Home() {
       />
 
       <style jsx global>{`
-        .bg-panel-border { background-color: var(--panel-border); }
-        .bg-accent-color { background-color: var(--accent-color); }
+        .bg-panel-border {
+          background-color: var(--panel-border);
+        }
+        .bg-accent-color {
+          background-color: var(--accent-color);
+        }
       `}</style>
     </>
   );
 }
+
