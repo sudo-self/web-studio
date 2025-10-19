@@ -30,17 +30,100 @@ export default function EditorPanel({ code, setCode, runCode, formatCode, onResi
 
   const handleRunCode = () => runCode();
 
-  const handleFormatCode = () => {
+  const handleFormatCode = async () => {
     try {
       setFormatting(true);
-      const formatted = prettier.format(String(code || ""), {
-        parser: "html",
-        plugins: [parserHtml],
-      });
-      setCode(String(formatted));
+      
+      // Ensure we have a string and handle potential Promise
+      const codeToFormat = String(code || "");
+      
+      let formatted;
+      try {
+        // Try synchronous formatting first
+        formatted = prettier.format(codeToFormat, {
+          parser: "html",
+          plugins: [parserHtml],
+        });
+        
+        // If it returns a Promise, await it
+        if (formatted && typeof formatted.then === 'function') {
+          formatted = await formatted;
+        }
+      } catch (syncError) {
+        console.log('Sync formatting failed, trying async:', syncError);
+        // If synchronous fails, it might be an async function
+        formatted = await prettier.format(codeToFormat, {
+          parser: "html",
+          plugins: [parserHtml],
+        });
+      }
+      
+      // Ensure we have a string result
+      const formattedString = String(formatted || codeToFormat);
+      setCode(formattedString);
+      
     } catch (err) {
       console.error("Formatting failed:", err);
-      alert("Formatting failed. Check console.");
+      
+      // Provide more specific error messages
+      if (err instanceof Error) {
+        if (err.message.includes('Unexpected token')) {
+          alert("Formatting failed: Invalid HTML syntax. Please check your code.");
+        } else {
+          alert(`Formatting failed: ${err.message}`);
+        }
+      } else {
+        alert("Formatting failed. Please check the console for details.");
+      }
+    } finally {
+      setFormatting(false);
+    }
+  };
+
+
+  const simpleFormatCode = () => {
+    try {
+      setFormatting(true);
+      
+      const codeToFormat = String(code || "");
+      
+   
+      const formatted = codeToFormat
+       
+        .replace(/(>)(<)(\/*)/g, '$1\n$2$3')
+       
+        .replace(/(<([^>]+)>)/g, '\n$1\n')
+     
+        .replace(/\n+/g, '\n')
+      
+        .split('\n')
+        .map(line => {
+        
+          const trimmed = line.trim();
+          if (trimmed.startsWith('</')) {
+            return line;
+          }
+          if (trimmed.endsWith('>') && !trimmed.startsWith('</') && !trimmed.startsWith('<')) {
+            return '  ' + line;
+          }
+          return line;
+        })
+        .join('\n')
+        .trim();
+      
+      setCode(formatted);
+      
+    } catch (err) {
+      console.error("Simple formatting failed:", err);
+      alert("Formatting failed. Using basic formatting instead.");
+      
+     
+      const basicFormatted = String(code || "")
+        .replace(/(>)(<)(\/*)/g, '$1\n$2$3')
+        .replace(/\n+/g, '\n')
+        .trim();
+      
+      setCode(basicFormatted);
     } finally {
       setFormatting(false);
     }
@@ -69,7 +152,7 @@ export default function EditorPanel({ code, setCode, runCode, formatCode, onResi
       .catch((err) => console.error(err));
   };
 
-  // calculate line numbers dynamically
+
   const lineNumbers = useMemo(() => {
     const totalLines = String(code || "").split("\n").length;
     return Array.from({ length: totalLines }, (_, i) => i + 1);
@@ -94,7 +177,7 @@ export default function EditorPanel({ code, setCode, runCode, formatCode, onResi
           </button>
           <button
             className="btn btn-success"
-            onClick={handleFormatCode}
+            onClick={handleFormatCode} // Try the async version first
             disabled={formatting}
           >
             {formatting ? "Formatting..." : "Format Code"}
