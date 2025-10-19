@@ -1,3 +1,5 @@
+// /components/EditorPanel.tsx
+
 "use client";
 
 import { useState, useMemo } from "react";
@@ -80,25 +82,18 @@ export default function EditorPanel({ code, setCode, runCode, formatCode, onResi
     }
   };
 
-
   const simpleFormatCode = () => {
     try {
       setFormatting(true);
       
       const codeToFormat = String(code || "");
       
-   
       const formatted = codeToFormat
-       
         .replace(/(>)(<)(\/*)/g, '$1\n$2$3')
-       
         .replace(/(<([^>]+)>)/g, '\n$1\n')
-     
         .replace(/\n+/g, '\n')
-      
         .split('\n')
         .map(line => {
-        
           const trimmed = line.trim();
           if (trimmed.startsWith('</')) {
             return line;
@@ -117,7 +112,6 @@ export default function EditorPanel({ code, setCode, runCode, formatCode, onResi
       console.error("Simple formatting failed:", err);
       alert("Formatting failed. Using basic formatting instead.");
       
-     
       const basicFormatted = String(code || "")
         .replace(/(>)(<)(\/*)/g, '$1\n$2$3')
         .replace(/\n+/g, '\n')
@@ -152,7 +146,6 @@ export default function EditorPanel({ code, setCode, runCode, formatCode, onResi
       .catch((err) => console.error(err));
   };
 
-
   const lineNumbers = useMemo(() => {
     const totalLines = String(code || "").split("\n").length;
     return Array.from({ length: totalLines }, (_, i) => i + 1);
@@ -177,7 +170,7 @@ export default function EditorPanel({ code, setCode, runCode, formatCode, onResi
           </button>
           <button
             className="btn btn-success"
-            onClick={handleFormatCode} // Try the async version first
+            onClick={handleFormatCode}
             disabled={formatting}
           >
             {formatting ? "Formatting..." : "Format Code"}
@@ -195,9 +188,9 @@ export default function EditorPanel({ code, setCode, runCode, formatCode, onResi
       </div>
 
       {/* Editor with line numbers */}
-      <div className="flex flex-1 overflow-auto">
+      <div className="flex flex-1 overflow-auto relative">
         {/* Line numbers gutter */}
-        <div className="bg-panel-header text-gray-400 text-right pr-3 select-none pt-[15px]">
+        <div className="bg-panel-header text-gray-400 text-right pr-3 select-none pt-[15px] border-r border-panel-border">
           {lineNumbers.map((line) => (
             <div
               key={line}
@@ -209,28 +202,31 @@ export default function EditorPanel({ code, setCode, runCode, formatCode, onResi
         </div>
 
         {/* Code editor */}
-        <Editor
-          value={String(code || "")}
-          onValueChange={(val) => setCode(String(val))}
-          highlight={highlightCode}
-          padding={15}
-          style={{
-            fontFamily: '"Fira Code", monospace',
-            fontSize: 14,
-            backgroundColor: "var(--panel-bg)",
-            color: "var(--foreground)",
-            minHeight: "100%",
-            lineHeight: 1.5,
-            flex: 1,
-            paddingLeft: 5,
-          }}
-          textareaClassName="editor-textarea"
-          preClassName="editor-pre"
-        />
+        <div className="flex-1 relative">
+          <Editor
+            value={String(code || "")}
+            onValueChange={(val) => setCode(String(val))}
+            highlight={highlightCode}
+            padding={15}
+            style={{
+              fontFamily: '"Fira Code", monospace',
+              fontSize: 14,
+              backgroundColor: "var(--panel-bg)",
+              color: "var(--foreground)",
+              minHeight: "100%",
+              lineHeight: 1.5,
+              flex: 1,
+              paddingLeft: 5,
+            }}
+            textareaClassName="editor-textarea"
+            preClassName="editor-pre"
+          />
+        </div>
       </div>
 
       {/* Prism + Editor styles */}
       <style jsx global>{`
+        /* Main editor container styles */
         .editor-pre,
         .editor-textarea {
           margin: 0 !important;
@@ -242,17 +238,96 @@ export default function EditorPanel({ code, setCode, runCode, formatCode, onResi
           word-wrap: normal !important;
           overflow-wrap: normal !important;
           tab-size: 2 !important;
+          outline: none !important;
         }
 
         .editor-pre {
           background: var(--panel-bg) !important;
           color: var(--foreground) !important;
+          position: absolute !important;
+          top: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          bottom: 0 !important;
+          pointer-events: none !important;
+          z-index: 1 !important;
+          overflow: hidden !important;
         }
 
         .editor-textarea {
-          outline: none;
-          caret-color: var(--foreground);
           background: transparent !important;
+          border: none !important;
+          resize: none !important;
+          position: relative !important;
+          z-index: 2 !important;
+          caret-color: var(--foreground) !important;
+          color: transparent !important; /* Make text transparent so we only see highlighted text from pre */
+        }
+
+        /* Fix for react-simple-code-editor specific classes */
+        .react-simple-code-editor {
+          position: relative !important;
+          overflow: auto !important;
+        }
+
+        .react-simple-code-editor textarea {
+          outline: none !important;
+          border: none !important;
+          background: transparent !important;
+          caret-color: var(--foreground) !important;
+          color: transparent !important;
+          /* Ensure proper cursor positioning */
+          position: relative !important;
+          z-index: 2 !important;
+        }
+
+        .react-simple-code-editor pre {
+          position: absolute !important;
+          top: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          bottom: 0 !important;
+          pointer-events: none !important;
+          z-index: 1 !important;
+          margin: 0 !important;
+          padding: inherit !important;
+          overflow: hidden !important;
+        }
+
+        /* Cursor blink animation */
+        .editor-textarea,
+        .react-simple-code-editor textarea {
+          animation: cursor-blink 1.2s steps(2, start) infinite !important;
+        }
+
+        @keyframes cursor-blink {
+          0%, 50% {
+            border-left: 1px solid var(--foreground);
+          }
+          51%, 100% {
+            border-left: 1px solid transparent;
+          }
+        }
+
+        /* Alternative cursor styling using caret */
+        .editor-textarea::-webkit-input-placeholder {
+          color: transparent;
+        }
+
+        .editor-textarea::-moz-placeholder {
+          color: transparent;
+        }
+
+        .editor-textarea:-ms-input-placeholder {
+          color: transparent;
+        }
+
+        .editor-textarea::-ms-input-placeholder {
+          color: transparent;
+        }
+
+        .editor-textarea::placeholder {
+          color: transparent;
         }
 
         /* Prism tokens */
@@ -283,11 +358,27 @@ export default function EditorPanel({ code, setCode, runCode, formatCode, onResi
         .token.property {
           color: #22863a;
         }
+
+        /* Ensure proper textarea sizing */
+        .react-simple-code-editor textarea {
+          min-height: 100% !important;
+          width: 100% !important;
+          padding: 15px !important;
+          padding-left: 5px !important;
+          overflow: auto !important;
+        }
+
+        /* Fix for line height consistency */
+        .react-simple-code-editor textarea,
+        .react-simple-code-editor pre {
+          line-height: 1.5 !important;
+          font-size: 14px !important;
+          font-family: "Fira Code", monospace !important;
+        }
       `}</style>
     </div>
   );
 }
-
 
 
 
