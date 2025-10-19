@@ -169,7 +169,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               marginTop: '4px',
               marginBottom: 0
             }}>
-              Cloudflare tunnel: http://10.10.20:1234
+              Cloudflare tunnel: http://10.0.0.20:1234
             </p>
           </div>
 
