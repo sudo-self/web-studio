@@ -14,10 +14,13 @@ export default function PreviewPanel({ code, onResizeStart }: PreviewPanelProps)
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [deviceView, setDeviceView] = useState<"mobile" | "tablet" | "desktop">("desktop");
 
+
   const generateHtml = (bodyContent: string) => `
     <!DOCTYPE html>
     <html>
       <head>
+        <!-- Set base URL so relative paths work -->
+        <base href="${window.location.origin}/" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
           body { 
@@ -29,6 +32,7 @@ export default function PreviewPanel({ code, onResizeStart }: PreviewPanelProps)
             line-height: 1.6;
           }
           * { box-sizing: border-box; }
+          img { max-width: 100%; height: auto; display: block; }
         </style>
       </head>
       <body>${bodyContent}</body>
@@ -68,15 +72,14 @@ export default function PreviewPanel({ code, onResizeStart }: PreviewPanelProps)
     return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
 
-  // Device preview width
   const getDeviceWidth = () => {
     switch (deviceView) {
       case "mobile":
-        return "375px"; // iPhone size
+        return "375px";
       case "tablet":
-        return "768px"; // iPad portrait
+        return "768px";
       default:
-        return "100%"; // desktop full
+        return "100%";
     }
   };
 
@@ -92,8 +95,8 @@ export default function PreviewPanel({ code, onResizeStart }: PreviewPanelProps)
       />
 
       {/* Header */}
-      <div className="panel-header">
-        <h2>Preview</h2>
+      <div className="panel-header flex justify-between items-center p-3 border-b border-panel-border">
+        <h2 className="text-lg font-semibold">Preview</h2>
         <div className="flex gap-3 flex-wrap">
           <button className="btn btn-primary" onClick={handleRefresh}>Refresh</button>
           <button className="btn btn-warning" onClick={() => setShowEmbed(!showEmbed)}>
@@ -167,6 +170,7 @@ export default function PreviewPanel({ code, onResizeStart }: PreviewPanelProps)
     </div>
   );
 }
+
 
 
 
