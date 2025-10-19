@@ -25,18 +25,28 @@ export default function Home() {
   const startXRef = useRef<number>(0);
   const startWidthsRef = useRef(panelWidths);
 
+  // Run code (preview)
   const runCode = () => {
     console.log("Code updated:", code);
   };
 
+  // Format code (required for EditorPanel)
+  const formatCode = () => {
+    const formatted = code.replace(/(>)(<)/g, "$1\n$2");
+    setCode(formatted);
+  };
+
+  // Insert a component into the editor
   const insertComponent = (html: string) => {
     setCode((prev) => prev + "\n" + html);
   };
 
+  // Insert AI-generated code
   const insertAiCode = (html: string) => {
     setCode((prev) => prev + "\n" + html);
   };
 
+  // Start resizing a panel
   const handleResizeStart = (panel: string, e: React.MouseEvent) => {
     e.preventDefault();
     setResizingPanel(panel);
@@ -47,6 +57,7 @@ export default function Home() {
     document.body.style.userSelect = "none";
   };
 
+  // Handle panel resizing
   useEffect(() => {
     if (!resizingPanel) return;
 
@@ -132,6 +143,7 @@ export default function Home() {
               code={code}
               setCode={setCode}
               runCode={runCode}
+              formatCode={formatCode} // <-- REQUIRED
               onResizeStart={(e) => handleResizeStart("editor", e)}
             />
           </div>
@@ -172,4 +184,5 @@ export default function Home() {
     </>
   );
 }
+
 
