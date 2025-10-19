@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { ReactElement } from "react";
 import {
   FileText,
@@ -25,6 +25,10 @@ import {
   HelpCircle,
   TrendingUp,
   Clock,
+  Star,
+  StarOff,
+  Eye,
+  X,
 } from "lucide-react";
 
 import { useSettings } from "@/contexts/SettingsContext";
@@ -32,8 +36,10 @@ import { useSettings } from "@/contexts/SettingsContext";
 type AiMode = "response" | "chat";
 type ChatRole = "user" | "assistant";
 
-interface Component {
-  [key: string]: string;
+interface ComponentInfo {
+  code: string;
+  description: string;
+  tags: string[];
 }
 
 interface ComponentCategories {
@@ -52,21 +58,9 @@ interface ChatMessage {
   content: string;
 }
 
-export default function ComponentsPanel({
-  onInsert,
-  onAiInsert,
-  onOpenSettings,
-  onResizeStart,
-}: ComponentsPanelProps) {
-  const { settings } = useSettings();
-  const [prompt, setPrompt] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [response, setResponse] = useState("");
-  const [mode, setMode] = useState<AiMode>("response");
-  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
-
-  const components: Component = {
-    header: `<!-- Header Component -->
+const components: { [key: string]: ComponentInfo } = {
+  header: {
+    code: `<!-- Header Component -->
 <header style="background-color: #333; color: white; padding: 1rem;">
   <div style="display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto;">
     <h1 style="margin: 0;">My Website</h1>
@@ -77,8 +71,12 @@ export default function ComponentsPanel({
     </nav>
   </div>
 </header>`,
+    description: "Website header with navigation",
+    tags: ["layout", "navigation", "header"]
+  },
 
-    hero: `<!-- Hero Section -->
+  hero: {
+    code: `<!-- Hero Section -->
 <section style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 4rem 2rem; text-align: center;">
   <div style="max-width: 800px; margin: 0 auto;">
     <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">Welcome to Our Website</h2>
@@ -86,8 +84,12 @@ export default function ComponentsPanel({
     <button style="background: white; color: #333; border: none; padding: 12px 30px; font-size: 1rem; border-radius: 5px; cursor: pointer;">Get Started</button>
   </div>
 </section>`,
+    description: "Hero section with call-to-action",
+    tags: ["layout", "hero", "cta"]
+  },
 
-    about: `<!-- About Section -->
+  about: {
+    code: `<!-- About Section -->
 <section style="padding: 4rem 2rem; background-color: #f9f9f9;">
   <div style="max-width: 800px; margin: 0 auto;">
     <h2 style="text-align: center; margin-bottom: 2rem; color: #333;">About Us</h2>
@@ -95,8 +97,12 @@ export default function ComponentsPanel({
     <p style="line-height: 1.6; color: #666;">Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.</p>
   </div>
 </section>`,
+    description: "About section with company information",
+    tags: ["layout", "content", "about"]
+  },
 
-    services: `<!-- Services Section -->
+  services: {
+    code: `<!-- Services Section -->
 <section style="padding: 4rem 2rem; background-color: white;">
   <div style="max-width: 1200px; margin: 0 auto;">
     <h2 style="text-align: center; margin-bottom: 3rem; color: #333;">Our Services</h2>
@@ -112,8 +118,12 @@ export default function ComponentsPanel({
     </div>
   </div>
 </section>`,
+    description: "Services showcase section",
+    tags: ["layout", "content", "services"]
+  },
 
-    contact: `<!-- Contact Form -->
+  contact: {
+    code: `<!-- Contact Form -->
 <section style="padding: 4rem 2rem; background-color: #f9f9f9;">
   <div style="max-width: 600px; margin: 0 auto;">
     <h2 style="text-align: center; margin-bottom: 2rem; color: #333;">Contact Us</h2>
@@ -130,8 +140,12 @@ export default function ComponentsPanel({
     </form>
   </div>
 </section>`,
+    description: "Contact form section",
+    tags: ["forms", "contact"]
+  },
 
-    footer: `<!-- Footer -->
+  footer: {
+    code: `<!-- Footer -->
 <footer style="background-color: #333; color: white; padding: 2rem; text-align: center;">
   <div style="max-width: 1200px; margin: 0 auto;">
     <p>&copy; 2024 My Website. All rights reserved.</p>
@@ -141,8 +155,12 @@ export default function ComponentsPanel({
     </div>
   </div>
 </footer>`,
+    description: "Website footer",
+    tags: ["layout", "footer"]
+  },
 
-    card: `<!-- Card Component -->
+  card: {
+    code: `<!-- Card Component -->
 <div style="background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; max-width: 300px; margin: 0 auto;">
   <img src="https://via.placeholder.com/300x200" alt="Card Image" style="width: 100%; height: auto;">
   <div style="padding: 1.5rem;">
@@ -151,8 +169,12 @@ export default function ComponentsPanel({
     <button style="background: #333; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Learn More</button>
   </div>
 </div>`,
+    description: "Card component with image and text",
+    tags: ["ui", "card", "content"]
+  },
 
-    gallery: `<!-- Image Gallery -->
+  gallery: {
+    code: `<!-- Image Gallery -->
 <section style="padding: 2rem; background-color: white;">
   <div style="max-width: 1200px; margin: 0 auto;">
     <h2 style="text-align: center; margin-bottom: 2rem; color: #333;">Image Gallery</h2>
@@ -162,8 +184,12 @@ export default function ComponentsPanel({
     </div>
   </div>
 </section>`,
+    description: "Image gallery grid",
+    tags: ["content", "gallery", "images"]
+  },
 
-    seo: `<!-- SEO Meta Tags -->
+  seo: {
+    code: `<!-- SEO Meta Tags -->
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -180,8 +206,12 @@ export default function ComponentsPanel({
   <meta name="twitter:description" content="Your website description">
   <link rel="canonical" href="https://yourwebsite.com">
 </head>`,
+    description: "SEO meta tags for head section",
+    tags: ["seo", "meta", "head"]
+  },
 
-    "seo-schema": `<!-- Schema.org Structured Data -->
+  "seo-schema": {
+    code: `<!-- Schema.org Structured Data -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -195,8 +225,12 @@ export default function ComponentsPanel({
   }
 }
 </script>`,
+    description: "Schema.org structured data",
+    tags: ["seo", "schema", "structured-data"]
+  },
 
-    "social-icons": `<!-- Social Media Icons with Font Awesome -->
+  "social-icons": {
+    code: `<!-- Social Media Icons with Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <div style="display: flex; gap: 15px; justify-content: center; padding: 2rem;">
   <a href="#" style="color: #333; text-decoration: none; font-size: 24px;">
@@ -215,8 +249,12 @@ export default function ComponentsPanel({
     <i class="fab fa-youtube"></i>
   </a>
 </div>`,
+    description: "Social media icons",
+    tags: ["icons", "social", "ui"]
+  },
 
-    "feature-icons": `<!-- Feature Icons Section -->
+  "feature-icons": {
+    code: `<!-- Feature Icons Section -->
 <section style="padding: 4rem 2rem; background-color: #f8fafc;">
   <div style="max-width: 1200px; margin: 0 auto;">
     <h2 style="text-align: center; margin-bottom: 3rem; color: #333;">Our Features</h2>
@@ -245,8 +283,12 @@ export default function ComponentsPanel({
     </div>
   </div>
 </section>`,
+    description: "Feature showcase with icons",
+    tags: ["content", "features", "icons"]
+  },
 
-    "font-icons": `<!-- Font Awesome Icons (CDN) -->
+  "font-icons": {
+    code: `<!-- Font Awesome Icons (CDN) -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <div style="display: flex; gap: 20px; justify-content: center; padding: 2rem;">
   <i class="fas fa-home" style="font-size: 24px; color: #333;"></i>
@@ -254,9 +296,12 @@ export default function ComponentsPanel({
   <i class="fas fa-phone" style="font-size: 24px; color: #333;"></i>
   <i class="fas fa-share-alt" style="font-size: 24px; color: #333;"></i>
 </div>`,
+    description: "Font Awesome icons",
+    tags: ["icons", "ui"]
+  },
 
-    // NEW COMPONENTS START HERE
-    "navbar": `<!-- Modern Navigation Bar -->
+  navbar: {
+    code: `<!-- Modern Navigation Bar -->
 <nav style="background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 1rem 2rem;">
   <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
     <div style="font-size: 1.5rem; font-weight: bold; color: #333;">Logo</div>
@@ -269,8 +314,12 @@ export default function ComponentsPanel({
     <button style="background: #667eea; color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer;">Get Started</button>
   </div>
 </nav>`,
+    description: "Modern navigation bar",
+    tags: ["navigation", "header", "ui"]
+  },
 
-    "sidebar": `<!-- Sidebar Navigation -->
+  sidebar: {
+    code: `<!-- Sidebar Navigation -->
 <div style="display: flex; min-height: 400px;">
   <aside style="width: 250px; background: #2d3748; color: white; padding: 2rem;">
     <h3 style="margin-bottom: 2rem;">Menu</h3>
@@ -286,8 +335,12 @@ export default function ComponentsPanel({
     <p>Your content goes here...</p>
   </main>
 </div>`,
+    description: "Sidebar navigation layout",
+    tags: ["layout", "navigation", "sidebar"]
+  },
 
-    "pricing": `<!-- Pricing Cards -->
+  pricing: {
+    code: `<!-- Pricing Cards -->
 <section style="padding: 4rem 2rem; background: #f8fafc;">
   <div style="max-width: 1200px; margin: 0 auto;">
     <h2 style="text-align: center; margin-bottom: 3rem; color: #333;">Choose Your Plan</h2>
@@ -316,8 +369,12 @@ export default function ComponentsPanel({
     </div>
   </div>
 </section>`,
+    description: "Pricing cards section",
+    tags: ["ui", "pricing", "cards"]
+  },
 
-    "testimonials": `<!-- Testimonials Section -->
+  testimonials: {
+    code: `<!-- Testimonials Section -->
 <section style="padding: 4rem 2rem; background: white;">
   <div style="max-width: 1200px; margin: 0 auto;">
     <h2 style="text-align: center; margin-bottom: 3rem; color: #333;">What Our Clients Say</h2>
@@ -337,8 +394,12 @@ export default function ComponentsPanel({
     </div>
   </div>
 </section>`,
+    description: "Customer testimonials section",
+    tags: ["content", "testimonials", "social-proof"]
+  },
 
-    "stats": `<!-- Statistics Section -->
+  stats: {
+    code: `<!-- Statistics Section -->
 <section style="padding: 4rem 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
   <div style="max-width: 1200px; margin: 0 auto;">
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; text-align: center;">
@@ -361,8 +422,12 @@ export default function ComponentsPanel({
     </div>
   </div>
 </section>`,
+    description: "Statistics counter section",
+    tags: ["content", "stats", "numbers"]
+  },
 
-    "login-form": `<!-- Login Form -->
+  "login-form": {
+    code: `<!-- Login Form -->
 <div style="max-width: 400px; margin: 2rem auto; padding: 2rem; background: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
   <h2 style="text-align: center; margin-bottom: 2rem; color: #333;">Welcome Back</h2>
   <form>
@@ -380,8 +445,12 @@ export default function ComponentsPanel({
     <a href="#" style="color: #667eea; text-decoration: none;">Forgot password?</a>
   </div>
 </div>`,
+    description: "Login form component",
+    tags: ["forms", "login", "authentication"]
+  },
 
-    "newsletter": `<!-- Newsletter Signup -->
+  newsletter: {
+    code: `<!-- Newsletter Signup -->
 <section style="padding: 4rem 2rem; background: #667eea; color: white;">
   <div style="max-width: 600px; margin: 0 auto; text-align: center;">
     <h2 style="margin-bottom: 1rem;">Stay Updated</h2>
@@ -392,8 +461,12 @@ export default function ComponentsPanel({
     </form>
   </div>
 </section>`,
+    description: "Newsletter signup form",
+    tags: ["forms", "newsletter", "marketing"]
+  },
 
-    "team": `<!-- Team Section -->
+  team: {
+    code: `<!-- Team Section -->
 <section style="padding: 4rem 2rem; background: #f8fafc;">
   <div style="max-width: 1200px; margin: 0 auto;">
     <h2 style="text-align: center; margin-bottom: 3rem; color: #333;">Meet Our Team</h2>
@@ -413,8 +486,12 @@ export default function ComponentsPanel({
     </div>
   </div>
 </section>`,
+    description: "Team member showcase",
+    tags: ["content", "team", "about"]
+  },
 
-    "faq": `<!-- FAQ Section -->
+  faq: {
+    code: `<!-- FAQ Section -->
 <section style="padding: 4rem 2rem; background: white;">
   <div style="max-width: 800px; margin: 0 auto;">
     <h2 style="text-align: center; margin-bottom: 3rem; color: #333;">Frequently Asked Questions</h2>
@@ -434,8 +511,12 @@ export default function ComponentsPanel({
     </div>
   </div>
 </section>`,
+    description: "FAQ accordion section",
+    tags: ["content", "faq", "help"]
+  },
 
-    "breadcrumb": `<!-- Breadcrumb Navigation -->
+  breadcrumb: {
+    code: `<!-- Breadcrumb Navigation -->
 <nav style="padding: 1rem 2rem; background: #f7fafc;">
   <div style="max-width: 1200px; margin: 0 auto;">
     <div style="display: flex; gap: 0.5rem; font-size: 0.9rem;">
@@ -447,8 +528,12 @@ export default function ComponentsPanel({
     </div>
   </div>
 </nav>`,
+    description: "Breadcrumb navigation",
+    tags: ["navigation", "breadcrumb", "ui"]
+  },
 
-    "modal": `<!-- Modal Dialog -->
+  modal: {
+    code: `<!-- Modal Dialog -->
 <div style="background: rgba(0,0,0,0.5); position: fixed; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; z-index: 1000;">
   <div style="background: white; padding: 2rem; border-radius: 10px; max-width: 500px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
     <h2 style="margin-bottom: 1rem; color: #333;">Modal Title</h2>
@@ -459,8 +544,12 @@ export default function ComponentsPanel({
     </div>
   </div>
 </div>`,
+    description: "Modal dialog component",
+    tags: ["ui", "modal", "dialog"]
+  },
 
-    "progress": `<!-- Progress Bars -->
+  progress: {
+    code: `<!-- Progress Bars -->
 <div style="max-width: 600px; margin: 2rem auto; padding: 2rem; background: white; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
   <h3 style="margin-bottom: 2rem; color: #333;">Skills & Progress</h3>
   <div style="margin-bottom: 1.5rem;">
@@ -482,8 +571,12 @@ export default function ComponentsPanel({
     </div>
   </div>
 </div>`,
+    description: "Progress bar component",
+    tags: ["ui", "progress", "skills"]
+  },
 
-    "timeline": `<!-- Timeline -->
+  timeline: {
+    code: `<!-- Timeline -->
 <div style="max-width: 800px; margin: 2rem auto; padding: 2rem;">
   <h3 style="margin-bottom: 2rem; color: #333; text-align: center;">Our Journey</h3>
   <div style="position: relative;">
@@ -508,49 +601,179 @@ export default function ComponentsPanel({
       </div>
     </div>
   </div>
-</div>`
+</div>`,
+    description: "Timeline component",
+    tags: ["content", "timeline", "history"]
+  }
+};
+
+const componentCategories: ComponentCategories = {
+  "Layout": ["header", "hero", "about", "services", "contact", "footer", "sidebar"],
+  "Navigation": ["navbar", "breadcrumb"],
+  "Content": ["card", "gallery", "team", "testimonials", "stats", "timeline", "faq"],
+  "Forms": ["contact", "login-form", "newsletter"],
+  "UI Components": ["modal", "progress", "pricing"],
+  "SEO": ["seo", "seo-schema"],
+  "Icons": ["social-icons", "feature-icons", "font-icons"]
+};
+
+const getComponentIcon = (componentKey: string): ReactElement => {
+  const icons: { [key: string]: ReactElement } = {
+    header: <FileText size={16} />,
+    hero: <Sparkles size={16} />,
+    about: <Info size={16} />,
+    services: <Wrench size={16} />,
+    contact: <Phone size={16} />,
+    footer: <SquareStack size={16} />,
+    card: <CreditCard size={16} />,
+    gallery: <Image size={16} />,
+    seo: <Search size={16} />,
+    "seo-schema": <Tag size={16} />,
+    "social-icons": <Users size={16} />,
+    "feature-icons": <Stars size={16} />,
+    "font-icons": <Type size={16} />,
+    navbar: <Navigation size={16} />,
+    sidebar: <Sidebar size={16} />,
+    pricing: <CreditCard size={16} />,
+    testimonials: <Users size={16} />,
+    stats: <BarChart3 size={16} />,
+    "login-form": <Mail size={16} />,
+    newsletter: <Mail size={16} />,
+    team: <Users size={16} />,
+    faq: <HelpCircle size={16} />,
+    breadcrumb: <Navigation size={16} />,
+    modal: <SquareStack size={16} />,
+    progress: <TrendingUp size={16} />,
+    timeline: <Clock size={16} />,
+  };
+  return icons[componentKey] || <FileText size={16} />;
+};
+
+const generateHtml = (bodyContent: string) => `
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <style>
+        body { 
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+          margin: 0; 
+          padding: 0; 
+          min-height: 100vh; 
+          background: #ffffff;
+          line-height: 1.6;
+        }
+        * { box-sizing: border-box; }
+      </style>
+    </head>
+    <body>${bodyContent}</body>
+  </html>
+`;
+
+export default function ComponentsPanel({
+  onInsert,
+  onAiInsert,
+  onOpenSettings,
+  onResizeStart,
+}: ComponentsPanelProps) {
+  const { settings } = useSettings();
+  const [prompt, setPrompt] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [response, setResponse] = useState("");
+  const [mode, setMode] = useState<AiMode>("response");
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [previewComponent, setPreviewComponent] = useState<string | null>(null);
+  const [recentComponents, setRecentComponents] = useState<string[]>([]);
+
+  // Load favorites and recent components from localStorage
+  useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') return;
+
+    try {
+      const savedFavorites = localStorage.getItem('component-favorites');
+      if (savedFavorites) {
+        setFavorites(new Set(JSON.parse(savedFavorites)));
+      }
+
+      const savedRecent = localStorage.getItem('recent-components');
+      if (savedRecent) {
+        setRecentComponents(JSON.parse(savedRecent));
+      }
+    } catch (e) {
+      console.error('Failed to load data from localStorage:', e);
+    }
+  }, []);
+
+  // Save favorites to localStorage
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    try {
+      localStorage.setItem('component-favorites', JSON.stringify(Array.from(favorites)));
+    } catch (e) {
+      console.error('Failed to save favorites:', e);
+    }
+  }, [favorites]);
+
+  // Filter components based on search
+  const filteredComponents = useMemo(() => {
+    if (!searchTerm) return componentCategories;
+    
+    const filtered: ComponentCategories = {};
+    Object.entries(componentCategories).forEach(([category, comps]) => {
+      const filteredComps = comps.filter(compKey => {
+        const comp = components[compKey];
+        return (
+          compKey.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          comp.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          comp.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+        );
+      });
+      if (filteredComps.length > 0) {
+        filtered[category] = filteredComps;
+      }
+    });
+    return filtered;
+  }, [searchTerm]);
+
+  const toggleFavorite = (componentKey: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setFavorites(prev => {
+      const newFavorites = new Set(prev);
+      if (newFavorites.has(componentKey)) {
+        newFavorites.delete(componentKey);
+      } else {
+        newFavorites.add(componentKey);
+      }
+      return newFavorites;
+    });
   };
 
-  const componentCategories: ComponentCategories = {
-    "Layout": ["header", "hero", "about", "services", "contact", "footer", "sidebar"],
-    "Navigation": ["navbar", "breadcrumb"],
-    "Content": ["card", "gallery", "team", "testimonials", "stats", "timeline", "faq"],
-    "Forms": ["contact", "login-form", "newsletter"],
-    "UI Components": ["modal", "progress", "pricing"],
-    "SEO": ["seo", "seo-schema"],
-    "Icons": ["social-icons", "feature-icons", "font-icons"]
-  };
+  const handleInsert = (componentKey: string) => {
+    const component = components[componentKey];
+    if (!component) return;
 
-  const getComponentIcon = (componentKey: string): ReactElement => {
-    const icons: { [key: string]: ReactElement } = {
-      header: <FileText size={16} />,
-      hero: <Sparkles size={16} />,
-      about: <Info size={16} />,
-      services: <Wrench size={16} />,
-      contact: <Phone size={16} />,
-      footer: <SquareStack size={16} />,
-      card: <CreditCard size={16} />,
-      gallery: <Image size={16} />,
-      seo: <Search size={16} />,
-      "seo-schema": <Tag size={16} />,
-      "social-icons": <Users size={16} />,
-      "feature-icons": <Stars size={16} />,
-      "font-icons": <Type size={16} />,
-      navbar: <Navigation size={16} />,
-      sidebar: <Sidebar size={16} />,
-      pricing: <CreditCard size={16} />,
-      testimonials: <Users size={16} />,
-      stats: <BarChart3 size={16} />,
-      "login-form": <Mail size={16} />,
-      newsletter: <Mail size={16} />,
-      team: <Users size={16} />,
-      faq: <HelpCircle size={16} />,
-      breadcrumb: <Navigation size={16} />,
-      modal: <SquareStack size={16} />,
-      progress: <TrendingUp size={16} />,
-      timeline: <Clock size={16} />,
-    };
-    return icons[componentKey] || <FileText size={16} />;
+    // Add to recent components (limit to 10)
+    setRecentComponents(prev => {
+      const filtered = prev.filter(key => key !== componentKey);
+      const updated = [componentKey, ...filtered].slice(0, 10);
+      
+      // Save to localStorage
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('recent-components', JSON.stringify(updated));
+        } catch (e) {
+          console.error('Failed to save recent components:', e);
+        }
+      }
+      
+      return updated;
+    });
+
+    onInsert(component.code);
   };
 
   const askAi = async () => {
@@ -645,32 +868,224 @@ Return only code. No explanations, comments, or extra text. Do not output markdo
             <Settings size={14} />
           </button>
         </div>
+        
+        {/* Search Bar */}
+        <div className="relative mt-2">
+          <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted" />
+          <input
+            type="text"
+            placeholder="Search components..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 bg-component-bg border border-panel-border rounded-lg text-sm focus:outline-none focus:border-accent-color text-foreground"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-muted hover:text-foreground"
+            >
+              ×
+            </button>
+          )}
+        </div>
       </div>
       
       {/* Components List */}
       <div className="flex-1 overflow-auto min-h-0">
         <div className="components-list">
-          {Object.entries(componentCategories).map(([category, keys]) => (
+          {/* Recently Used Section */}
+          {recentComponents.length > 0 && (
+            <div className="component-category">
+              <div className="category-title flex items-center gap-2">
+                <Clock size={14} />
+                Recently Used ({recentComponents.length})
+              </div>
+              {recentComponents.map((key) => (
+                <div
+                  key={key}
+                  className="component-item group"
+                  onClick={() => handleInsert(key)}
+                >
+                  <div className="component-icon">
+                    {getComponentIcon(key)}
+                  </div>
+                  <span className="component-name flex-1">
+                    {key.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ")}
+                  </span>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPreviewComponent(key);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Preview component"
+                    >
+                      <Eye size={14} className="text-text-muted hover:text-foreground" />
+                    </button>
+                    <button
+                      onClick={(e) => toggleFavorite(key, e)}
+                      className={`transition-opacity ${
+                        favorites.has(key) ? "opacity-100 text-yellow-500" : "opacity-0 group-hover:opacity-100 text-text-muted"
+                      }`}
+                      title={favorites.has(key) ? "Remove from favorites" : "Add to favorites"}
+                    >
+                      {favorites.has(key) ? (
+                        <Star size={14} className="fill-yellow-500" />
+                      ) : (
+                        <Star size={14} />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Favorites Section */}
+          {favorites.size > 0 && (
+            <div className="component-category">
+              <div className="category-title flex items-center gap-2">
+                <Star size={14} className="text-yellow-500" />
+                Favorites ({favorites.size})
+              </div>
+              {Array.from(favorites).map((key) => (
+                <div
+                  key={key}
+                  className="component-item group"
+                  onClick={() => handleInsert(key)}
+                >
+                  <div className="component-icon">
+                    {getComponentIcon(key)}
+                  </div>
+                  <span className="component-name flex-1">
+                    {key.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ")}
+                  </span>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPreviewComponent(key);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Preview component"
+                    >
+                      <Eye size={14} className="text-text-muted hover:text-foreground" />
+                    </button>
+                    <button
+                      onClick={(e) => toggleFavorite(key, e)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-yellow-500"
+                      title="Remove from favorites"
+                    >
+                      <StarOff size={14} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Regular Categories */}
+          {Object.entries(filteredComponents).map(([category, keys]) => (
             <div key={category} className="component-category">
               <div className="category-title">{category}</div>
               {keys.map((key) => (
                 <div
                   key={key}
-                  className="component-item"
-                  onClick={() => onInsert(components[key])}
+                  className="component-item group"
+                  onClick={() => handleInsert(key)}
                 >
                   <div className="component-icon">
                     {getComponentIcon(key)}
                   </div>
-                  <span className="component-name">
+                  <span className="component-name flex-1">
                     {key.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ")}
                   </span>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPreviewComponent(key);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Preview component"
+                    >
+                      <Eye size={14} className="text-text-muted hover:text-foreground" />
+                    </button>
+                    <button
+                      onClick={(e) => toggleFavorite(key, e)}
+                      className={`transition-opacity ${
+                        favorites.has(key) ? "opacity-100 text-yellow-500" : "opacity-0 group-hover:opacity-100 text-text-muted"
+                      }`}
+                      title={favorites.has(key) ? "Remove from favorites" : "Add to favorites"}
+                    >
+                      {favorites.has(key) ? (
+                        <Star size={14} className="fill-yellow-500" />
+                      ) : (
+                        <Star size={14} />
+                      )}
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
           ))}
+
+          {/* No Results Message */}
+          {searchTerm && Object.keys(filteredComponents).length === 0 && (
+            <div className="text-center py-8 text-text-muted">
+              <Search size={32} className="mx-auto mb-2 opacity-50" />
+              <p>No components found for "{searchTerm}"</p>
+              <button
+                onClick={() => setSearchTerm("")}
+                className="btn btn-secondary btn-sm mt-2"
+              >
+                Clear Search
+              </button>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Component Preview Modal */}
+      {previewComponent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-panel-bg rounded-lg p-4 max-w-4xl w-full mx-auto max-h-[90vh] flex flex-col">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-foreground">
+                Preview: {previewComponent.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ")}
+              </h3>
+              <button 
+                onClick={() => setPreviewComponent(null)}
+                className="text-text-muted hover:text-foreground"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <div className="flex-1 border rounded-lg overflow-hidden bg-white">
+              <iframe
+                srcDoc={generateHtml(components[previewComponent].code)}
+                className="w-full h-full min-h-[400px]"
+                title="Component Preview"
+              />
+            </div>
+            <div className="mt-4 flex gap-2">
+              <button
+                onClick={() => handleInsert(previewComponent)}
+                className="btn btn-primary flex-1"
+              >
+                Insert Component
+              </button>
+              <button
+                onClick={() => setPreviewComponent(null)}
+                className="btn btn-secondary"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* AI Section Header with Endpoint Indicator */}
       <div className="ai-section">
