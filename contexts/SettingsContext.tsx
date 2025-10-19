@@ -11,9 +11,9 @@ interface SettingsContextType {
   updateSettings: (newSettings: Partial<Settings>) => void;
 }
 
-// Use localhost as default since that's where LM Studio usually runs
+
 const defaultSettings: Settings = {
-  aiEndpoint: "http://10.10.20:1234"  // Changed from 10.0.0.20 to localhost
+  aiEndpoint: "http://lms.jessejesse.com"  
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -21,7 +21,7 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = useState<Settings>(defaultSettings);
 
-  // Load settings from localStorage on mount
+
   useEffect(() => {
     const saved = localStorage.getItem('website-builder-settings');
     if (saved) {
