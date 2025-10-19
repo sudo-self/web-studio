@@ -777,74 +777,123 @@ export default function ComponentsPanel({
   };
 
   const askAi = async () => {
-    if (!prompt.trim()) return;
-    setLoading(true);
-    setResponse("Thinking...");
+  if (!prompt.trim()) return;
+  setLoading(true);
+  setResponse("Connecting to AI via Cloudflare tunnel...");
 
+  try {
+    let aiText = "";
+    const baseUrl = settings.aiEndpoint;
+
+    console.log(`Making AI request to Cloudflare tunnel: ${baseUrl}`);
+
+    // Test if the endpoint is reachable first
     try {
-      let aiText = "";
-
-      const baseUrl = settings.aiEndpoint;
-
-      if (mode === "response") {
-        const res = await fetch(`${baseUrl}/v1/responses`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model: "default",
-            input: `Generate clean, ready-to-use HTML/CSS/JS code for: ${prompt}. 
-Return only code. No explanations, comments, or extra text. Do not output markdown instructions.`,
-          }),
-        });
-
-        if (!res.ok) throw new Error(`Server responded with ${res.status}`);
-        const data = await res.json();
-        aiText = String(data.output_text || data.output?.[0]?.content?.[0]?.text || "");
-      } else {
-        const updatedHistory = [...chatHistory, { role: "user" as ChatRole, content: prompt }];
-        const res = await fetch(`${baseUrl}/v1/chat/completions`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model: "default",
-            messages: [
-              {
-                role: "system",
-                content: "You are a professional web development assistant. Return only HTML/CSS/JS code. Do not include explanations, instructions, or markdown wrappers."
-              },
-              ...updatedHistory
-            ],
-          }),
-        });
-
-        if (!res.ok) throw new Error(`Server responded with ${res.status}`);
-        const data = await res.json();
-        aiText = String(data.choices?.[0]?.message?.content || "");
-
-        setChatHistory([...updatedHistory, { role: "assistant" as ChatRole, content: aiText }]);
+      const testResponse = await fetch(`${baseUrl}/v1/models`, {
+        method: 'GET',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+      });
+      
+      if (!testResponse.ok) {
+        throw new Error(`Server responded with ${testResponse.status}`);
       }
-
-      // Strip code block formatting
-      const cleanedText = aiText
-        .replace(/^```(?:html|js|css)?\s*/i, "")
-        .replace(/\s*```$/i, "")
-        .trim();
-
-      setResponse(cleanedText);
-
-      if (cleanedText) {
-        onAiInsert(`\n<!-- AI Generated -->\n${cleanedText}\n`);
-      }
-    } catch (err) {
-      console.error(err);
-      setResponse(
-        `Error connecting to AI server at ${settings.aiEndpoint}. Make sure LM Studio is running and the endpoint is correct.`
-      );
-    } finally {
-      setLoading(false);
-      setPrompt("");
+      console.log('Cloudflare tunnel connection test passed');
+    } catch (testError) {
+      throw new Error(`Cannot connect to AI server via Cloudflare tunnel at ${baseUrl}. Make sure LM Studio is running and the tunnel is active.`);
     }
-  };
+
+    if (mode === "response") {
+      const res = await fetch(`${baseUrl}/v1/chat/completions`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          model: "local-model", // LM Studio usually uses this
+          messages: [
+            {
+              role: "system",
+              content: "You are a professional web development assistant. Return only HTML/CSS/JS code. Do not include explanations, instructions, or markdown wrappers."
+            },
+            {
+              role: "user",
+              content: `Generate clean, ready-to-use HTML/CSS/JS code for: ${prompt}. Return only code. No explanations, comments, or extra text. Do not output markdown instructions.`
+            }
+          ],
+          max_tokens: 1000,
+          temperature: 0.7,
+          stream: false
+        }),
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Server responded with ${res.status}: ${errorText}`);
+      }
+      
+      const data = await res.json();
+      aiText = data.choices?.[0]?.message?.content || "";
+      
+    } else {
+      // Chat mode
+      const updatedHistory = [...chatHistory, { role: "user" as ChatRole, content: prompt }];
+      const res = await fetch(`${baseUrl}/v1/chat/completions`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          model: "local-model",
+          messages: [
+            {
+              role: "system",
+              content: "You are a professional web development assistant. Return only HTML/CSS/JS code. Do not include explanations, instructions, or markdown wrappers."
+            },
+            ...updatedHistory
+          ],
+          max_tokens: 1000,
+          temperature: 0.7,
+          stream: false
+        }),
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Server responded with ${res.status}: ${errorText}`);
+      }
+      
+      const data = await res.json();
+      aiText = data.choices?.[0]?.message?.content || "";
+      setChatHistory([...updatedHistory, { role: "assistant" as ChatRole, content: aiText }]);
+    }
+
+    // Strip code block formatting
+    const cleanedText = aiText
+      .replace(/^```(?:html|js|css)?\s*/i, "")
+      .replace(/\s*```$/i, "")
+      .trim();
+
+    setResponse(cleanedText || "AI responded with empty content. Please try again.");
+
+    if (cleanedText) {
+      onAiInsert(`\n<!-- AI Generated via Cloudflare Tunnel -->\n${cleanedText}\n`);
+    }
+  } catch (err) {
+    console.error('AI request failed:', err);
+    const errorMessage = err instanceof Error 
+      ? err.message 
+      : `Error connecting to AI server via Cloudflare tunnel at ${settings.aiEndpoint}. Make sure LM Studio is running and the tunnel is active.`;
+    setResponse(errorMessage);
+  } finally {
+    setLoading(false);
+    setPrompt("");
+  }
+};
 return (
   <div className="flex flex-col h-full overflow-hidden relative">
     {/* Resize Handle on the right side */}
