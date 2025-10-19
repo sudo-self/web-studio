@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Settings, X, Wifi, WifiOff, Cpu } from "lucide-react";
+import { Settings, X, Wifi, WifiOff, Cloud, Cpu, CheckCircle } from "lucide-react";
 import { useSettings } from "@/contexts/SettingsContext";
 
 interface SettingsPanelProps {
@@ -15,6 +15,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
   const [testing, setTesting] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'unknown'>('unknown');
   const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [currentModel, setCurrentModel] = useState<string>('');
 
   const handleSave = () => {
     updateSettings({ aiEndpoint });
@@ -36,14 +37,21 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
         const modelsData = await response.json();
         const models = modelsData.data?.map((model: any) => model.id) || [];
         setAvailableModels(models);
+        
+        const targetModel = "openai/gpt-oss-20b";
+        const hasTargetModel = models.includes(targetModel);
+        setCurrentModel(hasTargetModel ? targetModel : (models[0] || 'No models found'));
+        
         setConnectionStatus('connected');
       } else {
         setConnectionStatus('disconnected');
         setAvailableModels([]);
+        setCurrentModel('');
       }
     } catch (error) {
       setConnectionStatus('disconnected');
       setAvailableModels([]);
+      setCurrentModel('');
     } finally {
       setTesting(false);
     }
@@ -62,8 +70,8 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
       <div className="bg-panel-bg rounded-lg p-6 w-96 max-w-full border border-panel-border">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold flex items-center gap-2 text-foreground">
-            <Cpu size={20} />
-            LM Studio Settings
+            <Cloud size={20} />
+            AI Settings
           </h2>
           <button
             onClick={onClose}
@@ -76,14 +84,14 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
-              LM Studio Server
+              LM Studio Server (HTTP)
             </label>
             <div className="flex items-center gap-2">
               <input
                 type="text"
                 value={aiEndpoint}
                 onChange={(e) => setAiEndpoint(e.target.value)}
-                placeholder="http://localhost:1234"
+                placeholder="http://lms.jessejesse.com"
                 className="flex-1 px-3 py-2 bg-component-bg border border-panel-border rounded text-sm text-foreground focus:outline-none focus:border-accent-color"
               />
               <div className={`${
@@ -95,12 +103,65 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               </div>
             </div>
             <p className="text-xs text-text-muted mt-1">
-              LM Studio runs on HTTP - use localhost for development
+              Cloudflare tunnel: http://lms.jessejesse.com → http://10.0.0.20:1234
             </p>
           </div>
 
+          {/* Connection Status */}
+          {connectionStatus === 'connected' && (
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded p-3">
+              <div className="flex items-center gap-2 text-green-700 dark:text-green-400 text-sm">
+                <CheckCircle size={16} />
+                <span className="font-medium">Connected via Cloudflare Tunnel</span>
+              </div>
+              {currentModel && (
+                <div className="flex items-center gap-2 text-green-600 dark:text-green-300 text-xs mt-1">
+                  <Cpu size={12} />
+                  <span>Active: {currentModel}</span>
+                </div>
+              )}
+              {availableModels.length > 0 && (
+                <div className="mt-2 text-xs text-green-600 dark:text-green-300">
+                  <div>Available models:</div>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {availableModels.map((model, index) => (
+                      <span 
+                        key={index}
+                        className={`px-2 py-1 rounded ${
+                          model === 'openai/gpt-oss-20b' 
+                            ? 'bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200' 
+                            : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                        }`}
+                      >
+                        {model}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {connectionStatus === 'disconnected' && (
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded p-3">
+              <div className="flex items-center gap-2 text-red-700 dark:text-red-400 text-sm">
+                <WifiOff size={16} />
+                <span className="font-medium">Connection Failed</span>
+              </div>
+              <p className="text-xs text-red-600 dark:text-red-300 mt-1">
+                Check if LM Studio is running and tunnel is active
+              </p>
+            </div>
+          )}
+
           {/* Quick Endpoint Buttons */}
           <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => setAiEndpoint("http://lms.jessejesse.com")}
+              className="bg-component-bg border border-panel-border rounded py-2 px-3 text-xs hover:bg-component-hover transition-colors"
+            >
+              Cloudflare Tunnel
+            </button>
             <button
               onClick={() => setAiEndpoint("http://localhost:1234")}
               className="bg-component-bg border border-panel-border rounded py-2 px-3 text-xs hover:bg-component-hover transition-colors"
@@ -109,50 +170,11 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             </button>
             <button
               onClick={() => setAiEndpoint("http://10.0.0.20:1234")}
-              className="bg-component-bg border border-panel-border rounded py-2 px-3 text-xs hover:bg-component-hover transition-colors"
-            >
-              Local IP
-            </button>
-            <button
-              onClick={() => setAiEndpoint("http://lms.jessejesse.com")}
               className="bg-component-bg border border-panel-border rounded py-2 px-3 text-xs hover:bg-component-hover transition-colors col-span-2"
             >
-              Cloudflare Tunnel
+              Local Network IP
             </button>
           </div>
-
-          {/* Connection Status */}
-          {connectionStatus === 'connected' && availableModels.length > 0 && (
-            <div className="bg-component-bg border border-green-500 rounded p-3">
-              <div className="flex items-center gap-2 text-green-500 text-sm mb-2">
-                <Wifi size={14} />
-                <span>Connected to LM Studio</span>
-              </div>
-              <div className="text-xs text-text-muted">
-                <div>Available models:</div>
-                <div className="mt-1 space-y-1">
-                  {availableModels.map((model, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                      {model}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {connectionStatus === 'disconnected' && (
-            <div className="bg-component-bg border border-red-500 rounded p-3">
-              <div className="flex items-center gap-2 text-red-500 text-sm">
-                <WifiOff size={14} />
-                <span>Cannot connect to LM Studio</span>
-              </div>
-              <div className="text-xs text-text-muted mt-1">
-                Make sure LM Studio is running and the server is active
-              </div>
-            </div>
-          )}
 
           {/* Action Buttons */}
           <div className="flex gap-2">
@@ -176,7 +198,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               onClick={handleSave}
               className="flex-1 bg-button-primary text-white py-2 px-4 rounded text-sm font-medium"
             >
-              Save
+              Save Settings
             </button>
           </div>
         </div>
