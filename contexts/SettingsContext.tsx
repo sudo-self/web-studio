@@ -4,14 +4,18 @@ import React, { createContext, useContext } from "react";
 
 interface SettingsContextType {
   askAI: (prompt: string) => Promise<string>;
+  // Optional: include endpoint if you want
+  aiEndpoint?: string;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
+  const aiEndpoint = "/api/ask-ai"; // Optional, for reference
+
   const askAI = async (prompt: string) => {
     try {
-      const response = await fetch("/api/ask-ai", {
+      const response = await fetch(aiEndpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -28,7 +32,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <SettingsContext.Provider value={{ askAI }}>
+    <SettingsContext.Provider value={{ askAI, aiEndpoint }}>
       {children}
     </SettingsContext.Provider>
   );
@@ -41,5 +45,6 @@ export function useSettings() {
   }
   return context;
 }
+
 
 
