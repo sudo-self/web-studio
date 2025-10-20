@@ -1,68 +1,40 @@
-"use client";
+const askAI = async (prompt: string, onChunk?: (chunk: string) => void) => {
+  if (!prompt.trim()) return "";
 
-import React, { createContext, useContext, useState } from "react";
+  try {
+    const response = await fetch("/api/ai", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt }),
+    });
 
-interface Settings {
-  aiEndpoint: string;
-  theme: "light" | "dark" | "auto";
-  fontSize: number;
-  autoFormat: boolean;
-}
+    if (!response.body) throw new Error("No response body from AI API");
 
-interface SettingsContextType {
-  askAI: (prompt: string) => Promise<string>;
-  settings: Settings;
-  updateSettings: (newSettings: Partial<Settings>) => void;
-}
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let aiText = "";
 
-const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
-
-export function SettingsProvider({ children }: { children: React.ReactNode }) {
-  const aiEndpoint = "/api";
-
-  const askAI = async (prompt: string) => {
-    try {
-      const response = await fetch(aiEndpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt })
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Server responded with ${response.status}: ${errorText}`);
-      }
-
-      const data = await response.json();
-      return data.text || "No response";
-    } catch (err) {
-      console.error("AI request failed:", err);
-      return "Error contacting AI";
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      const chunk = decoder.decode(value, { stream: true });
+      aiText += chunk;
+      if (onChunk) onChunk(chunk); // send chunks to UI in real time
     }
-  };
 
-  const [settings, setSettings] = useState<Settings>({
-    aiEndpoint,
-    theme: "light",
-    fontSize: 14,
-    autoFormat: true
-  });
+    // Strip markdown/code fences
+    const cleanedText = aiText
+      .replace(/^```(?:html|js|css)?\s*/i, "")
+      .replace(/\s*```$/i, "")
+      .trim();
 
-  const updateSettings = (newSettings: Partial<Settings>) =>
-    setSettings((prev) => ({ ...prev, ...newSettings }));
+    return cleanedText || "No response from AI";
+  } catch (err) {
+    console.error("AI streaming failed:", err);
+    return "Error contacting AI";
+  }
+};
 
-  return (
-    <SettingsContext.Provider value={{ askAI, settings, updateSettings }}>
-      {children}
-    </SettingsContext.Provider>
-  );
-}
-
-export function useSettings() {
-  const context = useContext(SettingsContext);
-  if (!context) throw new Error("useSettings must be used within a SettingsProvider");
-  return context;
-}
 
 
 
