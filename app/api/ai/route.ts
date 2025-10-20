@@ -1,167 +1,154 @@
-// --- app/api/ai/route.ts ---
-import { NextRequest, NextResponse } from "next/server";
+"use client";
 
-const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
+import React, { createContext, useContext, useState, ReactNode } from "react";
 
-export async function POST(req: NextRequest) {
-  try {
-    const { prompt, mode, chatHistory } = await req.json();
+export interface Settings {
+  aiEndpoint: string;
+  theme: "light" | "dark" | "auto";
+  fontSize: number;
+  autoFormat: boolean;
+}
 
-    if (!prompt?.trim()) {
-      return NextResponse.json({ text: "No prompt provided" }, { status: 400 });
-    }
+export interface SettingsContextType {
+  settings: Settings;
+  updateSettings: (newSettings: Partial<Settings>) => void;
+  askAI: (prompt: string, onChunk?: (chunk: string) => void) => Promise<string>;
+}
 
-    // Check if API key is configured
-    if (!DEEPSEEK_API_KEY) {
-      console.error("DeepSeek API key not configured");
-      return NextResponse.json({ 
-        text: "DeepSeek API key not configured. Please add DEEPSEEK_API_KEY to your environment variables." 
-      }, { status: 500 });
-    }
+const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
-    const messages = [
-      {
-        role: "system",
-        content: `You are a web development expert. Generate clean, responsive HTML/CSS code.
-        Rules:
-        1. Return ONLY HTML code with inline CSS
-        2. No explanations, no markdown, no backticks
-        3. Use modern, responsive design
-        4. Include proper semantic HTML
-        5. Make it mobile-friendly
-        6. Use inline styles only
-        7. Do not include any text outside of HTML tags
-        8. Ensure the code is complete and valid`
-      },
-      ...(mode === "chat" ? chatHistory : []),
-      { 
-        role: "user", 
-        content: `Create this web component: ${prompt}. Return only HTML with inline CSS.` 
-      }
-    ];
+export const SettingsProvider = ({ children }: { children: ReactNode }) => {
+  const [settings, setSettings] = useState<Settings>({
+    aiEndpoint: "/api/ai",
+    theme: "light",
+    fontSize: 14,
+    autoFormat: true,
+  });
 
-    console.log("Sending request to DeepSeek API...");
-    
-    const res = await fetch("https://api.deepseek.com/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${DEEPSEEK_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "deepseek-chat",
-        messages: messages,
-        max_tokens: 2000,
-        temperature: 0.7,
-        stream: true
-      })
-    });
+  const updateSettings = (newSettings: Partial<Settings>) =>
+    setSettings((prev) => ({ ...prev, ...newSettings }));
 
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error("DeepSeek API error:", {
-        status: res.status,
-        statusText: res.statusText,
-        error: errorText
+  const askAI = async (prompt: string, onChunk?: (chunk: string) => void): Promise<string> => {
+    if (!prompt.trim()) return "";
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
+      const response = await fetch(settings.aiEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          prompt,
+          mode: "response"
+        }),
+        signal: controller.signal
       });
-      
-      if (res.status === 401) {
-        return NextResponse.json({ 
-          text: "DeepSeek API authentication failed. Please check your API key." 
-        }, { status: 401 });
-      } else if (res.status === 429) {
-        return NextResponse.json({ 
-          text: "DeepSeek rate limit exceeded. Please try again later." 
-        }, { status: 429 });
-      } else {
-        return NextResponse.json({ 
-          text: `DeepSeek API error (${res.status}): ${errorText}` 
-        }, { status: res.status });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("AI API error:", {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorText
+        });
+        throw new Error(`AI API error: ${response.status} - ${errorText}`);
       }
-    }
 
-    const reader = res.body?.getReader();
-    if (!reader) {
-      throw new Error("No response body received from DeepSeek");
-    }
+      if (!response.body) {
+        throw new Error("No response body from AI API");
+      }
 
-    // Create a streaming response
-    const stream = new ReadableStream({
-      async start(controller) {
-        const decoder = new TextDecoder();
-        try {
-          while (true) {
-            const { value, done } = await reader.read();
-            if (done) break;
-            
-            const chunk = decoder.decode(value, { stream: true });
-            
-            // Parse SSE format and extract content
-            const lines = chunk.split('\n');
-            for (const line of lines) {
-              if (line.startsWith('data: ') && line !== 'data: [DONE]') {
-                try {
-                  const data = JSON.parse(line.slice(6));
-                  const content = data.choices?.[0]?.delta?.content;
-                  if (content) {
-                    // Send the content as a simple text chunk
-                    controller.enqueue(new TextEncoder().encode(content));
-                  }
-                } catch (e) {
-                  // Ignore JSON parse errors for incomplete chunks
-                  console.warn("Failed to parse SSE chunk:", line);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let aiText = "";
+
+      try {
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          
+          // Handle DeepSeek streaming format (Server-Sent Events)
+          const lines = chunk.split('\n').filter(Boolean);
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const jsonStr = line.replace(/^data: /, '');
+              if (jsonStr === '[DONE]') continue;
+
+              try {
+                const parsed = JSON.parse(jsonStr);
+                // DeepSeek format: parsed.choices[0].delta.content
+                const delta = parsed.choices?.[0]?.delta?.content;
+                if (delta) {
+                  aiText += delta;
+                  if (onChunk) onChunk(delta);
                 }
+              } catch (e) {
+                console.warn("Failed to parse DeepSeek SSE chunk:", line, e);
               }
+            } else if (line.trim() && !line.startsWith('data: ')) {
+              // Handle non-SSE format (direct text streaming)
+              aiText += line;
+              if (onChunk) onChunk(line);
             }
           }
-        } catch (error) {
-          console.error("Stream reading error:", error);
-          controller.error(error);
-        } finally {
-          reader.releaseLock();
-          controller.close();
         }
-      },
-      cancel() {
-        reader.cancel();
+      } finally {
+        reader.releaseLock();
       }
-    });
 
-    return new Response(stream, {
-      headers: { 
-        "Content-Type": "text/plain; charset=utf-8",
-        "Cache-Control": "no-cache, no-transform",
-        "Connection": "keep-alive",
-        "X-Content-Type-Options": "nosniff"
+      // Clean the response
+      const cleanedText = cleanAIResponse(aiText);
+      return cleanedText || "No response from AI";
+
+    } catch (err) {
+      console.error("AI streaming failed:", err);
+      
+      if (err instanceof Error && err.name === 'AbortError') {
+        return "AI request timed out. Please try again.";
       }
-    });
+      
+      return `Error contacting AI: ${err instanceof Error ? err.message : 'Unknown error'}`;
+    }
+  };
 
-  } catch (err) {
-    console.error("API error:", err);
+  // Helper function to clean AI response
+  const cleanAIResponse = (text: string): string => {
+    if (!text) return "";
     
-    // Generate a fallback component
-    const fallbackComponent = generateFallbackComponent(prompt);
-    return NextResponse.json({ 
-      text: fallbackComponent,
-      error: "Server error: " + (err instanceof Error ? err.message : "Unknown error")
-    }, { status: 500 });
-  }
-}
+    let cleaned = text
+      .replace(/^```(?:html|js|css)?\s*/i, '')
+      .replace(/\s*```$/i, '')
+      .replace(/^`|`$/g, '')
+      .trim();
 
-function generateFallbackComponent(prompt: string): string {
-  return `<!-- Fallback Component - AI Service Temporarily Unavailable -->
-<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 3rem 2rem; text-align: center; border-radius: 12px; margin: 1rem 0;">
-  <h2 style="margin-bottom: 1rem; font-size: 1.8rem; font-weight: 600;">${prompt}</h2>
-  <p style="margin-bottom: 2rem; opacity: 0.9; font-size: 1.1rem;">AI service temporarily unavailable. Using fallback component.</p>
-  <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-    <button style="background: white; color: #667eea; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 1rem;">
-      Primary Action
-    </button>
-    <button style="background: transparent; color: white; border: 2px solid white; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 1rem;">
-      Secondary Action
-    </button>
-  </div>
-</div>`;
-}
+    // If it looks like HTML, ensure it's properly formatted
+    if (cleaned.includes('<') && cleaned.includes('>')) {
+      // Remove any leading text before the first HTML tag
+      const firstTagIndex = cleaned.indexOf('<');
+      if (firstTagIndex > 0) {
+        cleaned = cleaned.substring(firstTagIndex);
+      }
+    }
+
+    return cleaned;
+  };
+
+  return (
+    <SettingsContext.Provider value={{ settings, updateSettings, askAI }}>
+      {children}
+    </SettingsContext.Provider>
+  );
+};
+
+export const useSettings = (): SettingsContextType => {
+  const context = useContext(SettingsContext);
+  if (!context) throw new Error("useSettings must be used within a SettingsProvider");
+  return context;
+};
 
 
