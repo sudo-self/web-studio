@@ -776,14 +776,26 @@ export default function ComponentsPanel({
     onInsert(component.code);
   };
   
+// Replace the askAi function in ComponentsPanel.tsx with this improved version:
+
 const askAi = async () => {
-  if (!prompt.trim()) return;
+  if (!prompt.trim()) {
+    setResponse("Please enter a prompt");
+    return;
+  }
 
   setLoading(true);
   setResponse("");
 
   try {
-    console.log("Sending AI request:", { prompt, mode, endpoint: settings.aiEndpoint });
+    console.log("Sending AI request:", { 
+      prompt: prompt.substring(0, 100), 
+      mode, 
+      endpoint: settings.aiEndpoint 
+    });
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
     const res = await fetch(settings.aiEndpoint, {
       method: "POST",
@@ -793,71 +805,99 @@ const askAi = async () => {
         mode: mode,
         ...(mode === "chat" && chatHistory.length > 0 && { chatHistory })
       }),
+      signal: controller.signal,
     });
 
-    console.log("AI response status:", res.status);
+    clearTimeout(timeoutId);
 
     if (!res.ok) {
       const errorText = await res.text();
       console.error("AI API error:", res.status, errorText);
-      throw new Error(`Server error: ${res.status} - ${res.statusText}`);
+      throw new Error(`Server returned ${res.status}: ${res.statusText}`);
     }
 
     const data = await res.json();
-    console.log("AI response data:", data);
+    console.log("AI response received:", { 
+      hasText: !!data.text, 
+      length: data.text?.length 
+    });
     
-   
-    const aiText = data.text || data.choices?.[0]?.text || data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const aiText = data.text || "";
     
     if (!aiText.trim()) {
-      console.warn("Empty AI response received");
-      throw new Error("AI returned empty response. Please try again.");
+      throw new Error("AI returned empty response");
     }
 
-    const cleanedText = cleanAIResponse(aiText);
-    console.log("Cleaned AI response:", cleanedText);
+    setResponse(aiText);
     
-    setResponse(cleanedText);
-    
-
-    if (cleanedText.trim()) {
-      onAiInsert(`\n<!-- AI Generated: ${prompt.substring(0, 50)}${prompt.length > 50 ? '...' : ''} -->\n${cleanedText}\n`);
+    // Insert into editor if it contains HTML
+    if (aiText.includes('<') && aiText.includes('>')) {
+      const timestamp = new Date().toLocaleTimeString();
+      onAiInsert(`\n<!-- AI Generated (${timestamp}): ${prompt.substring(0, 50)}... -->\n${aiText}\n`);
     }
 
-   
+    // Update chat history
     if (mode === "chat") {
       setChatHistory(prev => [
         ...prev,
         { role: "user", content: prompt },
-        { role: "assistant", content: cleanedText }
+        { role: "assistant", content: aiText }
       ]);
     }
 
+    setPrompt(""); // Clear prompt on success
+
   } catch (err) {
     console.error("AI request failed:", err);
-    const errorMsg = err instanceof Error ? err.message : "Unknown error occurred";
     
-  
-    let userFriendlyError = `Error: ${errorMsg}`;
+    let userMessage = "An error occurred";
     
-    if (errorMsg.includes('Failed to fetch') || errorMsg.includes('Network')) {
-      userFriendlyError = "Network error: Cannot connect to AI server. Check your internet connection.";
-    } else if (errorMsg.includes('401') || errorMsg.includes('403')) {
-      userFriendlyError = "API authentication failed. Please check your Google Gemini API key in the .env.local file.";
-    } else if (errorMsg.includes('429')) {
-      userFriendlyError = "Rate limit exceeded. Please wait a moment and try again.";
-    } else if (errorMsg.includes('500') || errorMsg.includes('502') || errorMsg.includes('503')) {
-      userFriendlyError = "AI service temporarily unavailable. Please try again in a few moments.";
+    if (err instanceof Error) {
+      if (err.name === 'AbortError') {
+        userMessage = "Request timed out. Please try again.";
+      } else if (err.message.includes('Failed to fetch')) {
+        userMessage = "Network error. Check your connection and API endpoint.";
+      } else if (err.message.includes('401') || err.message.includes('403')) {
+        userMessage = "Authentication failed. Check your API key in settings.";
+      } else if (err.message.includes('429')) {
+        userMessage = "Rate limit exceeded. Wait a moment and try again.";
+      } else {
+        userMessage = err.message;
+      }
     }
     
-    setResponse(userFriendlyError);
-    
-   
+    setResponse(`❌ Error: ${userMessage}`);
   } finally {
     setLoading(false);
-    setPrompt("");
   }
 };
+
+// Also add this improved prompt textarea with better UX
+// Replace the textarea section in the JSX:
+/*
+<div className="relative">
+  <textarea
+    className="prompt-textarea"
+    placeholder="Describe the component you want to create...
+Examples:
+• Create a hero section with gradient background
+• Build a pricing table with 3 tiers
+• Make a contact form with validation styles"
+    value={prompt}
+    onChange={(e) => setPrompt(e.target.value)}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        askAi();
+      }
+    }}
+    disabled={loading}
+  />
+  <div className="text-xs text-text-muted mt-1 px-1">
+    Press Ctrl/Cmd + Enter to send
+  </div>
+</div>
+*/
 
 const cleanAIResponse = (text: string): string => {
   if (!text) return "";
