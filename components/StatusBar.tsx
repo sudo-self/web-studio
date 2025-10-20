@@ -11,14 +11,14 @@ export default function StatusBar() {
 
       {/* Center Section */}
       <div className="font-semibold flex items-center gap-1 text-gray-400">
-        <span className="text-green-400">&#10085;</span>
+        Github <span className="text-green-400">&#10085;</span>
         <a
           href="https://ai.jessejesse.com"
           target="_blank"
           rel="noopener noreferrer"
           className="hover:text-white transition-colors"
         >
-          ai.JesseJesse.com
+         sudo-self
         </a>
       </div>
 
