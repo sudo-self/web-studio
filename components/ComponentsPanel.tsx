@@ -823,10 +823,12 @@ const askAi = async () => {
                 setResponse((prev) => prev + delta);
               }
             } catch {
+              // If not JSON, treat as plain text
               aiText += line.replace(/^data: /, "");
               setResponse((prev) => prev + line.replace(/^data: /, ""));
             }
           } else {
+            // Non-SSE streaming text
             aiText += line;
             setResponse((prev) => prev + line);
           }
@@ -834,10 +836,10 @@ const askAi = async () => {
       }
     }
 
-
+    // Clean AI output
     const cleanedText = cleanAIResponse(aiText);
 
-  
+    // Update chat history if needed
     if (mode === "chat") {
       setChatHistory([
         ...chatHistory,
@@ -848,9 +850,11 @@ const askAi = async () => {
 
     setResponse(cleanedText);
 
- 
-    if (cleanedText) {
+    // Insert only if there is real HTML content
+    if (cleanedText && cleanedText.trim() !== "") {
       onAiInsert(`\n<!-- AI Generated -->\n${cleanedText}\n`);
+    } else {
+      console.warn("AI returned empty content, nothing inserted.");
     }
 
   } catch (err) {
@@ -862,7 +866,9 @@ const askAi = async () => {
   }
 };
 
-
+// ------------------------
+// Clean AI response
+// ------------------------
 const cleanAIResponse = (text: string): string => {
   let cleaned = text
     .replace(/```(?:html|js|css)?/gi, "")
@@ -878,6 +884,9 @@ const cleanAIResponse = (text: string): string => {
   return cleaned;
 };
 
+// ------------------------
+// Check if string contains HTML
+// ------------------------
 const containsHTML = (text: string): boolean => /<[^>]+>/.test(text);
 
 
