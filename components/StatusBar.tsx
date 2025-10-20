@@ -11,12 +11,12 @@ export default function StatusBar() {
 
       {/* Center Section */}
       <div className="font-semibold flex items-center gap-1 text-gray-400">
-        Github <span className="text-green-400">&#10085;</span>
+        GITHUB <span className="text-green-400">&#10085;</span>
         <a
           href="https://ai.jessejesse.com"
           target="_blank"
           rel="noopener noreferrer"
-          className="hover:text-white transition-colors"
+          className="text-green-400 hover:text-pink-400 transition-colors"
         >
          sudo-self
         </a>
@@ -24,7 +24,7 @@ export default function StatusBar() {
 
       {/* Right Section */}
       <div className="flex items-center gap-1">
-        <span className="font-semibold">Gemini</span>
+        <span className="font-semibold">GEMINI</span>
         <span className="text-green-400">2.0</span>
       </div>
     </div>
