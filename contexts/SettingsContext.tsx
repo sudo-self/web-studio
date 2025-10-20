@@ -4,14 +4,13 @@ import React, { createContext, useContext } from "react";
 
 interface SettingsContextType {
   askAI: (prompt: string) => Promise<string>;
-  // Optional: include endpoint if you want
   aiEndpoint?: string;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
-  const aiEndpoint = "/api/ask-ai"; // Optional, for reference
+  const aiEndpoint = "/api"; 
 
   const askAI = async (prompt: string) => {
     try {
@@ -22,6 +21,11 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         },
         body: JSON.stringify({ prompt }),
       });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Server responded with ${response.status}: ${errorText}`);
+      }
 
       const data = await response.json();
       return data.text || "No response";
@@ -45,6 +49,7 @@ export function useSettings() {
   }
   return context;
 }
+
 
 
 
