@@ -1119,7 +1119,7 @@ return (
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
               <Bot size={18} style={{ color: "var(--accent-color)" }} />
-              <h3>AI Assistant</h3>
+              <h3>DeepSeek V3.1</h3>
             </div>
             <div className="text-xs text-text-muted bg-component-bg px-2 py-1 rounded">
               {settings.aiEndpoint.replace('http://', '')}
