@@ -1,3 +1,4 @@
+// --- contexts/SettingsContext.tsx ---
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode } from "react";
@@ -33,7 +34,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
 
       const response = await fetch(settings.aiEndpoint, {
         method: "POST",
@@ -49,11 +50,6 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("AI API error:", {
-          status: response.status,
-          statusText: response.statusText,
-          error: errorText
-        });
         throw new Error(`AI API error: ${response.status} - ${errorText}`);
       }
 
@@ -72,7 +68,6 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
 
           const chunk = decoder.decode(value, { stream: true });
           
-          // Handle DeepSeek streaming format (Server-Sent Events)
           const lines = chunk.split('\n').filter(Boolean);
           for (const line of lines) {
             if (line.startsWith('data: ')) {
@@ -81,7 +76,6 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
 
               try {
                 const parsed = JSON.parse(jsonStr);
-                // DeepSeek format: parsed.choices[0].delta.content
                 const delta = parsed.choices?.[0]?.delta?.content;
                 if (delta) {
                   aiText += delta;
@@ -91,7 +85,6 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
                 console.warn("Failed to parse DeepSeek SSE chunk:", line, e);
               }
             } else if (line.trim() && !line.startsWith('data: ')) {
-              // Handle non-SSE format (direct text streaming)
               aiText += line;
               if (onChunk) onChunk(line);
             }
@@ -101,7 +94,6 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
         reader.releaseLock();
       }
 
-      // Clean the response
       const cleanedText = cleanAIResponse(aiText);
       return cleanedText || "No response from AI";
 
@@ -116,7 +108,6 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Helper function to clean AI response
   const cleanAIResponse = (text: string): string => {
     if (!text) return "";
     
@@ -126,9 +117,7 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       .replace(/^`|`$/g, '')
       .trim();
 
-    // If it looks like HTML, ensure it's properly formatted
     if (cleaned.includes('<') && cleaned.includes('>')) {
-      // Remove any leading text before the first HTML tag
       const firstTagIndex = cleaned.indexOf('<');
       if (firstTagIndex > 0) {
         cleaned = cleaned.substring(firstTagIndex);
