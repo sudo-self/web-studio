@@ -4,12 +4,12 @@ const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
 interface OpenRouterResponse {
   choices?: { message?: { content?: string } }[];
+  output_text?: string;
 }
 
 export async function POST(req: NextRequest) {
   try {
     const { prompt } = await req.json();
-
     if (!prompt?.trim()) {
       return NextResponse.json({ text: "No prompt provided." }, { status: 400 });
     }
@@ -32,15 +32,15 @@ export async function POST(req: NextRequest) {
     }
 
     const data: OpenRouterResponse = await res.json();
-    const aiText = data.choices?.[0]?.message?.content ?? "No response from AI";
+    const aiText = data.choices?.[0]?.message?.content ?? data.output_text ?? "No response from AI";
 
     return NextResponse.json({ text: aiText });
-
   } catch (err) {
     console.error("API route failed:", err);
     return NextResponse.json({ text: "Server error contacting AI." }, { status: 500 });
   }
 }
+
 
 
 
