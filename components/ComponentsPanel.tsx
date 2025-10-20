@@ -608,13 +608,13 @@ const components: { [key: string]: ComponentInfo } = {
 };
 
 const componentCategories: ComponentCategories = {
-  "Layout": ["header","hero","about","services","contact","footer","sidebar"],
-  "Navigation": ["navbar","breadcrumb"],
-  "Content": ["card","gallery","team","testimonials","stats","timeline","faq"],
-  "Forms": ["contact","login-form","newsletter"],
-  "UI Components": ["modal","progress","pricing"],
-  "SEO": ["seo","seo-schema"],
-  "Icons": ["social-icons","feature-icons","font-icons"]
+  "Layout": ["header", "hero", "about", "services", "contact", "footer", "sidebar"],
+  "Navigation": ["navbar", "breadcrumb"],
+  "Content": ["card", "gallery", "team", "testimonials", "stats", "timeline", "faq"],
+  "Forms": ["contact", "login-form", "newsletter"],
+  "UI Components": ["modal", "progress", "pricing"],
+  "SEO": ["seo", "seo-schema"],
+  "Icons": ["social-icons", "feature-icons", "font-icons"]
 };
 
 const getComponentIcon = (componentKey: string): ReactElement => {
@@ -655,7 +655,14 @@ const generateHtml = (bodyContent: string) => `
     <head>
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin:0;padding:0;min-height:100vh;background:#fff;line-height:1.6; }
+        body { 
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+          margin: 0; 
+          padding: 0; 
+          min-height: 100vh; 
+          background: #ffffff;
+          line-height: 1.6;
+        }
         * { box-sizing: border-box; }
       </style>
     </head>
@@ -680,24 +687,41 @@ export default function ComponentsPanel({
   const [previewComponent, setPreviewComponent] = useState<string | null>(null);
   const [recentComponents, setRecentComponents] = useState<string[]>([]);
 
+  // Load favorites and recent components from localStorage
   useEffect(() => {
+    // Only run on client side
     if (typeof window === 'undefined') return;
+
     try {
       const savedFavorites = localStorage.getItem('component-favorites');
-      if (savedFavorites) setFavorites(new Set(JSON.parse(savedFavorites)));
+      if (savedFavorites) {
+        setFavorites(new Set(JSON.parse(savedFavorites)));
+      }
+
       const savedRecent = localStorage.getItem('recent-components');
-      if (savedRecent) setRecentComponents(JSON.parse(savedRecent));
-    } catch (e) { console.error(e); }
+      if (savedRecent) {
+        setRecentComponents(JSON.parse(savedRecent));
+      }
+    } catch (e) {
+      console.error('Failed to load data from localStorage:', e);
+    }
   }, []);
 
+  // Save favorites to localStorage
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    try { localStorage.setItem('component-favorites', JSON.stringify(Array.from(favorites))); } 
-    catch (e) { console.error(e); }
+    
+    try {
+      localStorage.setItem('component-favorites', JSON.stringify(Array.from(favorites)));
+    } catch (e) {
+      console.error('Failed to save favorites:', e);
+    }
   }, [favorites]);
 
+  // Filter components based on search
   const filteredComponents = useMemo(() => {
     if (!searchTerm) return componentCategories;
+    
     const filtered: ComponentCategories = {};
     Object.entries(componentCategories).forEach(([category, comps]) => {
       const filteredComps = comps.filter(compKey => {
@@ -708,7 +732,9 @@ export default function ComponentsPanel({
           comp.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
         );
       });
-      if (filteredComps.length > 0) filtered[category] = filteredComps;
+      if (filteredComps.length > 0) {
+        filtered[category] = filteredComps;
+      }
     });
     return filtered;
   }, [searchTerm]);
@@ -717,8 +743,11 @@ export default function ComponentsPanel({
     e.stopPropagation();
     setFavorites(prev => {
       const newFavorites = new Set(prev);
-      if (newFavorites.has(componentKey)) newFavorites.delete(componentKey);
-      else newFavorites.add(componentKey);
+      if (newFavorites.has(componentKey)) {
+        newFavorites.delete(componentKey);
+      } else {
+        newFavorites.add(componentKey);
+      }
       return newFavorites;
     });
   };
@@ -727,13 +756,20 @@ export default function ComponentsPanel({
     const component = components[componentKey];
     if (!component) return;
 
+    // Add to recent components (limit to 10)
     setRecentComponents(prev => {
       const filtered = prev.filter(key => key !== componentKey);
       const updated = [componentKey, ...filtered].slice(0, 10);
+      
+      // Save to localStorage
       if (typeof window !== 'undefined') {
-        try { localStorage.setItem('recent-components', JSON.stringify(updated)); } 
-        catch (e) { console.error(e); }
+        try {
+          localStorage.setItem('recent-components', JSON.stringify(updated));
+        } catch (e) {
+          console.error('Failed to save recent components:', e);
+        }
       }
+      
       return updated;
     });
 
@@ -741,80 +777,479 @@ export default function ComponentsPanel({
   };
 
   const askAi = async () => {
-    if (!prompt.trim()) return;
-    setLoading(true);
-    setResponse("Connecting to AI...");
+  if (!prompt.trim()) return;
+  setLoading(true);
+  setResponse("Connecting to GPT-OSS-20B via Cloudflare tunnel...");
 
-    try {
-      let aiText = "";
+  try {
+    let aiText = "";
+    const baseUrl = settings.aiEndpoint;
 
-      if (mode === "response") {
-        const res = await fetch("/api/route", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            prompt: `Generate clean, ready-to-use HTML/CSS/JS code for: ${prompt}. Return only code. No explanations, comments, or extra text.`,
-          }),
-        });
+    console.log(`Making AI request to: ${baseUrl} with model: openai/gpt-oss-20b`);
 
-        if (!res.ok) throw new Error(`Server responded with ${res.status}`);
-        const data = await res.json();
-        aiText = data.text || "";
+    // Use your specific model
+    const modelToUse = "openai/gpt-oss-20b";
+
+    if (mode === "response") {
+      const res = await fetch(`${baseUrl}/v1/chat/completions`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          model: modelToUse,
+          messages: [
+            {
+              role: "system",
+              content: "You are a professional web development assistant. Return only HTML/CSS/JS code. Do not include explanations, instructions, or markdown wrappers."
+            },
+            {
+              role: "user",
+              content: `Generate clean, ready-to-use HTML/CSS/JS code for: ${prompt}. Return only code. No explanations, comments, or extra text. Do not output markdown instructions.`
+            }
+          ],
+          max_tokens: 1000,
+          temperature: 0.7,
+          stream: false
+        }),
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Server responded with ${res.status}: ${errorText}`);
       }
+      
+      const data = await res.json();
+      aiText = data.choices?.[0]?.message?.content || "";
+      
+    } else {
+      // Chat mode
+      const updatedHistory = [...chatHistory, { role: "user" as ChatRole, content: prompt }];
+      const res = await fetch(`${baseUrl}/v1/chat/completions`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          model: modelToUse,
+          messages: [
+            {
+              role: "system",
+              content: "You are a professional web development assistant. Return only HTML/CSS/JS code. Do not include explanations, instructions, or markdown wrappers."
+            },
+            ...updatedHistory
+          ],
+          max_tokens: 1000,
+          temperature: 0.7,
+          stream: false
+        }),
+      });
 
-      setResponse(aiText);
-      setLoading(false);
-    } catch (e: any) {
-      console.error(e);
-      setResponse("Failed to connect to AI.");
-      setLoading(false);
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Server responded with ${res.status}: ${errorText}`);
+      }
+      
+      const data = await res.json();
+      aiText = data.choices?.[0]?.message?.content || "";
+      setChatHistory([...updatedHistory, { role: "assistant" as ChatRole, content: aiText }]);
     }
-  };
 
-  return (
-    <div className="components-panel">
-      <div className="search-bar">
-        <input 
-          type="text" 
-          placeholder="Search components..." 
-          value={searchTerm} 
-          onChange={e => setSearchTerm(e.target.value)} 
-        />
+    // Strip code block formatting
+    const cleanedText = aiText
+      .replace(/^```(?:html|js|css)?\s*/i, "")
+      .replace(/\s*```$/i, "")
+      .trim();
+
+    setResponse(cleanedText || "AI responded with empty content. Please try again.");
+
+    if (cleanedText) {
+      onAiInsert(`\n<!-- AI Generated by GPT-OSS-20B -->\n${cleanedText}\n`);
+    }
+  } catch (err) {
+    console.error('AI request failed:', err);
+    const errorMessage = err instanceof Error 
+      ? err.message 
+      : `Error connecting to AI server at ${settings.aiEndpoint}.`;
+    setResponse(errorMessage);
+  } finally {
+    setLoading(false);
+    setPrompt("");
+  }
+};
+return (
+  <div className="flex flex-col h-full overflow-hidden relative">
+    {/* Resize Handle on the right side */}
+    {onResizeStart && (
+      <div
+        className="absolute -right-2 top-0 bottom-0 w-4 cursor-col-resize z-20 hover:bg-accent-color hover:bg-opacity-50 transition-colors"
+        onMouseDown={onResizeStart}
+      />
+    )}
+
+    {/* Compact Header */}
+    <div className="!p-2 border-b border-panel-border">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1 text-xs font-medium text-text-secondary">
+          <SquareStack size={12} />
+          <span>Components</span>
+        </div>
+        
+        <div className="flex items-center gap-1">
+          {/* Search Toggle */}
+          <button
+            onClick={() => setSearchTerm(searchTerm ? '' : ' ')}
+            className="!p-1.5 hover:bg-component-hover rounded transition-colors"
+            title="Search"
+          >
+            <Search size={12} />
+          </button>
+          
+          {/* Settings */}
+          <button
+            onClick={onOpenSettings}
+            className="!p-1.5 hover:bg-component-hover rounded transition-colors"
+            title="Settings"
+          >
+            <Settings size={12} />
+          </button>
+        </div>
       </div>
-      <div className="categories">
-        {Object.entries(filteredComponents).map(([category, comps]) => (
-          <div key={category} className="category">
-            <h3>{category}</h3>
-            <div className="components">
-              {comps.map(compKey => (
-                <div 
-                  key={compKey} 
-                  className="component-card" 
-                  onClick={() => handleInsert(compKey)}
+      
+      {/* Search Bar - Appears only when search is active */}
+      {searchTerm !== '' && (
+        <div className="mt-2 relative">
+          <input
+            type="text"
+            placeholder="Type to search components..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-2 pr-6 py-1 bg-component-bg border border-panel-border rounded text-xs focus:outline-none focus:border-accent-color text-foreground"
+            autoFocus
+          />
+          <button
+            onClick={() => setSearchTerm('')}
+            className="absolute right-1 top-1/2 transform -translate-y-1/2 text-text-muted hover:text-foreground text-xs"
+          >
+            ×
+          </button>
+        </div>
+      )}
+    </div>
+      
+      {/* Components List */}
+      <div className="flex-1 overflow-auto min-h-0">
+        <div className="components-list">
+          {/* Recently Used Section */}
+          {recentComponents.length > 0 && (
+            <div className="component-category">
+              <div className="category-title flex items-center gap-2">
+                <Clock size={14} />
+                Recently Used ({recentComponents.length})
+              </div>
+              {recentComponents.map((key) => (
+                <div
+                  key={key}
+                  className="component-item group"
+                  onClick={() => handleInsert(key)}
                 >
-                  {getComponentIcon(compKey)}
-                  <span>{compKey}</span>
-                  <button onClick={(e) => toggleFavorite(compKey, e)}>
-                    {favorites.has(compKey) ? <Star size={16} /> : <StarOff size={16} />}
-                  </button>
+                  <div className="component-icon">
+                    {getComponentIcon(key)}
+                  </div>
+                  <span className="component-name flex-1">
+                    {key.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ")}
+                  </span>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPreviewComponent(key);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Preview component"
+                    >
+                      <Eye size={14} className="text-text-muted hover:text-foreground" />
+                    </button>
+                    <button
+                      onClick={(e) => toggleFavorite(key, e)}
+                      className={`transition-opacity ${
+                        favorites.has(key) ? "opacity-100 text-yellow-500" : "opacity-0 group-hover:opacity-100 text-text-muted"
+                      }`}
+                      title={favorites.has(key) ? "Remove from favorites" : "Add to favorites"}
+                    >
+                      {favorites.has(key) ? (
+                        <Star size={14} className="fill-yellow-500" />
+                      ) : (
+                        <Star size={14} />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Favorites Section */}
+          {favorites.size > 0 && (
+            <div className="component-category">
+              <div className="category-title flex items-center gap-2">
+                <Star size={14} className="text-yellow-500" />
+                Favorites ({favorites.size})
+              </div>
+              {Array.from(favorites).map((key) => (
+                <div
+                  key={key}
+                  className="component-item group"
+                  onClick={() => handleInsert(key)}
+                >
+                  <div className="component-icon">
+                    {getComponentIcon(key)}
+                  </div>
+                  <span className="component-name flex-1">
+                    {key.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ")}
+                  </span>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPreviewComponent(key);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Preview component"
+                    >
+                      <Eye size={14} className="text-text-muted hover:text-foreground" />
+                    </button>
+                    <button
+                      onClick={(e) => toggleFavorite(key, e)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity text-yellow-500"
+                      title="Remove from favorites"
+                    >
+                      <StarOff size={14} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Regular Categories */}
+          {Object.entries(filteredComponents).map(([category, keys]) => (
+            <div key={category} className="component-category">
+              <div className="category-title">{category}</div>
+              {keys.map((key) => (
+                <div
+                  key={key}
+                  className="component-item group"
+                  onClick={() => handleInsert(key)}
+                >
+                  <div className="component-icon">
+                    {getComponentIcon(key)}
+                  </div>
+                  <span className="component-name flex-1">
+                    {key.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ")}
+                  </span>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPreviewComponent(key);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Preview component"
+                    >
+                      <Eye size={14} className="text-text-muted hover:text-foreground" />
+                    </button>
+                    <button
+                      onClick={(e) => toggleFavorite(key, e)}
+                      className={`transition-opacity ${
+                        favorites.has(key) ? "opacity-100 text-yellow-500" : "opacity-0 group-hover:opacity-100 text-text-muted"
+                      }`}
+                      title={favorites.has(key) ? "Remove from favorites" : "Add to favorites"}
+                    >
+                      {favorites.has(key) ? (
+                        <Star size={14} className="fill-yellow-500" />
+                      ) : (
+                        <Star size={14} />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
+
+          {/* No Results Message */}
+          {searchTerm && Object.keys(filteredComponents).length === 0 && (
+            <div className="text-center py-8 text-text-muted">
+              <Search size={32} className="mx-auto mb-2 opacity-50" />
+              <p>No components found for "{searchTerm}"</p>
+              <button
+                onClick={() => setSearchTerm("")}
+                className="btn btn-secondary btn-sm mt-2"
+              >
+                Clear Search
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Component Preview Modal */}
+      {previewComponent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-panel-bg rounded-lg p-4 max-w-4xl w-full mx-auto max-h-[90vh] flex flex-col">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-foreground">
+                Preview: {previewComponent.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ")}
+              </h3>
+              <button 
+                onClick={() => setPreviewComponent(null)}
+                className="text-text-muted hover:text-foreground"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <div className="flex-1 border rounded-lg overflow-hidden bg-white">
+              <iframe
+                srcDoc={generateHtml(components[previewComponent].code)}
+                className="w-full h-full min-h-[400px]"
+                title="Component Preview"
+              />
+            </div>
+            <div className="mt-4 flex gap-2">
+              <button
+                onClick={() => handleInsert(previewComponent)}
+                className="btn btn-primary flex-1"
+              >
+                Insert Component
+              </button>
+              <button
+                onClick={() => setPreviewComponent(null)}
+                className="btn btn-secondary"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Section Header with Endpoint Indicator */}
+      <div className="ai-section">
+        <div className="panel-header">
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-2">
+              <Bot size={18} style={{ color: "var(--accent-color)" }} />
+              <h3>AI Assistant</h3>
+            </div>
+            <div className="text-xs text-text-muted bg-component-bg px-2 py-1 rounded">
+              {settings.aiEndpoint.replace('http://', '')}
+            </div>
+          </div>
+        </div>
+
+        {/* Mode Toggle */}
+        <div className="mode-toggle">
+          <label className="mode-option">
+            <input
+              type="radio"
+              value="response"
+              checked={mode === "response"}
+              onChange={() => setMode("response")}
+            />
+            Stateless
+          </label>
+          <label className="mode-option">
+            <input
+              type="radio"
+              value="chat"
+              checked={mode === "chat"}
+              onChange={() => setMode("chat")}
+            />
+            Chat
+          </label>
+        </div>
+
+        {/* Prompt Input */}
+        <textarea
+          className="prompt-textarea"
+          placeholder="Ask AI to generate code..."
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) askAi();
+          }}
+        />
+
+        {/* Ask AI Button */}
+        <button
+          className="btn btn-accent"
+          onClick={askAi}
+          disabled={loading}
+        >
+          <Bot size={16} />
+          {loading ? "Asking AI..." : "Ask AI"}
+        </button>
+
+        {/* AI Response */}
+        {response && (
+          <div>
+            <div className="response-label">AI Response</div>
+            <div className="ai-response">
+              {response}
+            </div>
+          </div>
+        )}
+
+        {/* Chat History */}
+        {mode === "chat" && chatHistory.length > 0 && (
+          <div>
+            <div className="response-label">Chat History</div>
+            <div className="chat-history">
+              {chatHistory.map((msg, i) => (
+                <div key={i} className={`chat-message ${msg.role}`}>
+                  <div className={`message-role ${msg.role}`}>
+                    {msg.role.toUpperCase()}
+                  </div>
+                  <div>{msg.content}</div>
                 </div>
               ))}
             </div>
           </div>
-        ))}
-      </div>
-      <div className="ai-panel">
-        <textarea 
-          value={prompt} 
-          onChange={e => setPrompt(e.target.value)} 
-          placeholder="Ask AI to generate a component..." 
-        />
-        <button onClick={askAi} disabled={loading}>{loading ? "Loading..." : "Generate"}</button>
-        {response && <pre className="ai-response">{response}</pre>}
+        )}
       </div>
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
