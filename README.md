@@ -1,5 +1,5 @@
 # Web Studio
-
+[![Netlify Status](https://api.netlify.com/api/v1/badges/039e5ee7-573d-4103-81e1-5ea0af0b1eaa/deploy-status)](https://app.netlify.com/projects/ai-web-studio/deploys)<hr>
 A modern, open-source web development environment designed to streamline the creation of responsive websites using a visual interface.
 
 ---
