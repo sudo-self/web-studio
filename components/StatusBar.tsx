@@ -5,27 +5,27 @@ export default function StatusBar() {
     <div className="status-bar flex justify-between items-center px-4 py-2 text-sm bg-gray-900 text-gray-300 border-t border-gray-700 shadow-inner">
       {/* Left Section */}
       <div className="flex items-center gap-2">
-        <span className="font-semibold">AI Website Builder</span>
-        <span className="text-green-400">v1.0</span>
+        <span className="font-semibold">AI Web Studio</span>
+        <span className="text-green-400">netlify.app</span>
       </div>
 
       {/* Center Section */}
-      <div className="flex items-center gap-1 text-gray-400">
+      <div className="font-semibold flex items-center gap-1 text-gray-400">
         <span className="text-green-400">&#10085;</span>
         <a
-          href="https://jessejesse.com"
+          href="https://ai.jessejesse.com"
           target="_blank"
           rel="noopener noreferrer"
           className="hover:text-white transition-colors"
         >
-          JesseJesse.com
+          ai.JesseJesse.com
         </a>
       </div>
 
       {/* Right Section */}
       <div className="flex items-center gap-1">
-        <span className="font-medium">Editor:</span>
-        <span className="text-green-400">Ready</span>
+        <span className="font-semibold">Gemini</span>
+        <span className="text-green-400">2.0</span>
       </div>
     </div>
   );
