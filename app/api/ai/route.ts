@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { ApiRequestBody, ApiResponse, ChatMessage } from "@/types";
 
 const GEMINI_API_KEY = process.env.GOOGLE_AI_API_KEY;
-const GEMINI_MODEL = "gemini-2.0-flash"; // Gemini 2.0 Flash model
-const API_VERSION = "v1beta"; // v1beta for Gemini 2.0
+const GEMINI_MODEL = "gemini-2.0-flash"; 
+const API_VERSION = "v1beta"; 
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     console.log("Prompt:", prompt);
     console.log("Mode:", mode);
 
-    // Validation
+
     if (!prompt) {
       return NextResponse.json(
         { text: "Please provide a prompt" } as ApiResponse,
@@ -31,11 +31,11 @@ export async function POST(req: NextRequest) {
       } as ApiResponse);
     }
 
-    // Build enhanced prompt
+ 
     const fullPrompt = buildPrompt(prompt, mode, chatHistory);
     console.log("Full prompt length:", fullPrompt.length);
 
-    // Call Gemini 2.0 Flash API
+
     const apiUrl = `https://generativelanguage.googleapis.com/${API_VERSION}/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
     
     console.log("Using Gemini 2.0 Flash model");
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
         contents: [{ parts: [{ text: fullPrompt }] }],
         generationConfig: {
           temperature: 0.7,
-          maxOutputTokens: 8192, // Gemini 2.0 supports more tokens
+          maxOutputTokens: 8192, 
           topP: 0.95,
           topK: 40,
         },
@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
 
     const data = await apiResponse.json();
     
-    // Extract response with better error handling
+
     const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
     
     if (!rawText) {
@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
 
     console.log("Raw response length:", rawText.length);
     
-    // Clean and validate response
+ 
     const cleaned = cleanAIResponse(rawText);
     
     if (!cleaned.trim()) {
@@ -124,7 +124,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// Enhanced prompt builder
+
 function buildPrompt(prompt: string, mode: string, chatHistory: ChatMessage[]): string {
   const systemPrompt = `You are an expert web developer specializing in creating clean, modern, responsive HTML components with inline CSS.
 
@@ -174,37 +174,37 @@ USER REQUEST: ${prompt}
 Generate the HTML component now:`;
 }
 
-// Improved response cleaning
+
 function cleanAIResponse(text: string): string {
   if (!text) return "";
   
   let cleaned = text.trim();
   
-  // Remove markdown code blocks
+
   cleaned = cleaned.replace(/^```(?:html|css|js|javascript)?\s*\n?/gi, '');
   cleaned = cleaned.replace(/\n?\s*```$/g, '');
   cleaned = cleaned.replace(/```/g, '');
   
-  // Remove inline code markers
+
   cleaned = cleaned.replace(/^`+|`+$/g, '');
   
-  // If response starts with explanation text before HTML, try to extract HTML
+ 
   const htmlMatch = cleaned.match(/<!DOCTYPE html>|<html|<div|<section|<header|<nav|<main|<article|<footer/i);
   if (htmlMatch && htmlMatch.index && htmlMatch.index > 50) {
-    // There's likely explanation text before the HTML
+
     cleaned = cleaned.substring(htmlMatch.index);
   }
   
-  // Check if we have valid HTML
+
   if (!containsHTML(cleaned)) {
-    // If no HTML tags, wrap in a styled div
+
     return `<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; border-radius: 10px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
   <h2 style="margin-bottom: 1rem;">AI Response</h2>
   <p style="line-height: 1.6; white-space: pre-wrap;">${escapeHtml(cleaned)}</p>
 </div>`;
   }
   
-  // Remove trailing explanations after HTML
+
   const lastHtmlTag = Math.max(
     cleaned.lastIndexOf('</html>'),
     cleaned.lastIndexOf('</div>'),
@@ -215,7 +215,7 @@ function cleanAIResponse(text: string): string {
   if (lastHtmlTag > 0 && lastHtmlTag < cleaned.length - 1) {
     const afterHtml = cleaned.substring(lastHtmlTag + 10).trim();
     if (afterHtml.length > 0 && !containsHTML(afterHtml)) {
-      // Remove explanation text after HTML
+  
       cleaned = cleaned.substring(0, lastHtmlTag + 10);
     }
   }
@@ -223,7 +223,7 @@ function cleanAIResponse(text: string): string {
   return cleaned.trim();
 }
 
-// Helper functions
+
 function containsHTML(text: string): boolean {
   return /<[^>]+>/g.test(text);
 }
