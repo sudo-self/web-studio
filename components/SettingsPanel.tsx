@@ -13,11 +13,20 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
   const { askAI } = useSettings();
   const [testing, setTesting] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'unknown'>('unknown');
+  const [liveResponse, setLiveResponse] = useState(''); // For streaming text
 
   const handleTestConnection = async () => {
     setTesting(true);
+    setConnectionStatus('unknown');
+    setLiveResponse('');
+
     try {
-      const response = await askAI("Test connection");
+      // Provide a callback to askAI for live streaming
+      const response = await askAI("Test connection", (chunk) => {
+        setLiveResponse((prev) => prev + chunk);
+      });
+
+      // Decide connection status based on final response
       if (response && response !== "Error contacting AI") {
         setConnectionStatus('connected');
       } else {
@@ -55,12 +64,21 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             connectionStatus === 'disconnected' ? 'text-red-700' : 
             'text-yellow-700'
           }`}>
-            {connectionStatus === 'connected' ? <Wifi size={16} /> : connectionStatus === 'disconnected' ? <WifiOff size={16} /> : <Wifi size={16} />}
+            {connectionStatus === 'connected' ? <Wifi size={16} /> 
+              : connectionStatus === 'disconnected' ? <WifiOff size={16} /> 
+              : <Wifi size={16} />}
             <span>
               {connectionStatus === 'connected' ? 'Connected to OpenRouter' :
-               connectionStatus === 'disconnected' ? 'Connection Failed' : 'Unknown'}
+               connectionStatus === 'disconnected' ? 'Connection Failed' : 'Testing...'}
             </span>
           </div>
+
+          {/* Live AI Response */}
+          {liveResponse && (
+            <div className="text-xs p-2 border rounded border-panel-border bg-component-bg h-20 overflow-auto whitespace-pre-wrap">
+              {liveResponse}
+            </div>
+          )}
 
           {/* Test Button */}
           <div className="flex gap-2">
@@ -87,6 +105,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
     </div>
   );
 }
+
 
 
 
