@@ -1,4 +1,5 @@
 // types/index.ts
+
 export type AiMode = "response" | "chat";
 export type ChatRole = "user" | "assistant";
 
@@ -29,6 +30,7 @@ export interface Settings {
 }
 
 export interface AiResponse {
+  text?: string;
   output_text?: string;
   output?: Array<{
     content?: Array<{
@@ -39,5 +41,42 @@ export interface AiResponse {
     message?: {
       content?: string;
     };
+    text?: string;
   }>;
+  candidates?: Array<{
+    content?: {
+      parts?: Array<{
+        text?: string;
+    }>;
+    };
+  }>;
+}
+
+
+export interface ApiRequestBody {
+  prompt?: string;
+  mode?: AiMode;
+  chatHistory?: ChatMessage[];
+}
+
+export interface ApiResponse {
+  text: string;
+  error?: string;
+}
+
+
+export interface GeminiContentPart {
+  text: string;
+}
+
+export interface GeminiContent {
+  parts: GeminiContentPart[];
+}
+
+export interface GeminiCandidate {
+  content: GeminiContent;
+}
+
+export interface GeminiResponse {
+  candidates: GeminiCandidate[];
 }
