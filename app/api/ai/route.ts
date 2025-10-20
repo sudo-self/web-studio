@@ -1,3 +1,5 @@
+// --- app/api/ai/route.ts ---
+
 import { NextRequest, NextResponse } from "next/server";
 
 const GEMINI_API_KEY = process.env.GOOGLE_AI_API_KEY;
@@ -6,12 +8,41 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const prompt = body?.prompt?.trim() || "";
+    const mode = body?.mode || "response";
+    const chatHistory = body?.chatHistory || [];
 
-    if (!prompt) return NextResponse.json({ text: "" }, { status: 400 });
+    console.log("Received AI request:", { prompt, mode, chatHistoryLength: chatHistory.length });
+
+    if (!prompt) {
+      return NextResponse.json({ text: "Please provide a prompt" }, { status: 400 });
+    }
 
     if (!GEMINI_API_KEY) {
-      console.warn("No Gemini API key - returning empty string");
-      return NextResponse.json({ text: "" });
+      console.warn("No Gemini API key - using fallback");
+      const fallback = generateFallbackComponent(prompt);
+      return NextResponse.json({ text: fallback });
+    }
+
+  
+    let fullPrompt = `As a senior front-end developer, create clean, responsive HTML with inline CSS.
+
+REQUIREMENTS:
+- Return ONLY the HTML code with inline styles
+- No markdown, no backticks, no explanations
+- Make it mobile-friendly and accessible
+- Use semantic HTML5 elements
+- Include proper ARIA labels where needed
+- Ensure responsive design
+
+Create this component: ${prompt}`;
+
+  
+    if (mode === "chat" && chatHistory.length > 0) {
+      const recentHistory = chatHistory.slice(-4);
+      const historyContext = recentHistory.map(msg => 
+        `${msg.role}: ${msg.content}`
+      ).join('\n');
+      fullPrompt = `Chat history:\n${historyContext}\n\nCurrent request: ${prompt}\n\nResponse:`;
     }
 
     const response = await fetch(
@@ -22,54 +53,74 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({
           contents: [
             {
-              parts: [
-                {
-                  text: `
-You are a senior front-end developer.
-Return ONLY a single valid HTML block with inline CSS.
-No markdown, backticks, comments, or extra text.
-Make it semantic, responsive, mobile-friendly.
-Generate this component: ${prompt}
-                `
-                }
-              ]
+              parts: [{ text: fullPrompt }]
             }
           ],
-          generationConfig: { temperature: 0.7, maxOutputTokens: 2000 },
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 2000,
+          }
         }),
       }
     );
 
     if (!response.ok) {
-      console.error("Gemini API error:", await response.text());
-      return NextResponse.json({ text: "" });
+      const errorData = await response.text();
+      console.error("Gemini API error:", response.status, errorData);
+      const fallback = generateFallbackComponent(prompt);
+      return NextResponse.json({ text: fallback });
     }
 
     const data = await response.json();
-    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
+    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    
+    console.log("Gemini raw response:", rawText.substring(0, 200) + "...");
 
-    const cleaned = cleanAIResponse(raw);
+    if (!rawText.trim()) {
+      throw new Error("Empty response from Gemini");
+    }
 
+    const cleaned = cleanAIResponse(rawText);
+    
     return NextResponse.json({ text: cleaned });
+
   } catch (err) {
-    console.error("API error:", err);
-    return NextResponse.json({ text: "" });
+    console.error("API route error:", err);
+    const fallback = generateFallbackComponent("Error fallback component");
+    return NextResponse.json({ text: fallback });
   }
 }
 
 function cleanAIResponse(text: string): string {
+  if (!text) return "";
+  
   let cleaned = text
-    .replace(/```(?:html|css|js)?/gi, "")
-    .replace(/```/g, "")
-    .replace(/`/g, "")
+    .replace(/^```(?:html|css|js)?\s*/gi, '')
+    .replace(/\s*```$/gi, '')
+    .replace(/```/g, '')
+    .replace(/^`|`$/g, '')
     .trim();
 
-  if (cleaned.includes("<") && cleaned.includes(">")) {
-    const firstTagIndex = cleaned.indexOf("<");
-    if (firstTagIndex > 0) cleaned = cleaned.substring(firstTagIndex);
+
+  if (cleaned.includes('<') && cleaned.includes('>')) {
+    const firstTagIndex = cleaned.indexOf('<');
+    if (firstTagIndex > 0) {
+      cleaned = cleaned.substring(firstTagIndex);
+    }
   }
 
-  return cleaned;
+  return cleaned || generateFallbackComponent("Cleaned component");
+}
+
+function generateFallbackComponent(prompt: string): string {
+  return `<!-- AI Generated: ${prompt} -->
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 3rem 2rem; text-align: center; border-radius: 12px; margin: 1rem 0;">
+  <h2 style="margin-bottom: 1rem; font-size: 2rem;">${prompt}</h2>
+  <p style="margin-bottom: 2rem; opacity: 0.9;">Beautiful, responsive component</p>
+  <button style="background: white; color: #667eea; border: none; padding: 12px 30px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: transform 0.2s;">
+    Get Started
+  </button>
+</div>`;
 }
 
 
