@@ -778,12 +778,12 @@ export default function ComponentsPanel({
   
 const askAi = async () => {
   if (!prompt.trim()) return;
+
   setLoading(true);
   setResponse("");
 
   try {
-    // Send prompt to your AI API
-    const res = await fetch(`${settings.aiEndpoint}`, {
+    const res = await fetch(settings.aiEndpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ prompt, mode }),
@@ -794,9 +794,10 @@ const askAi = async () => {
       throw new Error(`Server responded with ${res.status}: ${errorText}`);
     }
 
-    // Parse JSON response
     const data = await res.json();
-    const cleanedText = data?.text?.trim() || "";
+    
+  
+    const cleanedText = (data.text || data.choices?.[0]?.text || "").trim();
 
     if (!cleanedText) {
       console.warn("AI returned empty content, nothing inserted.");
@@ -804,16 +805,12 @@ const askAi = async () => {
       return;
     }
 
-    // Update state
     setResponse(cleanedText);
-
-    // Insert AI HTML into editor
     onAiInsert(`\n<!-- AI Generated -->\n${cleanedText}\n`);
 
-    // Update chat history if using chat mode
     if (mode === "chat") {
-      setChatHistory([
-        ...chatHistory,
+      setChatHistory(prev => [
+        ...prev,
         { role: "user", content: prompt },
         { role: "assistant", content: cleanedText }
       ]);
@@ -827,6 +824,7 @@ const askAi = async () => {
     setPrompt("");
   }
 };
+
 
 
 
