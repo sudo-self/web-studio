@@ -775,7 +775,6 @@ export default function ComponentsPanel({
 
     onInsert(component.code);
   };
-
 const askAi = async () => {
   if (!prompt.trim()) return;
   setLoading(true);
@@ -820,16 +819,37 @@ const askAi = async () => {
     let aiText = "";
 
     if (reader) {
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value);
-        aiText += chunk;
-        setResponse((prev) => prev + chunk); // update UI incrementally
+      let done = false;
+      while (!done) {
+        const { value, done: readerDone } = await reader.read();
+        done = readerDone;
+        if (value) {
+          const chunk = decoder.decode(value, { stream: true });
+          
+          // OpenRouter/Streamed JSON events may come with "data: ..." lines
+          const lines = chunk.split("\n").filter(Boolean);
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              const jsonStr = line.replace(/^data: /, "");
+              if (jsonStr === "[DONE]") continue;
+
+              try {
+                const parsed = JSON.parse(jsonStr);
+                const delta = parsed.choices?.[0]?.delta?.content || parsed.choices?.[0]?.message?.content;
+                if (delta) {
+                  aiText += delta;
+                  setResponse((prev) => prev + delta); // live update
+                }
+              } catch (e) {
+                console.warn("Failed to parse chunk:", line, e);
+              }
+            }
+          }
+        }
       }
     }
 
-    // Clean up code blocks
+    // Clean code block wrappers
     const cleanedText = aiText.replace(/^```(?:html|js|css)?\s*/i, "")
                               .replace(/\s*```$/i, "")
                               .trim();
@@ -844,6 +864,7 @@ const askAi = async () => {
 
     setResponse(cleanedText);
     if (cleanedText) onAiInsert(`\n<!-- AI Generated -->\n${cleanedText}\n`);
+
   } catch (err) {
     console.error("AI streaming failed:", err);
     setResponse("Error contacting AI server.");
@@ -852,6 +873,7 @@ const askAi = async () => {
     setPrompt("");
   }
 };
+
 
 return (
   <div className="flex flex-col h-full overflow-hidden relative">
