@@ -2,17 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
-interface OpenRouterResponse {
-  choices?: { message?: { content?: string } }[];
-  output_text?: string;
-}
-
 export async function POST(req: NextRequest) {
   try {
-    const { prompt } = await req.json();
-    if (!prompt?.trim()) {
-      return NextResponse.json({ text: "No prompt provided." }, { status: 400 });
-    }
+    const { prompt, mode, chatHistory } = await req.json();
+
+    if (!prompt?.trim()) return NextResponse.json({ text: "No prompt provided" }, { status: 400 });
 
     const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -22,7 +16,17 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         model: "deepseek/deepseek-chat-v3.1:free",
-        messages: [{ role: "user", content: prompt }]
+        messages: [
+          {
+            role: "system",
+            content: "You are a professional web development assistant. Return only HTML/CSS/JS code. No explanations."
+          },
+          ...(mode === "chat" ? chatHistory : []),
+          { role: "user", content: prompt }
+        ],
+        max_tokens: 1000,
+        temperature: 0.7,
+        stream: true
       })
     });
 
@@ -31,16 +35,29 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ text: `OpenRouter API error: ${errorText}` }, { status: res.status });
     }
 
-    const data: OpenRouterResponse = await res.json();
-    const aiText = data.choices?.[0]?.message?.content ?? data.output_text ?? "No response from AI";
+    // Stream response back to client
+    const reader = res.body?.getReader();
+    const stream = new ReadableStream({
+      async start(controller) {
+        const decoder = new TextDecoder("utf-8");
+        while (true) {
+          const { value, done } = await reader!.read();
+          if (done) break;
+          const chunk = decoder.decode(value);
+          controller.enqueue(chunk);
+        }
+        controller.close();
+      }
+    });
 
-    return NextResponse.json({ text: aiText });
+    return new Response(stream, {
+      headers: { "Content-Type": "text/event-stream" }
+    });
+
   } catch (err) {
-    console.error("API route failed:", err);
-    return NextResponse.json({ text: "Server error contacting AI." }, { status: 500 });
+    console.error("API error:", err);
+    return NextResponse.json({ text: "Server error contacting AI" }, { status: 500 });
   }
 }
-
-
 
 
