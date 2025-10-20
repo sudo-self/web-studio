@@ -58,6 +58,8 @@ interface ChatMessage {
   content: string;
 }
 
+const [isRequesting, setIsRequesting] = useState(false);
+
 const components: { [key: string]: ComponentInfo } = {
   header: {
     code: `<!-- Header Component -->
@@ -775,27 +777,42 @@ export default function ComponentsPanel({
 
     onInsert(component.code);
   };
-  
-// Replace the askAi function in ComponentsPanel.tsx with this improved version:
 
+  // ============================================
+// STEP 1: Add this state at the top with your other useState declarations
+// ============================================
+const [isRequesting, setIsRequesting] = useState(false);
+
+
+// ============================================
+// STEP 2: Replace your entire askAi function with this
+// ============================================
 const askAi = async () => {
   if (!prompt.trim()) {
-    setResponse("Please enter a prompt");
+    setResponse("⚠️ Please enter a prompt");
     return;
   }
 
+  // Prevent duplicate requests
+  if (isRequesting || loading) {
+    console.log("Request already in progress, ignoring...");
+    return;
+  }
+
+  setIsRequesting(true);
   setLoading(true);
   setResponse("");
 
   try {
-    console.log("Sending AI request:", { 
+    console.log("🚀 Sending AI request:", { 
       prompt: prompt.substring(0, 100), 
       mode, 
-      endpoint: settings.aiEndpoint 
+      endpoint: settings.aiEndpoint,
+      timestamp: new Date().toISOString()
     });
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
     const res = await fetch(settings.aiEndpoint, {
       method: "POST",
@@ -812,12 +829,12 @@ const askAi = async () => {
 
     if (!res.ok) {
       const errorText = await res.text();
-      console.error("AI API error:", res.status, errorText);
+      console.error("❌ AI API error:", res.status, errorText);
       throw new Error(`Server returned ${res.status}: ${res.statusText}`);
     }
 
     const data = await res.json();
-    console.log("AI response received:", { 
+    console.log("✅ AI response received:", { 
       hasText: !!data.text, 
       length: data.text?.length 
     });
@@ -848,7 +865,7 @@ const askAi = async () => {
     setPrompt(""); // Clear prompt on success
 
   } catch (err) {
-    console.error("AI request failed:", err);
+    console.error("💥 AI request failed:", err);
     
     let userMessage = "An error occurred";
     
@@ -856,11 +873,11 @@ const askAi = async () => {
       if (err.name === 'AbortError') {
         userMessage = "Request timed out. Please try again.";
       } else if (err.message.includes('Failed to fetch')) {
-        userMessage = "Network error. Check your connection and API endpoint.";
+        userMessage = "Network error. Check your connection.";
       } else if (err.message.includes('401') || err.message.includes('403')) {
-        userMessage = "Authentication failed. Check your API key in settings.";
+        userMessage = "Authentication failed. Check your API key.";
       } else if (err.message.includes('429')) {
-        userMessage = "Rate limit exceeded. Wait a moment and try again.";
+        userMessage = "Rate limit exceeded. Wait 10 seconds before trying again.";
       } else {
         userMessage = err.message;
       }
@@ -869,322 +886,21 @@ const askAi = async () => {
     setResponse(`❌ Error: ${userMessage}`);
   } finally {
     setLoading(false);
+    // Delay to prevent rapid clicking
+    setTimeout(() => {
+      setIsRequesting(false);
+    }, 1000);
   }
 };
 
-// Also add this improved prompt textarea with better UX
-// Replace the textarea section in the JSX:
-/*
-<div className="relative">
-  <textarea
-    className="prompt-textarea"
-    placeholder="Describe the component you want to create...
-Examples:
-• Create a hero section with gradient background
-• Build a pricing table with 3 tiers
-• Make a contact form with validation styles"
-    value={prompt}
-    onChange={(e) => setPrompt(e.target.value)}
-    onKeyDown={(e) => {
-      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-        e.preventDefault();
-        askAi();
-      }
-    }}
-    disabled={loading}
-  />
-  <div className="text-xs text-text-muted mt-1 px-1">
-    Press Ctrl/Cmd + Enter to send
-  </div>
-</div>
-*/
 
-const cleanAIResponse = (text: string): string => {
-  if (!text) return "";
-  
-  let cleaned = text
-    .replace(/^```(?:html|css|js)?\s*/gi, '') 
-    .replace(/\s*```$/gi, '')                 
-    .replace(/```/g, '')                       
-    .replace(/^`|`$/g, '')                  
-    .replace(/^<!DOCTYPE html>[\s\S]*?<body[^>]*>/i, '')  
-    .replace(/<\/body>\s*<\/html>\s*$/i, '')  
-    .trim();
+// ============================================
+// STEP 3: Replace your entire AI section JSX with this
+// Find the section that starts with <div className="ai-section">
+// and replace it completely with this code
+// ============================================
 
-
-  if (cleaned && !cleaned.includes('<') && !cleaned.includes('>')) {
- 
-    cleaned = `<div style="background: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px solid #e2e8f0; color: #334155;">
-  <p><strong>AI Response:</strong></p>
-  <pre style="white-space: pre-wrap; margin: 0;">${cleaned}</pre>
-</div>`;
-  }
-
-  return cleaned;
-};
-
-const containsHTML = (text: string): boolean => {
-  return /<[^>]*>/.test(text);
-};
-
-return (
-  <div className="flex flex-col h-full overflow-hidden relative">
-    {/* Resize Handle on the right side */}
-    {onResizeStart && (
-      <div
-        className="absolute -right-2 top-0 bottom-0 w-4 cursor-col-resize z-20 hover:bg-accent-color hover:bg-opacity-50 transition-colors"
-        onMouseDown={onResizeStart}
-      />
-    )}
-
-    {/* Compact Header */}
-    <div className="!p-2 border-b border-panel-border">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1 text-xs font-medium text-text-secondary">
-          <SquareStack size={12} />
-          <span>Components</span>
-        </div>
-        
-        <div className="flex items-center gap-1">
-          {/* Search Toggle */}
-          <button
-            onClick={() => setSearchTerm(searchTerm ? '' : ' ')}
-            className="!p-1.5 hover:bg-component-hover rounded transition-colors"
-            title="Search"
-          >
-            <Search size={12} />
-          </button>
-          
-          {/* Settings */}
-          <button
-            onClick={onOpenSettings}
-            className="!p-1.5 hover:bg-component-hover rounded transition-colors"
-            title="Settings"
-          >
-            <Settings size={12} />
-          </button>
-        </div>
-      </div>
-      
-      {/* Search Bar - Appears only when search is active */}
-      {searchTerm !== '' && (
-        <div className="mt-2 relative">
-          <input
-            type="text"
-            placeholder="Type to search components..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-2 pr-6 py-1 bg-component-bg border border-panel-border rounded text-xs focus:outline-none focus:border-accent-color text-foreground"
-            autoFocus
-          />
-          <button
-            onClick={() => setSearchTerm('')}
-            className="absolute right-1 top-1/2 transform -translate-y-1/2 text-text-muted hover:text-foreground text-xs"
-          >
-            ×
-          </button>
-        </div>
-      )}
-    </div>
-      
-      {/* Components List */}
-      <div className="flex-1 overflow-auto min-h-0">
-        <div className="components-list">
-          {/* Recently Used Section */}
-          {recentComponents.length > 0 && (
-            <div className="component-category">
-              <div className="category-title flex items-center gap-2">
-                <Clock size={14} />
-                Recently Used ({recentComponents.length})
-              </div>
-              {recentComponents.map((key) => (
-                <div
-                  key={key}
-                  className="component-item group"
-                  onClick={() => handleInsert(key)}
-                >
-                  <div className="component-icon">
-                    {getComponentIcon(key)}
-                  </div>
-                  <span className="component-name flex-1">
-                    {key.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ")}
-                  </span>
-                  <div className="flex gap-1">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setPreviewComponent(key);
-                      }}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
-                      title="Preview component"
-                    >
-                      <Eye size={14} className="text-text-muted hover:text-foreground" />
-                    </button>
-                    <button
-                      onClick={(e) => toggleFavorite(key, e)}
-                      className={`transition-opacity ${
-                        favorites.has(key) ? "opacity-100 text-yellow-500" : "opacity-0 group-hover:opacity-100 text-text-muted"
-                      }`}
-                      title={favorites.has(key) ? "Remove from favorites" : "Add to favorites"}
-                    >
-                      {favorites.has(key) ? (
-                        <Star size={14} className="fill-yellow-500" />
-                      ) : (
-                        <Star size={14} />
-                      )}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Favorites Section */}
-          {favorites.size > 0 && (
-            <div className="component-category">
-              <div className="category-title flex items-center gap-2">
-                <Star size={14} className="text-yellow-500" />
-                Favorites ({favorites.size})
-              </div>
-              {Array.from(favorites).map((key) => (
-                <div
-                  key={key}
-                  className="component-item group"
-                  onClick={() => handleInsert(key)}
-                >
-                  <div className="component-icon">
-                    {getComponentIcon(key)}
-                  </div>
-                  <span className="component-name flex-1">
-                    {key.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ")}
-                  </span>
-                  <div className="flex gap-1">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setPreviewComponent(key);
-                      }}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
-                      title="Preview component"
-                    >
-                      <Eye size={14} className="text-text-muted hover:text-foreground" />
-                    </button>
-                    <button
-                      onClick={(e) => toggleFavorite(key, e)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity text-yellow-500"
-                      title="Remove from favorites"
-                    >
-                      <StarOff size={14} />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Regular Categories */}
-          {Object.entries(filteredComponents).map(([category, keys]) => (
-            <div key={category} className="component-category">
-              <div className="category-title">{category}</div>
-              {keys.map((key) => (
-                <div
-                  key={key}
-                  className="component-item group"
-                  onClick={() => handleInsert(key)}
-                >
-                  <div className="component-icon">
-                    {getComponentIcon(key)}
-                  </div>
-                  <span className="component-name flex-1">
-                    {key.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ")}
-                  </span>
-                  <div className="flex gap-1">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setPreviewComponent(key);
-                      }}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
-                      title="Preview component"
-                    >
-                      <Eye size={14} className="text-text-muted hover:text-foreground" />
-                    </button>
-                    <button
-                      onClick={(e) => toggleFavorite(key, e)}
-                      className={`transition-opacity ${
-                        favorites.has(key) ? "opacity-100 text-yellow-500" : "opacity-0 group-hover:opacity-100 text-text-muted"
-                      }`}
-                      title={favorites.has(key) ? "Remove from favorites" : "Add to favorites"}
-                    >
-                      {favorites.has(key) ? (
-                        <Star size={14} className="fill-yellow-500" />
-                      ) : (
-                        <Star size={14} />
-                      )}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ))}
-
-          {/* No Results Message */}
-          {searchTerm && Object.keys(filteredComponents).length === 0 && (
-            <div className="text-center py-8 text-text-muted">
-              <Search size={32} className="mx-auto mb-2 opacity-50" />
-              <p>No components found for "{searchTerm}"</p>
-              <button
-                onClick={() => setSearchTerm("")}
-                className="btn btn-secondary btn-sm mt-2"
-              >
-                Clear Search
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Component Preview Modal */}
-      {previewComponent && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-panel-bg rounded-lg p-4 max-w-4xl w-full mx-auto max-h-[90vh] flex flex-col">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-foreground">
-                Preview: {previewComponent.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ")}
-              </h3>
-              <button 
-                onClick={() => setPreviewComponent(null)}
-                className="text-text-muted hover:text-foreground"
-              >
-                <X size={24} />
-              </button>
-            </div>
-            <div className="flex-1 border rounded-lg overflow-hidden bg-white">
-              <iframe
-                srcDoc={generateHtml(components[previewComponent].code)}
-                className="w-full h-full min-h-[400px]"
-                title="Component Preview"
-              />
-            </div>
-            <div className="mt-4 flex gap-2">
-              <button
-                onClick={() => handleInsert(previewComponent)}
-                className="btn btn-primary flex-1"
-              >
-                Insert Component
-              </button>
-              <button
-                onClick={() => setPreviewComponent(null)}
-                className="btn btn-secondary"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* AI Section Header with Endpoint Indicator */}
+      {/* AI Section */}
       <div className="ai-section">
         <div className="panel-header">
           <div className="flex items-center justify-between w-full">
@@ -1193,7 +909,7 @@ return (
               <h3>AI Assistant</h3>
             </div>
             <div className="text-xs text-text-muted bg-component-bg px-2 py-1 rounded">
-              {settings.aiEndpoint.replace('http://', '')}
+              Gemini 2.0
             </div>
           </div>
         </div>
@@ -1206,6 +922,7 @@ return (
               value="response"
               checked={mode === "response"}
               onChange={() => setMode("response")}
+              disabled={loading || isRequesting}
             />
             Stateless
           </label>
@@ -1215,30 +932,56 @@ return (
               value="chat"
               checked={mode === "chat"}
               onChange={() => setMode("chat")}
+              disabled={loading || isRequesting}
             />
             Chat
           </label>
         </div>
 
         {/* Prompt Input */}
-        <textarea
-          className="prompt-textarea"
-          placeholder="Ask AI to generate code..."
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) askAi();
-          }}
-        />
+        <div className="relative">
+          <textarea
+            className="prompt-textarea"
+            placeholder="Describe what you want to create...
+
+Examples:
+• Hero section with blue gradient
+• Pricing cards with 3 tiers
+• Contact form with modern styling
+• Navigation bar with dropdown"
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                if (!isRequesting && !loading && prompt.trim()) {
+                  askAi();
+                }
+              }
+            }}
+            disabled={loading || isRequesting}
+          />
+          <div className="text-xs text-text-muted mt-1 px-1 flex justify-between">
+            <span>Press Ctrl/Cmd + Enter to send</span>
+            {(loading || isRequesting) && <span className="text-accent-color">●</span>}
+          </div>
+        </div>
 
         {/* Ask AI Button */}
         <button
           className="btn btn-accent"
-          onClick={askAi}
-          disabled={loading}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!isRequesting && !loading && prompt.trim()) {
+              askAi();
+            }
+          }}
+          disabled={loading || isRequesting || !prompt.trim()}
+          style={{ opacity: (loading || isRequesting || !prompt.trim()) ? 0.5 : 1 }}
         >
           <Bot size={16} />
-          {loading ? "Asking AI..." : "Ask AI"}
+          {loading ? "Generating..." : isRequesting ? "Please wait..." : "Ask AI"}
         </button>
 
         {/* AI Response */}
@@ -1254,7 +997,15 @@ return (
         {/* Chat History */}
         {mode === "chat" && chatHistory.length > 0 && (
           <div>
-            <div className="response-label">Chat History</div>
+            <div className="response-label flex justify-between items-center">
+              <span>Chat History</span>
+              <button 
+                onClick={() => setChatHistory([])}
+                className="text-xs text-text-muted hover:text-foreground"
+              >
+                Clear
+              </button>
+            </div>
             <div className="chat-history">
               {chatHistory.map((msg, i) => (
                 <div key={i} className={`chat-message ${msg.role}`}>
@@ -1268,9 +1019,8 @@ return (
           </div>
         )}
       </div>
-    </div>
-  );
-}
+  
+
 
 
 
