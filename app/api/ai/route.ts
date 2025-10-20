@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ApiRequestBody, ApiResponse, ChatMessage } from "@/types";
 
 const GEMINI_API_KEY = process.env.GOOGLE_AI_API_KEY;
-const GEMINI_MODEL = "gemini-pro"; // Correct model name for v1beta API
+const GEMINI_MODEL = "gemini-1.5-flash-latest"; // Use latest stable model with v1 API
 
 export async function POST(req: NextRequest) {
   try {
@@ -34,8 +34,10 @@ export async function POST(req: NextRequest) {
     const fullPrompt = buildPrompt(prompt, mode, chatHistory);
     console.log("Full prompt length:", fullPrompt.length);
 
-    // Call Gemini API
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+    // Call Gemini API - using v1 endpoint with correct model
+    const apiUrl = `https://generativelanguage.googleapis.com/v1/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+    
+    console.log("API URL:", apiUrl.replace(GEMINI_API_KEY, "***"));
     
     const apiResponse = await fetch(apiUrl, {
       method: "POST",
