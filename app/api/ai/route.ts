@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || ""; 
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,16 +10,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ text: "No prompt provided" }, { status: 400 });
     }
 
-    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const res = await fetch("https://api.deepseek.com/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+        "Authorization": `Bearer ${DEEPSEEK_API_KEY}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": process.env.SITE_URL || "https://ai-web-studio.netlify.app",
-        "X-Title": "Website Builder"
       },
       body: JSON.stringify({
-        model: "google/gemini-flash-1.5:free", // Most reliable free model
+        model: "deepseek-chat", // Use DeepSeek's model
         messages: [
           {
             role: "system",
@@ -30,7 +28,8 @@ export async function POST(req: NextRequest) {
             3. Use modern, responsive design
             4. Include proper semantic HTML
             5. Make it mobile-friendly
-            6. Use inline styles only`
+            6. Use inline styles only
+            7. Do not include any text outside of HTML tags`
           },
           ...(mode === "chat" ? chatHistory : []),
           { 
@@ -47,7 +46,7 @@ export async function POST(req: NextRequest) {
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));
       return NextResponse.json({ 
-        text: `OpenRouter API error: ${JSON.stringify(errorData)}` 
+        text: `DeepSeek API error: ${JSON.stringify(errorData)}` 
       }, { status: res.status });
     }
 
