@@ -782,16 +782,10 @@ const askAi = async () => {
   setResponse("");
 
   try {
-    const controller = new AbortController();
     const res = await fetch(`${settings.aiEndpoint}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        prompt,
-        mode,
-        chatHistory: mode === "chat" ? chatHistory : undefined
-      }),
-      signal: controller.signal
+      body: JSON.stringify({ prompt, mode }),
     });
 
     if (!res.ok) {
@@ -799,95 +793,25 @@ const askAi = async () => {
       throw new Error(`Server responded with ${res.status}: ${errorText}`);
     }
 
-    const reader = res.body?.getReader();
-    const decoder = new TextDecoder("utf-8");
-    let aiText = "";
-
-    if (reader) {
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
-
-        const lines = chunk.split("\n").filter(Boolean);
-        for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            const jsonStr = line.replace(/^data: /, "");
-            if (jsonStr === "[DONE]") continue;
-
-            try {
-              const parsed = JSON.parse(jsonStr);
-              const delta = parsed.choices?.[0]?.delta?.content;
-              if (delta) {
-                aiText += delta;
-                setResponse((prev) => prev + delta);
-              }
-            } catch {
-              // If not JSON, treat as plain text
-              aiText += line.replace(/^data: /, "");
-              setResponse((prev) => prev + line.replace(/^data: /, ""));
-            }
-          } else {
-            // Non-SSE streaming text
-            aiText += line;
-            setResponse((prev) => prev + line);
-          }
-        }
-      }
-    }
-
-    // Clean AI output
-    const cleanedText = cleanAIResponse(aiText);
-
-    // Update chat history if needed
-    if (mode === "chat") {
-      setChatHistory([
-        ...chatHistory,
-        { role: "user", content: prompt },
-        { role: "assistant", content: cleanedText }
-      ]);
-    }
+    const data = await res.json();
+    const cleanedText = data?.text?.trim() || "";
 
     setResponse(cleanedText);
 
-    // Insert only if there is real HTML content
-    if (cleanedText && cleanedText.trim() !== "") {
+    if (cleanedText) {
       onAiInsert(`\n<!-- AI Generated -->\n${cleanedText}\n`);
     } else {
       console.warn("AI returned empty content, nothing inserted.");
     }
-
   } catch (err) {
-    console.error("AI streaming failed:", err);
-    setResponse("Error contacting AI server. Please check your API configuration.");
+    console.error("AI request failed:", err);
+    setResponse("Error contacting AI server.");
   } finally {
     setLoading(false);
     setPrompt("");
   }
 };
 
-// ------------------------
-// Clean AI response
-// ------------------------
-const cleanAIResponse = (text: string): string => {
-  let cleaned = text
-    .replace(/```(?:html|js|css)?/gi, "")
-    .replace(/```/g, "")
-    .replace(/`/g, "")
-    .trim();
-
-  if (containsHTML(cleaned) && !cleaned.startsWith("<")) {
-    const firstTag = cleaned.indexOf("<");
-    if (firstTag >= 0) cleaned = cleaned.substring(firstTag);
-  }
-
-  return cleaned;
-};
-
-// ------------------------
-// Check if string contains HTML
-// ------------------------
-const containsHTML = (text: string): boolean => /<[^>]+>/.test(text);
 
 
 
