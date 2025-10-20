@@ -2,56 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { ApiRequestBody, ApiResponse, ChatMessage } from "@/types";
 
 const GEMINI_API_KEY = process.env.GOOGLE_AI_API_KEY;
-
-// Try these models in order until one works
-const MODELS_TO_TRY = [
-  "gemini-1.5-flash",
-  "gemini-1.5-pro", 
-  "gemini-pro",
-  "gemini-1.5-flash-001",
-  "gemini-1.5-pro-001",
-];
-
-async function findWorkingModel(apiKey: string): Promise<string | null> {
-  for (const model of MODELS_TO_TRY) {
-    try {
-      // Try v1 first
-      let url = `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${apiKey}`;
-      let response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: "test" }] }],
-        }),
-      });
-      
-      if (response.ok) {
-        console.log(`✓ Found working model: ${model} (v1)`);
-        return `v1:${model}`;
-      }
-      
-      // Try v1beta
-      url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-      response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: "test" }] }],
-        }),
-      });
-      
-      if (response.ok) {
-        console.log(`✓ Found working model: ${model} (v1beta)`);
-        return `v1beta:${model}`;
-      }
-    } catch (err) {
-      console.log(`✗ Model ${model} failed`);
-    }
-  }
-  return null;
-}
-
-let cachedModelInfo: string | null = null;
+const GEMINI_MODEL = "gemini-2.0-flash"; // Gemini 2.0 Flash model
+const API_VERSION = "v1beta"; // v1beta for Gemini 2.0
 
 export async function POST(req: NextRequest) {
   try {
@@ -79,32 +31,14 @@ export async function POST(req: NextRequest) {
       } as ApiResponse);
     }
 
-    // Find working model if not cached
-    if (!cachedModelInfo) {
-      console.log("Detecting working Gemini model...");
-      cachedModelInfo = await findWorkingModel(GEMINI_API_KEY);
-      
-      if (!cachedModelInfo) {
-        return NextResponse.json({
-          text: createErrorHTML(
-            "No Compatible Model Found",
-            "Unable to find a working Gemini model. Please check your API key has access to Gemini models."
-          ),
-        } as ApiResponse);
-      }
-    }
-    
-    const [apiVersion, modelName] = cachedModelInfo.split(':');
-    console.log(`Using model: ${modelName} with API version: ${apiVersion}`);
-
     // Build enhanced prompt
     const fullPrompt = buildPrompt(prompt, mode, chatHistory);
     console.log("Full prompt length:", fullPrompt.length);
 
-    // Call Gemini API with detected model
-    const apiUrl = `https://generativelanguage.googleapis.com/${apiVersion}/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
+    // Call Gemini 2.0 Flash API
+    const apiUrl = `https://generativelanguage.googleapis.com/${API_VERSION}/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
     
-    console.log("API URL:", apiUrl.replace(GEMINI_API_KEY, "***"));
+    console.log("Using Gemini 2.0 Flash model");
     
     const apiResponse = await fetch(apiUrl, {
       method: "POST",
@@ -113,7 +47,7 @@ export async function POST(req: NextRequest) {
         contents: [{ parts: [{ text: fullPrompt }] }],
         generationConfig: {
           temperature: 0.7,
-          maxOutputTokens: 4096, // Increased for better responses
+          maxOutputTokens: 8192, // Gemini 2.0 supports more tokens
           topP: 0.95,
           topK: 40,
         },
