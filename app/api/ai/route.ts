@@ -1,23 +1,13 @@
 // --- app/api/ai/route.ts ---
+
 import { NextRequest, NextResponse } from "next/server";
+import { ApiRequestBody, ApiResponse, ChatMessage } from "@/types";
 
 const GEMINI_API_KEY = process.env.GOOGLE_AI_API_KEY;
 
-
-interface ChatMessage {
-  role: string;
-  content: string;
-}
-
-interface RequestBody {
-  prompt?: string;
-  mode?: string;
-  chatHistory?: ChatMessage[];
-}
-
 export async function POST(req: NextRequest) {
   try {
-    const body: RequestBody = await req.json();
+    const body: ApiRequestBody = await req.json();
     const prompt = body?.prompt?.trim() || "";
     const mode = body?.mode || "response";
     const chatHistory: ChatMessage[] = body?.chatHistory || [];
@@ -25,17 +15,19 @@ export async function POST(req: NextRequest) {
     console.log("Received AI request:", { prompt, mode, chatHistoryLength: chatHistory.length });
 
     if (!prompt) {
-      return NextResponse.json({ text: "Please provide a prompt" }, { status: 400 });
+      const response: ApiResponse = { text: "Please provide a prompt" };
+      return NextResponse.json(response, { status: 400 });
     }
 
-   
+  
     if (!GEMINI_API_KEY) {
       console.warn("No Gemini API key - using fallback");
       const fallback = generateFallbackComponent(prompt);
-      return NextResponse.json({ text: fallback });
+      const response: ApiResponse = { text: fallback };
+      return NextResponse.json(response);
     }
 
-
+   
     let fullPrompt = `As a senior front-end developer, create clean, responsive HTML with inline CSS.
 
 REQUIREMENTS:
@@ -48,7 +40,7 @@ REQUIREMENTS:
 
 Create this component: ${prompt}`;
 
- 
+
     if (mode === "chat" && chatHistory.length > 0) {
       const recentHistory = chatHistory.slice(-4); 
       const historyContext = recentHistory.map((msg: ChatMessage) => 
@@ -80,7 +72,8 @@ Create this component: ${prompt}`;
       const errorData = await response.text();
       console.error("Gemini API error:", response.status, errorData);
       const fallback = generateFallbackComponent(prompt);
-      return NextResponse.json({ text: fallback });
+      const apiResponse: ApiResponse = { text: fallback };
+      return NextResponse.json(apiResponse);
     }
 
     const data = await response.json();
@@ -93,13 +86,18 @@ Create this component: ${prompt}`;
     }
 
     const cleaned = cleanAIResponse(rawText);
+    const apiResponse: ApiResponse = { text: cleaned };
     
-    return NextResponse.json({ text: cleaned });
+    return NextResponse.json(apiResponse);
 
   } catch (err) {
     console.error("API route error:", err);
     const fallback = generateFallbackComponent("Error fallback component");
-    return NextResponse.json({ text: fallback });
+    const response: ApiResponse = { 
+      text: fallback,
+      error: err instanceof Error ? err.message : "Unknown error"
+    };
+    return NextResponse.json(response);
   }
 }
 
