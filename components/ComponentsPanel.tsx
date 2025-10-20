@@ -783,31 +783,48 @@ const askAi = async () => {
   setResponse("");
 
   try {
+    console.log("Sending AI request:", { prompt, mode, endpoint: settings.aiEndpoint });
+
     const res = await fetch(settings.aiEndpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt, mode }),
+      body: JSON.stringify({ 
+        prompt: prompt.trim(),
+        mode: mode,
+        ...(mode === "chat" && chatHistory.length > 0 && { chatHistory })
+      }),
     });
+
+    console.log("AI response status:", res.status);
 
     if (!res.ok) {
       const errorText = await res.text();
-      throw new Error(`Server responded with ${res.status}: ${errorText}`);
+      console.error("AI API error:", res.status, errorText);
+      throw new Error(`Server error: ${res.status} - ${res.statusText}`);
     }
 
     const data = await res.json();
+    console.log("AI response data:", data);
     
-  
-    const cleanedText = (data.text || data.choices?.[0]?.text || "").trim();
-
-    if (!cleanedText) {
-      console.warn("AI returned empty content, nothing inserted.");
-      setResponse("AI returned empty content.");
-      return;
+   
+    const aiText = data.text || data.choices?.[0]?.text || data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    
+    if (!aiText.trim()) {
+      console.warn("Empty AI response received");
+      throw new Error("AI returned empty response. Please try again.");
     }
 
+    const cleanedText = cleanAIResponse(aiText);
+    console.log("Cleaned AI response:", cleanedText);
+    
     setResponse(cleanedText);
-    onAiInsert(`\n<!-- AI Generated -->\n${cleanedText}\n`);
+    
 
+    if (cleanedText.trim()) {
+      onAiInsert(`\n<!-- AI Generated: ${prompt.substring(0, 50)}${prompt.length > 50 ? '...' : ''} -->\n${cleanedText}\n`);
+    }
+
+   
     if (mode === "chat") {
       setChatHistory(prev => [
         ...prev,
@@ -818,17 +835,57 @@ const askAi = async () => {
 
   } catch (err) {
     console.error("AI request failed:", err);
-    setResponse("Error contacting AI server. Please check your API key and endpoint.");
+    const errorMsg = err instanceof Error ? err.message : "Unknown error occurred";
+    
+  
+    let userFriendlyError = `Error: ${errorMsg}`;
+    
+    if (errorMsg.includes('Failed to fetch') || errorMsg.includes('Network')) {
+      userFriendlyError = "Network error: Cannot connect to AI server. Check your internet connection.";
+    } else if (errorMsg.includes('401') || errorMsg.includes('403')) {
+      userFriendlyError = "API authentication failed. Please check your Google Gemini API key in the .env.local file.";
+    } else if (errorMsg.includes('429')) {
+      userFriendlyError = "Rate limit exceeded. Please wait a moment and try again.";
+    } else if (errorMsg.includes('500') || errorMsg.includes('502') || errorMsg.includes('503')) {
+      userFriendlyError = "AI service temporarily unavailable. Please try again in a few moments.";
+    }
+    
+    setResponse(userFriendlyError);
+    
+   
   } finally {
     setLoading(false);
     setPrompt("");
   }
 };
 
+const cleanAIResponse = (text: string): string => {
+  if (!text) return "";
+  
+  let cleaned = text
+    .replace(/^```(?:html|css|js)?\s*/gi, '') 
+    .replace(/\s*```$/gi, '')                 
+    .replace(/```/g, '')                       
+    .replace(/^`|`$/g, '')                  
+    .replace(/^<!DOCTYPE html>[\s\S]*?<body[^>]*>/i, '')  
+    .replace(/<\/body>\s*<\/html>\s*$/i, '')  
+    .trim();
 
 
+  if (cleaned && !cleaned.includes('<') && !cleaned.includes('>')) {
+ 
+    cleaned = `<div style="background: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px solid #e2e8f0; color: #334155;">
+  <p><strong>AI Response:</strong></p>
+  <pre style="white-space: pre-wrap; margin: 0;">${cleaned}</pre>
+</div>`;
+  }
 
+  return cleaned;
+};
 
+const containsHTML = (text: string): boolean => {
+  return /<[^>]*>/.test(text);
+};
 
 return (
   <div className="flex flex-col h-full overflow-hidden relative">
