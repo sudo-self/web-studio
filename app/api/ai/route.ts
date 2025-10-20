@@ -1,4 +1,5 @@
 // --- app/api/ai/route.ts ---
+
 import { NextRequest, NextResponse } from "next/server";
 import { ApiRequestBody, ApiResponse, ChatMessage } from "@/types";
 
@@ -23,12 +24,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(response, { status: 400 });
     }
 
-    // If no API key, use fallback with clear message
+  
     if (!GEMINI_API_KEY) {
-      console.error("❌ NO GEMINI API KEY FOUND");
-      const fallback = `<!-- ⚠️ API KEY MISSING - Using Fallback -->
+      console.error("NO GEMINI API KEY FOUND");
+      const fallback = `<!-- API KEY MISSING - Using Fallback -->
 <div style="background: #ff6b6b; color: white; padding: 2rem; border-radius: 8px; margin: 1rem 0;">
-  <h3 style="margin-bottom: 1rem;">⚠️ Gemini API Key Missing</h3>
+  <h3 style="margin-bottom: 1rem;">Gemini API Key Missing</h3>
   <p>Please set GOOGLE_AI_API_KEY in your environment variables.</p>
   <p>Current prompt: "${prompt}"</p>
 </div>`;
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(response);
     }
 
-    // Build the prompt for Gemini
+  
     let fullPrompt = `You are an expert web developer. Create a complete, responsive HTML component with inline CSS.
 
 CRITICAL RULES:
@@ -51,7 +52,7 @@ Create this: ${prompt}
 
 HTML OUTPUT:`;
 
-    // Add chat context if in chat mode
+
     if (mode === "chat" && chatHistory.length > 0) {
       const recentHistory = chatHistory.slice(-4);
       const historyContext = recentHistory.map((msg: ChatMessage) => 
@@ -174,6 +175,10 @@ function cleanAIResponse(text: string): string {
 
   return cleaned;
 }
+
+
+
+
 
 
 
