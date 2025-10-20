@@ -808,35 +808,40 @@ const askAi = async () => {
         if (done) break;
         const chunk = decoder.decode(value, { stream: true });
 
-        // If the API returns streamed JSON lines like OpenRouter
-        const lines = chunk.split("\n").filter(Boolean);
+        // Handle DeepSeek streaming format
+        const lines = chunk.split('\n').filter(Boolean);
         for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            const jsonStr = line.replace(/^data: /, "");
-            if (jsonStr === "[DONE]") continue;
+          if (line.startsWith('data: ')) {
+            const jsonStr = line.replace(/^data: /, '');
+            if (jsonStr === '[DONE]') continue;
 
             try {
               const parsed = JSON.parse(jsonStr);
-              const delta =
-                parsed.choices?.[0]?.delta?.content ||
-                parsed.choices?.[0]?.message?.content;
+              // DeepSeek format: parsed.choices[0].delta.content
+              const delta = parsed.choices?.[0]?.delta?.content;
               if (delta) {
                 aiText += delta;
                 setResponse((prev) => prev + delta);
               }
             } catch (e) {
-              console.warn("Failed to parse chunk:", line, e);
+              console.warn("Failed to parse DeepSeek chunk:", line, e);
+              // If it's not JSON, treat it as direct text
+              if (line.trim() && !line.startsWith('data: ')) {
+                aiText += line;
+                setResponse((prev) => prev + line);
+              }
             }
+          } else if (line.trim() && !line.startsWith('data: ')) {
+            // Handle non-SSE format (direct text streaming)
+            aiText += line;
+            setResponse((prev) => prev + line);
           }
         }
       }
     }
 
-    // Remove code block wrappers
-    const cleanedText = aiText
-      .replace(/^```(?:html|js|css)?\s*/i, "")
-      .replace(/\s*```$/i, "")
-      .trim();
+    // Clean the response - remove markdown code blocks and ensure it's HTML
+    const cleanedText = cleanAIResponse(aiText);
 
     if (mode === "chat") {
       setChatHistory([
@@ -847,16 +852,52 @@ const askAi = async () => {
     }
 
     setResponse(cleanedText);
-    if (cleanedText) onAiInsert(`\n<!-- AI Generated -->\n${cleanedText}\n`);
+    
+    // Only insert if we have valid HTML content
+    if (cleanedText && containsHTML(cleanedText)) {
+      onAiInsert(`\n<!-- AI Generated -->\n${cleanedText}\n`);
+    } else if (cleanedText) {
+      // Wrap non-HTML content in a div
+      onAiInsert(`\n<!-- AI Generated -->\n<div style="background: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px solid #e2e8f0;">\n${cleanedText}\n</div>\n`);
+    }
 
   } catch (err) {
     console.error("AI streaming failed:", err);
-    setResponse("Error contacting AI server.");
+    setResponse("Error contacting AI server. Please check your DeepSeek API configuration.");
   } finally {
     setLoading(false);
     setPrompt("");
   }
 };
+
+// Helper function to clean AI response
+const cleanAIResponse = (text: string): string => {
+  let cleaned = text
+    .replace(/^```(?:html|js|css)?\s*/i, '')
+    .replace(/\s*```$/i, '')
+    .replace(/^`|`$/g, '')
+    .trim();
+
+  // Ensure it starts with HTML tag if it contains HTML
+  if (containsHTML(cleaned) && !cleaned.trim().startsWith('<')) {
+    // Extract HTML from the response
+    const htmlMatch = cleaned.match(/<[^>]*>/);
+    if (htmlMatch) {
+      const startIndex = cleaned.indexOf('<');
+      cleaned = cleaned.substring(startIndex);
+    }
+  }
+
+  return cleaned;
+};
+
+// Helper function to check if text contains HTML
+const containsHTML = (text: string): boolean => {
+  return /<[^>]*>/.test(text);
+};
+
+// Update your AI endpoint in settings to point to your DeepSeek API route
+// Make sure your settings.aiEndpoint is set to your DeepSeek API route, e.g., "/api/ai/deepseek"
 
 
 
