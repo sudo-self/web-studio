@@ -19,7 +19,7 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 
 export const SettingsProvider = ({ children }: { children: ReactNode }) => {
   const [settings, setSettings] = useState<Settings>({
-    aiEndpoint: "/api/ai",
+    aiEndpoint: "/api/ai", // Make sure this points to your DeepSeek API route
     theme: "light",
     fontSize: 14,
     autoFormat: true,
@@ -35,8 +35,16 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
       const response = await fetch(settings.aiEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ 
+          prompt,
+          mode: "response" // Default mode for backward compatibility
+        }),
       });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`AI API error: ${response.status} - ${errorText}`);
+      }
 
       if (!response.body) throw new Error("No response body from AI API");
 
@@ -49,22 +57,55 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
         if (done) break;
 
         const chunk = decoder.decode(value, { stream: true });
-        aiText += chunk;
+        
+        // Handle DeepSeek streaming format (Server-Sent Events)
+        const lines = chunk.split('\n').filter(Boolean);
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const jsonStr = line.replace(/^data: /, '');
+            if (jsonStr === '[DONE]') continue;
 
-        if (onChunk) onChunk(chunk);
+            try {
+              const parsed = JSON.parse(jsonStr);
+              // DeepSeek format: parsed.choices[0].delta.content
+              const delta = parsed.choices?.[0]?.delta?.content;
+              if (delta) {
+                aiText += delta;
+                if (onChunk) onChunk(delta);
+              }
+            } catch (e) {
+              // If it's not JSON, treat it as direct text
+              console.warn("Failed to parse DeepSeek chunk:", line, e);
+              if (line.trim() && !line.startsWith('data: ')) {
+                aiText += line;
+                if (onChunk) onChunk(line);
+              }
+            }
+          } else if (line.trim() && !line.startsWith('data: ')) {
+            // Handle non-SSE format (direct text streaming)
+            aiText += line;
+            if (onChunk) onChunk(line);
+          }
+        }
       }
 
-      // Remove code block fences
-      const cleanedText = aiText
-        .replace(/^```(?:html|js|css)?\s*/i, "")
-        .replace(/\s*```$/i, "")
-        .trim();
-
+      // Clean the response
+      const cleanedText = cleanAIResponse(aiText);
       return cleanedText || "No response from AI";
+
     } catch (err) {
       console.error("AI streaming failed:", err);
-      return "Error contacting AI";
+      return `Error contacting AI: ${err instanceof Error ? err.message : 'Unknown error'}`;
     }
+  };
+
+  // Helper function to clean AI response
+  const cleanAIResponse = (text: string): string => {
+    return text
+      .replace(/^```(?:html|js|css)?\s*/i, '')
+      .replace(/\s*```$/i, '')
+      .replace(/^`|`$/g, '')
+      .trim();
   };
 
   return (
