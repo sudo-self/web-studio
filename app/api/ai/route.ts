@@ -1,6 +1,7 @@
+// --- app/api/ai/route.ts ---
 import { NextRequest, NextResponse } from "next/server";
 
-const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || ""; 
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
 
 export async function POST(req: NextRequest) {
   try {
@@ -8,6 +9,14 @@ export async function POST(req: NextRequest) {
 
     if (!prompt?.trim()) {
       return NextResponse.json({ text: "No prompt provided" }, { status: 400 });
+    }
+
+    // Check if API key is configured
+    if (!DEEPSEEK_API_KEY) {
+      console.error("DeepSeek API key not configured");
+      return NextResponse.json({ 
+        text: "DeepSeek API key not configured. Please add DEEPSEEK_API_KEY to your environment variables." 
+      }, { status: 500 });
     }
 
     const messages = [
@@ -31,6 +40,8 @@ export async function POST(req: NextRequest) {
       }
     ];
 
+    console.log("Sending request to DeepSeek API...");
+    
     const res = await fetch("https://api.deepseek.com/chat/completions", {
       method: "POST",
       headers: {
@@ -54,14 +65,13 @@ export async function POST(req: NextRequest) {
         error: errorText
       });
       
-      // Provide a helpful fallback based on the error
       if (res.status === 401) {
         return NextResponse.json({ 
-          text: "API authentication failed. Please check your DeepSeek API key." 
+          text: "DeepSeek API authentication failed. Please check your API key." 
         }, { status: 401 });
       } else if (res.status === 429) {
         return NextResponse.json({ 
-          text: "Rate limit exceeded. Please try again later." 
+          text: "DeepSeek rate limit exceeded. Please try again later." 
         }, { status: 429 });
       } else {
         return NextResponse.json({ 
@@ -72,9 +82,10 @@ export async function POST(req: NextRequest) {
 
     const reader = res.body?.getReader();
     if (!reader) {
-      throw new Error("No response body received");
+      throw new Error("No response body received from DeepSeek");
     }
 
+    // Create a streaming response
     const stream = new ReadableStream({
       async start(controller) {
         const decoder = new TextDecoder();
@@ -93,10 +104,12 @@ export async function POST(req: NextRequest) {
                   const data = JSON.parse(line.slice(6));
                   const content = data.choices?.[0]?.delta?.content;
                   if (content) {
-                    controller.enqueue(content);
+                    // Send the content as a simple text chunk
+                    controller.enqueue(new TextEncoder().encode(content));
                   }
                 } catch (e) {
                   // Ignore JSON parse errors for incomplete chunks
+                  console.warn("Failed to parse SSE chunk:", line);
                 }
               }
             }
@@ -139,7 +152,7 @@ function generateFallbackComponent(prompt: string): string {
   return `<!-- Fallback Component - AI Service Temporarily Unavailable -->
 <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 3rem 2rem; text-align: center; border-radius: 12px; margin: 1rem 0;">
   <h2 style="margin-bottom: 1rem; font-size: 1.8rem; font-weight: 600;">${prompt}</h2>
-  <p style="margin-bottom: 2rem; opacity: 0.9; font-size: 1.1rem;">AI-generated component placeholder</p>
+  <p style="margin-bottom: 2rem; opacity: 0.9; font-size: 1.1rem;">AI service temporarily unavailable. Using fallback component.</p>
   <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
     <button style="background: white; color: #667eea; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 1rem;">
       Primary Action
