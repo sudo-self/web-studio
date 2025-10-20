@@ -10,7 +10,7 @@ interface SettingsPanelProps {
 }
 
 export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
-  const { askAI, aiEndpoint } = useSettings();
+  const { askAI } = useSettings();
   const [testing, setTesting] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'unknown'>('unknown');
 
@@ -18,7 +18,6 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
     setTesting(true);
     try {
       const response = await askAI("Test connection");
-
       if (response && response !== "Error contacting AI") {
         setConnectionStatus('connected');
       } else {
@@ -52,15 +51,13 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
         <div className="space-y-4">
           {/* Connection Status */}
           <div className={`flex items-center gap-2 text-sm ${
-            connectionStatus === 'connected' ? 'text-green-700' :
-            connectionStatus === 'disconnected' ? 'text-red-700' :
+            connectionStatus === 'connected' ? 'text-green-700' : 
+            connectionStatus === 'disconnected' ? 'text-red-700' : 
             'text-yellow-700'
           }`}>
-            {connectionStatus === 'connected' ? <Wifi size={16} /> :
-             connectionStatus === 'disconnected' ? <WifiOff size={16} /> :
-             <Wifi size={16} />}
+            {connectionStatus === 'connected' ? <Wifi size={16} /> : connectionStatus === 'disconnected' ? <WifiOff size={16} /> : <Wifi size={16} />}
             <span>
-              {connectionStatus === 'connected' ? `Connected to AI at ${aiEndpoint}` :
+              {connectionStatus === 'connected' ? 'Connected to OpenRouter' :
                connectionStatus === 'disconnected' ? 'Connection Failed' : 'Unknown'}
             </span>
           </div>
@@ -90,5 +87,6 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
     </div>
   );
 }
+
 
 
