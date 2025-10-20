@@ -1,5 +1,4 @@
 // --- app/api/ai/route.ts ---
-
 import { NextRequest, NextResponse } from "next/server";
 import { ApiRequestBody, ApiResponse, ChatMessage } from "@/types";
 
@@ -12,44 +11,58 @@ export async function POST(req: NextRequest) {
     const mode = body?.mode || "response";
     const chatHistory: ChatMessage[] = body?.chatHistory || [];
 
-    console.log("Received AI request:", { prompt, mode, chatHistoryLength: chatHistory.length });
+    console.log("=== AI API DEBUG ===");
+    console.log("Prompt:", prompt);
+    console.log("Mode:", mode);
+    console.log("API Key exists:", !!GEMINI_API_KEY);
+    console.log("API Key length:", GEMINI_API_KEY?.length);
+    console.log("API Key preview:", GEMINI_API_KEY ? `${GEMINI_API_KEY.substring(0, 10)}...` : "No key");
 
     if (!prompt) {
       const response: ApiResponse = { text: "Please provide a prompt" };
       return NextResponse.json(response, { status: 400 });
     }
 
-  
+    // If no API key, use fallback with clear message
     if (!GEMINI_API_KEY) {
-      console.warn("No Gemini API key - using fallback");
-      const fallback = generateFallbackComponent(prompt);
+      console.error("❌ NO GEMINI API KEY FOUND");
+      const fallback = `<!-- ⚠️ API KEY MISSING - Using Fallback -->
+<div style="background: #ff6b6b; color: white; padding: 2rem; border-radius: 8px; margin: 1rem 0;">
+  <h3 style="margin-bottom: 1rem;">⚠️ Gemini API Key Missing</h3>
+  <p>Please set GOOGLE_AI_API_KEY in your environment variables.</p>
+  <p>Current prompt: "${prompt}"</p>
+</div>`;
       const response: ApiResponse = { text: fallback };
       return NextResponse.json(response);
     }
 
-   
-    let fullPrompt = `As a senior front-end developer, create clean, responsive HTML with inline CSS.
+    // Build the prompt for Gemini
+    let fullPrompt = `You are an expert web developer. Create a complete, responsive HTML component with inline CSS.
 
-REQUIREMENTS:
-- Return ONLY the HTML code with inline styles
-- No markdown, no backticks, no explanations
-- Make it mobile-friendly and accessible
-- Use semantic HTML5 elements
-- Include proper ARIA labels where needed
-- Ensure responsive design
+CRITICAL RULES:
+- Return ONLY pure HTML with inline styles, nothing else
+- No markdown, no code blocks, no explanations
+- Make it fully responsive and mobile-friendly
+- Use modern CSS (flexbox/grid)
+- Include proper semantic HTML and accessibility
+- Ensure it works as a standalone component
 
-Create this component: ${prompt}`;
+Create this: ${prompt}
 
+HTML OUTPUT:`;
 
+    // Add chat context if in chat mode
     if (mode === "chat" && chatHistory.length > 0) {
-      const recentHistory = chatHistory.slice(-4); 
+      const recentHistory = chatHistory.slice(-4);
       const historyContext = recentHistory.map((msg: ChatMessage) => 
         `${msg.role}: ${msg.content}`
       ).join('\n');
-      fullPrompt = `Chat history:\n${historyContext}\n\nCurrent request: ${prompt}\n\nResponse:`;
+      fullPrompt = `Previous conversation:\n${historyContext}\n\nNew request: ${prompt}\n\nHTML Response:`;
     }
 
-    const response = await fetch(
+    console.log("Sending request to Gemini API...");
+
+    const apiResponse = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`,
       {
         method: "POST",
@@ -63,39 +76,69 @@ Create this component: ${prompt}`;
           generationConfig: {
             temperature: 0.7,
             maxOutputTokens: 2000,
+            topP: 0.8,
+            topK: 40
           }
         }),
       }
     );
 
-    if (!response.ok) {
-      const errorData = await response.text();
-      console.error("Gemini API error:", response.status, errorData);
-      const fallback = generateFallbackComponent(prompt);
-      const apiResponse: ApiResponse = { text: fallback };
-      return NextResponse.json(apiResponse);
+    console.log("Gemini API response status:", apiResponse.status);
+
+    if (!apiResponse.ok) {
+      const errorText = await apiResponse.text();
+      console.error("❌ Gemini API error:", apiResponse.status, errorText);
+      
+      let errorMessage = `API Error: ${apiResponse.status}`;
+      if (apiResponse.status === 401) errorMessage = "Invalid API Key";
+      if (apiResponse.status === 403) errorMessage = "API Key not authorized";
+      if (apiResponse.status === 429) errorMessage = "Rate limit exceeded";
+      
+      const fallback = `<!-- ❌ API Error: ${apiResponse.status} -->
+<div style="background: #ffa94d; color: white; padding: 2rem; border-radius: 8px; margin: 1rem 0;">
+  <h3 style="margin-bottom: 1rem;">⚠️ API Error (${apiResponse.status})</h3>
+  <p>${errorMessage}</p>
+  <p>Prompt: "${prompt}"</p>
+</div>`;
+      const response: ApiResponse = { text: fallback };
+      return NextResponse.json(response);
     }
 
-    const data = await response.json();
+    const data = await apiResponse.json();
+    console.log("Gemini API response data:", JSON.stringify(data, null, 2));
+
     const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
     
-    console.log("Gemini raw response:", rawText.substring(0, 200) + "...");
+    console.log("Raw Gemini text length:", rawText.length);
+    console.log("Raw text preview:", rawText.substring(0, 200) + "...");
 
     if (!rawText.trim()) {
-      throw new Error("Empty response from Gemini");
+      console.error("❌ Empty response from Gemini API");
+      throw new Error("Empty response from Gemini API");
     }
 
     const cleaned = cleanAIResponse(rawText);
-    const apiResponse: ApiResponse = { text: cleaned };
+    console.log("Cleaned response length:", cleaned.length);
     
-    return NextResponse.json(apiResponse);
+    const finalResponse: ApiResponse = { text: cleaned };
+    console.log("✅ Successfully generated AI response");
+    
+    return NextResponse.json(finalResponse);
 
   } catch (err) {
-    console.error("API route error:", err);
-    const fallback = generateFallbackComponent("Error fallback component");
+    console.error("❌ API route error:", err);
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    
+    const fallback = `<!-- ❌ Server Error -->
+<div style="background: #ff8787; color: white; padding: 2rem; border-radius: 8px; margin: 1rem 0;">
+  <h3 style="margin-bottom: 1rem;">⚠️ Server Error</h3>
+  <p>${errorMessage}</p>
+  <p>Please check your API configuration.</p>
+</div>`;
+    
     const response: ApiResponse = { 
       text: fallback,
-      error: err instanceof Error ? err.message : "Unknown error"
+      error: errorMessage
     };
     return NextResponse.json(response);
   }
@@ -109,9 +152,19 @@ function cleanAIResponse(text: string): string {
     .replace(/\s*```$/gi, '')
     .replace(/```/g, '')
     .replace(/^`|`$/g, '')
+    .replace(/^<!DOCTYPE html>[\s\S]*?<body[^>]*>/i, '')
+    .replace(/<\/body>\s*<\/html>\s*$/i, '')
     .trim();
 
+  // If no HTML tags found, it might be an error message
+  if (!cleaned.includes('<') && !cleaned.includes('>')) {
+    return `<div style="background: #ffe8cc; padding: 1rem; border-radius: 8px; border: 1px solid #ffa94d;">
+  <p><strong>AI Response (non-HTML):</strong></p>
+  <pre style="white-space: pre-wrap;">${cleaned}</pre>
+</div>`;
+  }
 
+  // Extract HTML content
   if (cleaned.includes('<') && cleaned.includes('>')) {
     const firstTagIndex = cleaned.indexOf('<');
     if (firstTagIndex > 0) {
@@ -119,18 +172,7 @@ function cleanAIResponse(text: string): string {
     }
   }
 
-  return cleaned || generateFallbackComponent("Cleaned component");
-}
-
-function generateFallbackComponent(prompt: string): string {
-  return `<!-- AI Generated: ${prompt} -->
-<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 3rem 2rem; text-align: center; border-radius: 12px; margin: 1rem 0;">
-  <h2 style="margin-bottom: 1rem; font-size: 2rem;">${prompt}</h2>
-  <p style="margin-bottom: 2rem; opacity: 0.9;">Beautiful, responsive component</p>
-  <button style="background: white; color: #667eea; border: none; padding: 12px 30px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: transform 0.2s;">
-    Get Started
-  </button>
-</div>`;
+  return cleaned;
 }
 
 
