@@ -781,30 +781,14 @@ const askAi = async () => {
   setResponse("");
 
   try {
-    const baseUrl = settings.aiEndpoint;
-    const modelToUse = "openai/gpt-oss-20b";
-
     const controller = new AbortController();
-    const res = await fetch(`${baseUrl}/v1/chat/completions`, {
+    const res = await fetch(`${settings.aiEndpoint}`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: modelToUse,
-        messages: [
-          {
-            role: "system",
-            content: "You are a professional web development assistant. Return only HTML/CSS/JS code. No explanations or markdown."
-          },
-          ...(mode === "chat"
-            ? [...chatHistory, { role: "user", content: prompt }]
-            : [{ role: "user", content: prompt }])
-        ],
-        max_tokens: 1000,
-        temperature: 0.7,
-        stream: true
+        prompt,
+        mode,
+        chatHistory: mode === "chat" ? chatHistory : undefined
       }),
       signal: controller.signal
     });
@@ -819,40 +803,40 @@ const askAi = async () => {
     let aiText = "";
 
     if (reader) {
-      let done = false;
-      while (!done) {
-        const { value, done: readerDone } = await reader.read();
-        done = readerDone;
-        if (value) {
-          const chunk = decoder.decode(value, { stream: true });
-          
-          // OpenRouter/Streamed JSON events may come with "data: ..." lines
-          const lines = chunk.split("\n").filter(Boolean);
-          for (const line of lines) {
-            if (line.startsWith("data: ")) {
-              const jsonStr = line.replace(/^data: /, "");
-              if (jsonStr === "[DONE]") continue;
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
 
-              try {
-                const parsed = JSON.parse(jsonStr);
-                const delta = parsed.choices?.[0]?.delta?.content || parsed.choices?.[0]?.message?.content;
-                if (delta) {
-                  aiText += delta;
-                  setResponse((prev) => prev + delta); // live update
-                }
-              } catch (e) {
-                console.warn("Failed to parse chunk:", line, e);
+        // If the API returns streamed JSON lines like OpenRouter
+        const lines = chunk.split("\n").filter(Boolean);
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            const jsonStr = line.replace(/^data: /, "");
+            if (jsonStr === "[DONE]") continue;
+
+            try {
+              const parsed = JSON.parse(jsonStr);
+              const delta =
+                parsed.choices?.[0]?.delta?.content ||
+                parsed.choices?.[0]?.message?.content;
+              if (delta) {
+                aiText += delta;
+                setResponse((prev) => prev + delta);
               }
+            } catch (e) {
+              console.warn("Failed to parse chunk:", line, e);
             }
           }
         }
       }
     }
 
-    // Clean code block wrappers
-    const cleanedText = aiText.replace(/^```(?:html|js|css)?\s*/i, "")
-                              .replace(/\s*```$/i, "")
-                              .trim();
+    // Remove code block wrappers
+    const cleanedText = aiText
+      .replace(/^```(?:html|js|css)?\s*/i, "")
+      .replace(/\s*```$/i, "")
+      .trim();
 
     if (mode === "chat") {
       setChatHistory([
@@ -873,6 +857,7 @@ const askAi = async () => {
     setPrompt("");
   }
 };
+
 
 
 return (
