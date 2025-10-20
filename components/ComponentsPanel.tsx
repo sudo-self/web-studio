@@ -775,6 +775,7 @@ export default function ComponentsPanel({
 
     onInsert(component.code);
   };
+  
 const askAi = async () => {
   if (!prompt.trim()) return;
   setLoading(true);
@@ -808,31 +809,24 @@ const askAi = async () => {
         if (done) break;
         const chunk = decoder.decode(value, { stream: true });
 
-        // Handle DeepSeek streaming format
-        const lines = chunk.split('\n').filter(Boolean);
+        const lines = chunk.split("\n").filter(Boolean);
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const jsonStr = line.replace(/^data: /, '');
-            if (jsonStr === '[DONE]') continue;
+          if (line.startsWith("data: ")) {
+            const jsonStr = line.replace(/^data: /, "");
+            if (jsonStr === "[DONE]") continue;
 
             try {
               const parsed = JSON.parse(jsonStr);
-              // DeepSeek format: parsed.choices[0].delta.content
               const delta = parsed.choices?.[0]?.delta?.content;
               if (delta) {
                 aiText += delta;
                 setResponse((prev) => prev + delta);
               }
-            } catch (e) {
-              console.warn("Failed to parse DeepSeek chunk:", line, e);
-              // If it's not JSON, treat it as direct text
-              if (line.trim() && !line.startsWith('data: ')) {
-                aiText += line;
-                setResponse((prev) => prev + line);
-              }
+            } catch {
+              aiText += line.replace(/^data: /, "");
+              setResponse((prev) => prev + line.replace(/^data: /, ""));
             }
-          } else if (line.trim() && !line.startsWith('data: ')) {
-            // Handle non-SSE format (direct text streaming)
+          } else {
             aiText += line;
             setResponse((prev) => prev + line);
           }
@@ -840,9 +834,10 @@ const askAi = async () => {
       }
     }
 
-    // Clean the response - remove markdown code blocks and ensure it's HTML
+
     const cleanedText = cleanAIResponse(aiText);
 
+  
     if (mode === "chat") {
       setChatHistory([
         ...chatHistory,
@@ -852,52 +847,38 @@ const askAi = async () => {
     }
 
     setResponse(cleanedText);
-    
-    // Only insert if we have valid HTML content
-    if (cleanedText && containsHTML(cleanedText)) {
+
+ 
+    if (cleanedText) {
       onAiInsert(`\n<!-- AI Generated -->\n${cleanedText}\n`);
-    } else if (cleanedText) {
-      // Wrap non-HTML content in a div
-      onAiInsert(`\n<!-- AI Generated -->\n<div style="background: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px solid #e2e8f0;">\n${cleanedText}\n</div>\n`);
     }
 
   } catch (err) {
     console.error("AI streaming failed:", err);
-    setResponse("Error contacting AI server. Please check your DeepSeek API configuration.");
+    setResponse("Error contacting AI server. Please check your API configuration.");
   } finally {
     setLoading(false);
     setPrompt("");
   }
 };
 
-// Helper function to clean AI response
+
 const cleanAIResponse = (text: string): string => {
   let cleaned = text
-    .replace(/^```(?:html|js|css)?\s*/i, '')
-    .replace(/\s*```$/i, '')
-    .replace(/^`|`$/g, '')
+    .replace(/```(?:html|js|css)?/gi, "")
+    .replace(/```/g, "")
+    .replace(/`/g, "")
     .trim();
 
-  // Ensure it starts with HTML tag if it contains HTML
-  if (containsHTML(cleaned) && !cleaned.trim().startsWith('<')) {
-    // Extract HTML from the response
-    const htmlMatch = cleaned.match(/<[^>]*>/);
-    if (htmlMatch) {
-      const startIndex = cleaned.indexOf('<');
-      cleaned = cleaned.substring(startIndex);
-    }
+  if (containsHTML(cleaned) && !cleaned.startsWith("<")) {
+    const firstTag = cleaned.indexOf("<");
+    if (firstTag >= 0) cleaned = cleaned.substring(firstTag);
   }
 
   return cleaned;
 };
 
-// Helper function to check if text contains HTML
-const containsHTML = (text: string): boolean => {
-  return /<[^>]*>/.test(text);
-};
-
-// Update your AI endpoint in settings to point to your DeepSeek API route
-// Make sure your settings.aiEndpoint is set to your DeepSeek API route, e.g., "/api/ai/deepseek"
+const containsHTML = (text: string): boolean => /<[^>]+>/.test(text);
 
 
 
