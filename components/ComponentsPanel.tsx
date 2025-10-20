@@ -778,12 +778,6 @@ export default function ComponentsPanel({
     onInsert(component.code);
   };
 
-  // ============================================
-// STEP 1: Add this state at the top with your other useState declarations
-// ============================================
-const [isRequesting, setIsRequesting] = useState(false);
-
-
 // ============================================
 // STEP 2: Replace your entire askAi function with this
 // ============================================
