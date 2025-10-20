@@ -1,15 +1,26 @@
 // --- app/api/ai/route.ts ---
-
 import { NextRequest, NextResponse } from "next/server";
 
 const GEMINI_API_KEY = process.env.GOOGLE_AI_API_KEY;
 
+
+interface ChatMessage {
+  role: string;
+  content: string;
+}
+
+interface RequestBody {
+  prompt?: string;
+  mode?: string;
+  chatHistory?: ChatMessage[];
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const body: RequestBody = await req.json();
     const prompt = body?.prompt?.trim() || "";
     const mode = body?.mode || "response";
-    const chatHistory = body?.chatHistory || [];
+    const chatHistory: ChatMessage[] = body?.chatHistory || [];
 
     console.log("Received AI request:", { prompt, mode, chatHistoryLength: chatHistory.length });
 
@@ -17,13 +28,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ text: "Please provide a prompt" }, { status: 400 });
     }
 
+   
     if (!GEMINI_API_KEY) {
       console.warn("No Gemini API key - using fallback");
       const fallback = generateFallbackComponent(prompt);
       return NextResponse.json({ text: fallback });
     }
 
-  
+
     let fullPrompt = `As a senior front-end developer, create clean, responsive HTML with inline CSS.
 
 REQUIREMENTS:
@@ -36,10 +48,10 @@ REQUIREMENTS:
 
 Create this component: ${prompt}`;
 
-  
+ 
     if (mode === "chat" && chatHistory.length > 0) {
-      const recentHistory = chatHistory.slice(-4);
-      const historyContext = recentHistory.map(msg => 
+      const recentHistory = chatHistory.slice(-4); 
+      const historyContext = recentHistory.map((msg: ChatMessage) => 
         `${msg.role}: ${msg.content}`
       ).join('\n');
       fullPrompt = `Chat history:\n${historyContext}\n\nCurrent request: ${prompt}\n\nResponse:`;
