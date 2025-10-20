@@ -58,7 +58,6 @@ interface ChatMessage {
   content: string;
 }
 
-const [isRequesting, setIsRequesting] = useState(false);
 
 const components: { [key: string]: ComponentInfo } = {
   header: {
@@ -650,6 +649,9 @@ const getComponentIcon = (componentKey: string): ReactElement => {
   };
   return icons[componentKey] || <FileText size={16} />;
 };
+
+
+const [isRequesting, setIsRequesting] = useState(false);
 
 const generateHtml = (bodyContent: string) => `
   <!DOCTYPE html>
