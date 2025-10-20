@@ -782,6 +782,7 @@ const askAi = async () => {
   setResponse("");
 
   try {
+    // Send prompt to your AI API
     const res = await fetch(`${settings.aiEndpoint}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -793,24 +794,40 @@ const askAi = async () => {
       throw new Error(`Server responded with ${res.status}: ${errorText}`);
     }
 
+    // Parse JSON response
     const data = await res.json();
     const cleanedText = data?.text?.trim() || "";
 
+    if (!cleanedText) {
+      console.warn("AI returned empty content, nothing inserted.");
+      setResponse("AI returned empty content.");
+      return;
+    }
+
+    // Update state
     setResponse(cleanedText);
 
-    if (cleanedText) {
-      onAiInsert(`\n<!-- AI Generated -->\n${cleanedText}\n`);
-    } else {
-      console.warn("AI returned empty content, nothing inserted.");
+    // Insert AI HTML into editor
+    onAiInsert(`\n<!-- AI Generated -->\n${cleanedText}\n`);
+
+    // Update chat history if using chat mode
+    if (mode === "chat") {
+      setChatHistory([
+        ...chatHistory,
+        { role: "user", content: prompt },
+        { role: "assistant", content: cleanedText }
+      ]);
     }
+
   } catch (err) {
     console.error("AI request failed:", err);
-    setResponse("Error contacting AI server.");
+    setResponse("Error contacting AI server. Please check your API key and endpoint.");
   } finally {
     setLoading(false);
     setPrompt("");
   }
 };
+
 
 
 
