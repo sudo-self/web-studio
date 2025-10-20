@@ -1,23 +1,51 @@
-import type { NextRequest, NextResponse } from "next/server";
+// app/api/route.ts
+
+import { NextRequest, NextResponse } from "next/server";
+
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
 export async function POST(req: NextRequest) {
-  const { prompt } = await req.json();
+  try {
+    const body = await req.json();
+    const prompt = body.prompt;
 
-  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "deepseek/deepseek-chat-v3.1:free",
-      messages: [{ role: "user", content: prompt }],
-      max_tokens: 1000,
-      temperature: 0.7,
-    }),
-  });
+    if (!prompt || prompt.trim() === "") {
+      return NextResponse.json({ text: "No prompt provided." }, { status: 400 });
+    }
 
-  const data = await res.json();
-  return NextResponse.json({ text: data.choices?.[0]?.message?.content || "" });
+    // Call OpenRouter
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "deepseek/deepseek-chat-v3.1:free",
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      return NextResponse.json(
+        { text: `OpenRouter API error: ${errorText}` },
+        { status: res.status }
+      );
+    }
+
+    const data = await res.json();
+    const aiText = data.choices?.[0]?.message?.content || "No response from AI";
+
+    return NextResponse.json({ text: aiText });
+
+  } catch (err) {
+    console.error("API route failed:", err);
+    return NextResponse.json(
+      { text: "Server error contacting AI." },
+      { status: 500 }
+    );
+  }
 }
+
 
