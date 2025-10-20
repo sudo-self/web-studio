@@ -784,12 +784,12 @@ const askAi = async () => {
     let aiText = "";
 
     if (mode === "response") {
-   
-      const res = await fetch("/api", {
+      // Stateless HTML/CSS/JS generation
+      const res = await fetch("/api/route", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          prompt: `Generate clean, ready-to-use HTML/CSS/JS code for: ${prompt}. Return only code. No explanations, comments, or extra text.`
+          prompt: `Generate clean, ready-to-use HTML/CSS/JS code for: ${prompt}. Return only code. No explanations, comments, or extra text.`,
         }),
       });
 
@@ -800,16 +800,24 @@ const askAi = async () => {
 
       const data = await res.json();
       aiText = data.text || "";
-
     } else {
-    
-      const updatedHistory = [...chatHistory, { role: "user" as ChatRole, content: prompt }];
-      const res = await fetch("/api", {
+      // Chat mode
+      const updatedHistory = [
+        ...chatHistory,
+        { role: "user" as ChatRole, content: prompt },
+      ];
+
+      const chatPrompt = updatedHistory
+        .map(
+          (msg) =>
+            `${msg.role === "user" ? "User" : "Assistant"}: ${msg.content}`
+        )
+        .join("\n");
+
+      const res = await fetch("/api/route", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt: updatedHistory.map(msg => `${msg.role === "user" ? "User" : "Assistant"}: ${msg.content}`).join("\n")
-        }),
+        body: JSON.stringify({ prompt: chatPrompt }),
       });
 
       if (!res.ok) {
@@ -819,10 +827,14 @@ const askAi = async () => {
 
       const data = await res.json();
       aiText = data.text || "";
-      setChatHistory([...updatedHistory, { role: "assistant" as ChatRole, content: aiText }]);
+
+      setChatHistory([
+        ...updatedHistory,
+        { role: "assistant" as ChatRole, content: aiText },
+      ]);
     }
 
-
+    // Remove code block formatting
     const cleanedText = aiText
       .replace(/^```(?:html|js|css)?\s*/i, "")
       .replace(/\s*```$/i, "")
@@ -833,7 +845,6 @@ const askAi = async () => {
     if (cleanedText) {
       onAiInsert(`\n<!-- AI Generated -->\n${cleanedText}\n`);
     }
-
   } catch (err) {
     console.error("AI request failed:", err);
     const errorMessage =
