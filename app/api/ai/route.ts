@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ApiRequestBody, ApiResponse, ChatMessage } from "@/types";
 
 const GEMINI_API_KEY = process.env.GOOGLE_AI_API_KEY;
-const GEMINI_MODEL = "gemini-1.5-flash"; 
+const GEMINI_MODEL = "gemini-pro"; // Correct model name for v1beta API
 
 export async function POST(req: NextRequest) {
   try {
