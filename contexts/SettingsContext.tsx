@@ -1,11 +1,16 @@
 "use client";
 
 import React, { createContext, useContext, useState } from "react";
-import { Settings } from "@/types";
+
+interface Settings {
+  aiEndpoint: string;
+  theme: "light" | "dark" | "auto";
+  fontSize: number;
+  autoFormat: boolean;
+}
 
 interface SettingsContextType {
   askAI: (prompt: string) => Promise<string>;
-  aiEndpoint: string;
   settings: Settings;
   updateSettings: (newSettings: Partial<Settings>) => void;
 }
@@ -13,22 +18,22 @@ interface SettingsContextType {
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
-  const aiEndpoint = "/api"; // This is your API route
+  const aiEndpoint = "/api";
 
   const askAI = async (prompt: string) => {
     try {
-      const res = await fetch(aiEndpoint, {
+      const response = await fetch(aiEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt })
       });
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Server responded with ${res.status}: ${errorText}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Server responded with ${response.status}: ${errorText}`);
       }
 
-      const data = await res.json();
+      const data = await response.json();
       return data.text || "No response";
     } catch (err) {
       console.error("AI request failed:", err);
@@ -37,17 +42,17 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   };
 
   const [settings, setSettings] = useState<Settings>({
-    aiEndpoint,     // must match your types
+    aiEndpoint,
     theme: "light",
     fontSize: 14,
-    autoFormat: true,
+    autoFormat: true
   });
 
   const updateSettings = (newSettings: Partial<Settings>) =>
     setSettings((prev) => ({ ...prev, ...newSettings }));
 
   return (
-    <SettingsContext.Provider value={{ askAI, aiEndpoint, settings, updateSettings }}>
+    <SettingsContext.Provider value={{ askAI, settings, updateSettings }}>
       {children}
     </SettingsContext.Provider>
   );
@@ -58,6 +63,7 @@ export function useSettings() {
   if (!context) throw new Error("useSettings must be used within a SettingsProvider");
   return context;
 }
+
 
 
 
