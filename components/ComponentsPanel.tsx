@@ -162,7 +162,7 @@ const components: { [key: string]: ComponentInfo } = {
   card: {
     code: `<!-- Card Component -->
 <div style="background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; max-width: 300px; margin: 0 auto;">
-  <img src="https://via.placeholder.com/300x200" alt="Card Image" style="width: 100%; height: auto;">
+  <img src="https://studio-website-builder.vercel.app/icon-512.png" alt="Card Image" style="width: 100%; height: auto;">
   <div style="padding: 1.5rem;">
     <h3 style="margin-bottom: 0.5rem; color: #333;">Card Title</h3>
     <p style="color: #666; margin-bottom: 1rem;">This is a sample card with example content.</p>
@@ -179,8 +179,8 @@ const components: { [key: string]: ComponentInfo } = {
   <div style="max-width: 1200px; margin: 0 auto;">
     <h2 style="text-align: center; margin-bottom: 2rem; color: #333;">Image Gallery</h2>
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
-      <img src="https://via.placeholder.com/200" alt="Gallery Image" style="width: 100%; height: auto; border-radius: 8px;">
-      <img src="https://via.placeholder.com/200" alt="Gallery Image" style="width: 100%; height: auto; border-radius: 8px;">
+      <img src="https://studio-website-builder.vercel.app/icon-512.png" alt="Gallery Image" style="width: 100%; height: auto; border-radius: 8px;">
+      <img src="https://studio-website-builder.vercel.app/icon-512.png" alt="Gallery Image" style="width: 100%; height: auto; border-radius: 8px;">
     </div>
   </div>
 </section>`,
@@ -472,13 +472,13 @@ const components: { [key: string]: ComponentInfo } = {
     <h2 style="text-align: center; margin-bottom: 3rem; color: #333;">Meet Our Team</h2>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
       <div style="text-align: center; background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-        <img src="https://via.placeholder.com/150" alt="Team Member" style="width: 150px; height: 150px; border-radius: 50%; margin: 0 auto 1rem;">
+        <img src="https://studio-website-builder.vercel.app/icon-512.png" alt="Team Member" style="width: 150px; height: 150px; border-radius: 50%; margin: 0 auto 1rem;">
         <h3 style="color: #333; margin-bottom: 0.5rem;">John Doe</h3>
         <div style="color: #667eea; margin-bottom: 1rem;">CEO & Founder</div>
         <p style="color: #666;">Visionary leader with 10+ years of experience in the industry.</p>
       </div>
       <div style="text-align: center; background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-        <img src="https://via.placeholder.com/150" alt="Team Member" style="width: 150px; height: 150px; border-radius: 50%; margin: 0 auto 1rem;">
+        <img src="https://studio-website-builder.vercel.app/icon-512.png" alt="Team Member" style="width: 150px; height: 150px; border-radius: 50%; margin: 0 auto 1rem;">
         <h3 style="color: #333; margin-bottom: 0.5rem;">Jane Smith</h3>
         <div style="color: #667eea; margin-bottom: 1rem;">Creative Director</div>
         <p style="color: #666;">Award-winning designer with a passion for innovation.</p>
@@ -1175,7 +1175,7 @@ return (
         {/* Prompt Input */}
         <textarea
           className="prompt-textarea"
-          placeholder="Ask AI to generate or modify code..."
+          placeholder="Ask AI to generate code..."
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={(e) => {
@@ -1223,7 +1223,6 @@ return (
     </div>
   );
 }
-
 
 
 
