@@ -1,19 +1,19 @@
-// app/api/route.ts
-
 import { NextRequest, NextResponse } from "next/server";
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
+interface OpenRouterResponse {
+  choices?: { message?: { content?: string } }[];
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const prompt = body.prompt;
+    const { prompt } = await req.json();
 
-    if (!prompt || prompt.trim() === "") {
+    if (!prompt?.trim()) {
       return NextResponse.json({ text: "No prompt provided." }, { status: 400 });
     }
 
-    // Call OpenRouter
     const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -28,24 +28,19 @@ export async function POST(req: NextRequest) {
 
     if (!res.ok) {
       const errorText = await res.text();
-      return NextResponse.json(
-        { text: `OpenRouter API error: ${errorText}` },
-        { status: res.status }
-      );
+      return NextResponse.json({ text: `OpenRouter API error: ${errorText}` }, { status: res.status });
     }
 
-    const data = await res.json();
-    const aiText = data.choices?.[0]?.message?.content || "No response from AI";
+    const data: OpenRouterResponse = await res.json();
+    const aiText = data.choices?.[0]?.message?.content ?? "No response from AI";
 
     return NextResponse.json({ text: aiText });
 
   } catch (err) {
     console.error("API route failed:", err);
-    return NextResponse.json(
-      { text: "Server error contacting AI." },
-      { status: 500 }
-    );
+    return NextResponse.json({ text: "Server error contacting AI." }, { status: 500 });
   }
 }
+
 
 
