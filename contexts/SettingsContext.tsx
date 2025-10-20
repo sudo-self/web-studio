@@ -1,62 +1,51 @@
 "use client";
 
 import React, { createContext, useContext, useState } from "react";
+import { Settings } from "@/types";
 
-// Settings interface
-interface Settings {
-  theme: "light" | "dark";
-  fontSize: number;
-}
-
-// Context type
 interface SettingsContextType {
-  askAI: (prompt: string) => Promise<string>; // Function to call AI
-  aiEndpoint: string;                          // AI endpoint URL
-  settings: Settings;                          // User settings
-  updateSettings: (newSettings: Partial<Settings>) => void; // Update settings
+  askAI: (prompt: string) => Promise<string>;
+  aiEndpoint: string;
+  settings: Settings;
+  updateSettings: (newSettings: Partial<Settings>) => void;
 }
 
-// Create context
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
-// Provider component
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
-  // Set the AI endpoint (can be local API or remote)
-  const aiEndpoint = "/api"; // points to app/api/route.ts
+  const aiEndpoint = "/api"; // This is your API route
 
-  // Function to call AI
   const askAI = async (prompt: string) => {
     try {
-      const response = await fetch(aiEndpoint, {
+      const res = await fetch(aiEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Server responded with ${response.status}: ${errorText}`);
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Server responded with ${res.status}: ${errorText}`);
       }
 
-      const data = await response.json();
-      return data.text || "No response from AI";
+      const data = await res.json();
+      return data.text || "No response";
     } catch (err) {
       console.error("AI request failed:", err);
       return "Error contacting AI";
     }
   };
 
-  // State for settings
   const [settings, setSettings] = useState<Settings>({
+    aiEndpoint,     // must match your types
     theme: "light",
     fontSize: 14,
+    autoFormat: true,
   });
 
-  // Function to update settings
   const updateSettings = (newSettings: Partial<Settings>) =>
     setSettings((prev) => ({ ...prev, ...newSettings }));
 
-  // Provide everything via context
   return (
     <SettingsContext.Provider value={{ askAI, aiEndpoint, settings, updateSettings }}>
       {children}
@@ -64,12 +53,12 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Custom hook to use the context
 export function useSettings() {
   const context = useContext(SettingsContext);
   if (!context) throw new Error("useSettings must be used within a SettingsProvider");
   return context;
 }
+
 
 
 
