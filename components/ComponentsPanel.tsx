@@ -646,6 +646,31 @@ const generateHtml = (bodyContent: string) => `
   </html>
 `;
 
+// Simple GithubAuth component
+const GithubAuth = ({ onAuthSuccess }: { onAuthSuccess: (token: string) => void }) => {
+  const startOAuth = () => {
+    const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
+    const redirectUri = `${window.location.origin}/auth/github/callback`;
+    const scope = 'repo,workflow,user';
+    const state = Math.random().toString(36).substring(2);
+    
+    localStorage.setItem('github_oauth_state', state);
+    
+    const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${state}`;
+    window.location.href = authUrl;
+  };
+
+  return (
+    <button
+      className="btn btn-primary w-full flex items-center justify-center gap-2"
+      onClick={startOAuth}
+    >
+      <Github size={16} />
+      Sign in with GitHub
+    </button>
+  );
+};
+
 export default function ComponentsPanel({
   onInsert,
   onAiInsert,
@@ -670,6 +695,9 @@ export default function ComponentsPanel({
     isPublic: true,
     deployPages: true
   });
+  const [githubToken, setGithubToken] = useState<string | null>(null);
+  const [githubUser, setGithubUser] = useState<any>(null);
+  const [isCreatingRepo, setIsCreatingRepo] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -681,6 +709,13 @@ export default function ComponentsPanel({
       const savedRecent = localStorage.getItem('recent-components');
       if (savedRecent) {
         setRecentComponents(JSON.parse(savedRecent));
+      }
+      
+      // Check for existing GitHub token
+      const token = localStorage.getItem('github_access_token');
+      if (token) {
+        setGithubToken(token);
+        fetchUserInfo(token);
       }
     } catch (e) {
       console.error('Failed to load data from localStorage:', e);
@@ -695,6 +730,23 @@ export default function ComponentsPanel({
       console.error('Failed to save favorites:', e);
     }
   }, [favorites]);
+
+  const fetchUserInfo = async (token: string) => {
+    try {
+      const response = await fetch('https://api.github.com/user', {
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github.v3+json'
+        }
+      });
+      if (response.ok) {
+        const user = await response.json();
+        setGithubUser(user);
+      }
+    } catch (error) {
+      console.error('Failed to fetch user info:', error);
+    }
+  };
 
   const filteredComponents = useMemo(() => {
     if (!searchTerm) return componentCategories;
@@ -759,7 +811,7 @@ export default function ComponentsPanel({
     setLoading(true);
     setResponse("");
     try {
-      console.log("🚀 Sending AI request:", { 
+      console.log("ð Sending AI request:", { 
         prompt: prompt.substring(0, 100), 
         mode, 
         timestamp: new Date().toISOString()
@@ -858,7 +910,7 @@ CRITICAL REQUIREMENTS:
       setPrompt("");
 
     } catch (err) {
-      console.error("💥 AI request failed:", err);
+      console.error("ð¥ AI request failed:", err);
       let userMessage = "An error occurred";
       
       if (err instanceof Error) {
@@ -875,7 +927,7 @@ CRITICAL REQUIREMENTS:
         }
       }
       
-      setResponse(`❌ Error: ${userMessage}`);
+      setResponse(`â Error: ${userMessage}`);
       
     } finally {
       setLoading(false);
@@ -885,71 +937,33 @@ CRITICAL REQUIREMENTS:
     }
   };
 
-const [githubToken, setGithubToken] = useState<string | null>(null);
-const [githubUser, setGithubUser] = useState<any>(null);
-const [isCreatingRepo, setIsCreatingRepo] = useState(false);
-
-useEffect(() => {
-  // Check for existing token on mount
-  const token = localStorage.getItem('github_access_token');
-  if (token) {
-    setGithubToken(token);
-    // Optionally fetch user info
-    fetchUserInfo(token);
-  }
-}, []);
-
-useEffect(() => {
-  // Check for existing GitHub token on component mount
-  const token = localStorage.getItem('github_access_token');
-  if (token) {
-    setGithubToken(token);
-    fetchUserInfo(token);
-  }
-}, []);
-
-const fetchUserInfo = async (token: string) => {
-  try {
-    const response = await fetch('https://api.github.com/user', {
-      headers: { 
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/vnd.github.v3+json'
-      }
-    });
-    if (response.ok) {
-      const user = await response.json();
-      setGithubUser(user);
-    }
-  } catch (error) {
-    console.error('Failed to fetch user info:', error);
-  }
-};
-
-const getCurrentProjectData = () => {
-
-  return {
-    html: code || '<!DOCTYPE html>\n<html>\n<head>\n    <title>Web Studio Project</title>\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n</head>\n<body>\n    <h1>Project Created with AI Web Studio</h1>\n</body>\n</html>'
+  // GitHub functions
+  const getCurrentProjectData = () => {
+    // This would need to get the current code from your app state
+    // For now, return a basic HTML structure
+    return {
+      html: '<!DOCTYPE html>\n<html>\n<head>\n    <title>Web Studio Project</title>\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n</head>\n<body>\n    <h1>Project Created with AI Web Studio</h1>\n    <p>This project was created using studio.jessejesse.com</p>\n</body>\n</html>'
+    };
   };
-};
 
-const createProjectFiles = (projectData: any, deployPages: boolean) => {
-  const badge = '<img src="https://img.shields.io/badge/made%20with-studio.jessejesse.com-blue?style=flat" alt="made with studio.jessejesse.com" />';
-  
-  const files = [
-    {
-      path: 'index.html',
-      content: projectData.html
-    },
-    {
-      path: 'README.md',
-      content: `# ${githubForm.name}\n\n${githubForm.description}\n\n${badge}\n\n## About\n\nThis project was created with [studio.jessejesse.com](https://studio.jessejesse.com) - an AI-powered web development studio.\n\n## Getting Started\n\nOpen \\`index.html\\` in your browser to view the project.\n\n---\n*Created with ❤️ using AI Web Studio*`
-    }
-  ];
+  const createProjectFiles = (projectData: any, deployPages: boolean) => {
+    const badge = '<img src="https://img.shields.io/badge/made%20with-studio.jessejesse.com-blue?style=flat" alt="made with studio.jessejesse.com" />';
+    
+    const files = [
+      {
+        path: 'index.html',
+        content: projectData.html
+      },
+      {
+        path: 'README.md',
+        content: `# ${githubForm.name}\n\n${githubForm.description}\n\n${badge}\n\n## About\n\nThis project was created with [studio.jessejesse.com](https://studio.jessejesse.com) - an AI-powered web development studio.\n\n## Getting Started\n\nOpen \\`index.html\\` in your browser to view the project.\n\n---\n*Created with love using AI Web Studio*`
+      }
+    ];
 
-  if (deployPages) {
-    files.push({
-      path: '.github/workflows/static.yml',
-      content: `name: Deploy to GitHub Pages
+    if (deployPages) {
+      files.push({
+        path: '.github/workflows/static.yml',
+        content: `name: Deploy to GitHub Pages
 
 on:
   push:
@@ -976,55 +990,55 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v2`
-    });
-  }
-
-  return files;
-};
-
-const handleCreateRepo = async () => {
-  if (!githubToken) {
-    alert('Please connect to GitHub first');
-    return;
-  }
-
-  setIsCreatingRepo(true);
-  try {
-    const projectData = getCurrentProjectData();
-    const files = createProjectFiles(projectData, githubForm.deployPages);
-    
-    const response = await fetch('/api/github/create-repo', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        ...githubForm,
-        files: files,
-        accessToken: githubToken
-      }),
-    });
-
-    const result = await response.json();
-
-    if (result.success) {
-      alert(`Repository created successfully!\n\nURL: ${result.html_url}\n${githubForm.deployPages ? `Pages: ${result.pages_url}` : ''}`);
-      setShowGithubModal(false);
-      
-    
-      if (result.html_url) {
-        window.open(result.html_url, '_blank');
-      }
-    } else {
-      throw new Error(result.error || 'Failed to create repository');
+      });
     }
-  } catch (error: any) {
-    console.error('GitHub repo creation failed:', error);
-    alert(`Failed to create repository: ${error.message}`);
-  } finally {
-    setIsCreatingRepo(false);
-  }
-};
+
+    return files;
+  };
+
+  const handleCreateRepo = async () => {
+    if (!githubToken) {
+      alert('Please connect to GitHub first');
+      return;
+    }
+
+    setIsCreatingRepo(true);
+    try {
+      const projectData = getCurrentProjectData();
+      const files = createProjectFiles(projectData, githubForm.deployPages);
+      
+      const response = await fetch('/api/github/create-repo', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...githubForm,
+          files: files,
+          accessToken: githubToken
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        alert(`Repository created successfully!\n\nURL: ${result.html_url}\n${githubForm.deployPages ? `Pages: ${result.pages_url}` : ''}`);
+        setShowGithubModal(false);
+        
+        // Open the new repo in a new tab
+        if (result.html_url) {
+          window.open(result.html_url, '_blank');
+        }
+      } else {
+        throw new Error(result.error || 'Failed to create repository');
+      }
+    } catch (error: any) {
+      console.error('GitHub repo creation failed:', error);
+      alert(`Failed to create repository: ${error.message}`);
+    } finally {
+      setIsCreatingRepo(false);
+    }
+  };
 
   return (
     <div className="flex flex-col h-full overflow-hidden relative">
@@ -1072,7 +1086,7 @@ const handleCreateRepo = async () => {
               onClick={() => setSearchTerm('')}
               className="absolute right-1 top-1/2 transform -translate-y-1/2 text-text-muted hover:text-foreground text-xs"
             >
-              ×
+              Ã
             </button>
           </div>
         )}
@@ -1309,7 +1323,7 @@ const handleCreateRepo = async () => {
           />
           <div className="text-xs text-text-muted mt-1 px-1 flex justify-between">
             <span>Cloudflare Workers AI</span>
-            {(loading || isRequesting) && <span className="text-accent-color">●</span>}
+            {(loading || isRequesting) && <span className="text-accent-color">â</span>}
           </div>
         </div>
 
@@ -1358,181 +1372,182 @@ const handleCreateRepo = async () => {
         )}
       </div>
 
-     {showGithubModal && (
-  <div className="modal-overlay">
-    <div className="modal-content">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-text-primary flex items-center gap-2">
-          <Github size={20} />
-          Create GitHub Repository
-        </h3>
-        <button 
-          onClick={() => setShowGithubModal(false)}
-          className="btn btn-ghost btn-sm btn-icon"
-          disabled={isCreatingRepo}
-        >
-          <X size={16} />
-        </button>
-      </div>
-      
-      {!githubToken ? (
-        <div className="text-center py-4">
-          <Github size={48} className="mx-auto mb-4 text-text-muted" />
-          <h4 className="text-lg font-medium mb-2 text-text-primary">Connect GitHub</h4>
-          <p className="text-text-muted mb-6">Sign in with GitHub to create repositories and deploy to Pages</p>
-          <GithubAuth onAuthSuccess={(token) => {
-            setGithubToken(token);
-            fetchUserInfo(token);
-          }} />
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {/* User Info */}
-          <div className="flex items-center justify-between p-3 bg-component-bg rounded border border-panel-border">
-            <div className="flex items-center gap-3">
-              <img 
-                src={githubUser?.avatar_url} 
-                alt="GitHub Avatar" 
-                className="w-8 h-8 rounded-full"
-              />
-              <div>
-                <div className="text-sm font-medium text-text-primary">{githubUser?.login}</div>
-                <div className="text-xs text-text-muted">Connected to GitHub</div>
+      {showGithubModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-text-primary flex items-center gap-2">
+                <Github size={20} />
+                Create GitHub Repository
+              </h3>
+              <button 
+                onClick={() => setShowGithubModal(false)}
+                className="btn btn-ghost btn-sm btn-icon"
+                disabled={isCreatingRepo}
+              >
+                <X size={16} />
+              </button>
+            </div>
+            
+            {!githubToken ? (
+              <div className="text-center py-4">
+                <Github size={48} className="mx-auto mb-4 text-text-muted" />
+                <h4 className="text-lg font-medium mb-2 text-text-primary">Connect GitHub</h4>
+                <p className="text-text-muted mb-6">Sign in with GitHub to create repositories and deploy to Pages</p>
+                <GithubAuth onAuthSuccess={(token) => {
+                  setGithubToken(token);
+                  localStorage.setItem('github_access_token', token);
+                  fetchUserInfo(token);
+                }} />
               </div>
-            </div>
-            <button 
-              onClick={() => {
-                localStorage.removeItem('github_access_token');
-                setGithubToken(null);
-                setGithubUser(null);
-              }}
-              className="text-xs text-accent-color hover:underline"
-              disabled={isCreatingRepo}
-            >
-              Disconnect
-            </button>
-          </div>
+            ) : (
+              <div className="space-y-6">
+                {/* User Info */}
+                <div className="flex items-center justify-between p-3 bg-component-bg rounded border border-panel-border">
+                  <div className="flex items-center gap-3">
+                    <img 
+                      src={githubUser?.avatar_url} 
+                      alt="GitHub Avatar" 
+                      className="w-8 h-8 rounded-full"
+                    />
+                    <div>
+                      <div className="text-sm font-medium text-text-primary">{githubUser?.login}</div>
+                      <div className="text-xs text-text-muted">Connected to GitHub</div>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      localStorage.removeItem('github_access_token');
+                      setGithubToken(null);
+                      setGithubUser(null);
+                    }}
+                    className="text-xs text-accent-color hover:underline"
+                    disabled={isCreatingRepo}
+                  >
+                    Disconnect
+                  </button>
+                </div>
 
-          {/* Repository Form */}
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
-                Repository Name
-              </label>
-              <input 
-                type="text" 
-                value={githubForm.name}
-                onChange={(e) => setGithubForm(prev => ({...prev, name: e.target.value}))}
-                className="w-full p-3 border border-panel-border rounded-lg bg-component-bg text-text-primary text-sm focus:outline-none focus:border-accent-color"
-                placeholder="my-awesome-project"
-                disabled={isCreatingRepo}
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
-                Description
-              </label>
-              <input 
-                type="text" 
-                value={githubForm.description}
-                onChange={(e) => setGithubForm(prev => ({...prev, description: e.target.value}))}
-                className="w-full p-3 border border-panel-border rounded-lg bg-component-bg text-text-primary text-sm focus:outline-none focus:border-accent-color"
-                placeholder="Project created with AI Web Studio"
-                disabled={isCreatingRepo}
-              />
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <input 
-                type="checkbox" 
-                id="deploy-pages" 
-                checked={githubForm.deployPages}
-                onChange={(e) => setGithubForm(prev => ({...prev, deployPages: e.target.checked}))}
-                className="rounded border-panel-border bg-component-bg focus:ring-accent-color"
-                disabled={isCreatingRepo}
-              />
-              <label htmlFor="deploy-pages" className="text-sm text-text-primary">
-                Deploy to GitHub Pages
-              </label>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <input 
-                type="checkbox" 
-                id="is-public" 
-                checked={githubForm.isPublic}
-                onChange={(e) => setGithubForm(prev => ({...prev, isPublic: e.target.checked}))}
-                className="rounded border-panel-border bg-component-bg focus:ring-accent-color"
-                disabled={isCreatingRepo}
-              />
-              <label htmlFor="is-public" className="text-sm text-text-primary">
-                Public repository
-              </label>
-            </div>
+                {/* Repository Form */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-text-primary mb-2">
+                      Repository Name
+                    </label>
+                    <input 
+                      type="text" 
+                      value={githubForm.name}
+                      onChange={(e) => setGithubForm(prev => ({...prev, name: e.target.value}))}
+                      className="w-full p-3 border border-panel-border rounded-lg bg-component-bg text-text-primary text-sm focus:outline-none focus:border-accent-color"
+                      placeholder="my-awesome-project"
+                      disabled={isCreatingRepo}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-text-primary mb-2">
+                      Description
+                    </label>
+                    <input 
+                      type="text" 
+                      value={githubForm.description}
+                      onChange={(e) => setGithubForm(prev => ({...prev, description: e.target.value}))}
+                      className="w-full p-3 border border-panel-border rounded-lg bg-component-bg text-text-primary text-sm focus:outline-none focus:border-accent-color"
+                      placeholder="Project created with AI Web Studio"
+                      disabled={isCreatingRepo}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <input 
+                      type="checkbox" 
+                      id="deploy-pages" 
+                      checked={githubForm.deployPages}
+                      onChange={(e) => setGithubForm(prev => ({...prev, deployPages: e.target.checked}))}
+                      className="rounded border-panel-border bg-component-bg focus:ring-accent-color"
+                      disabled={isCreatingRepo}
+                    />
+                    <label htmlFor="deploy-pages" className="text-sm text-text-primary">
+                      Deploy to GitHub Pages
+                    </label>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <input 
+                      type="checkbox" 
+                      id="is-public" 
+                      checked={githubForm.isPublic}
+                      onChange={(e) => setGithubForm(prev => ({...prev, isPublic: e.target.checked}))}
+                      className="rounded border-panel-border bg-component-bg focus:ring-accent-color"
+                      disabled={isCreatingRepo}
+                    />
+                    <label htmlFor="is-public" className="text-sm text-text-primary">
+                      Public repository
+                    </label>
+                  </div>
 
-            {/* Files Preview */}
-            <div className="text-xs text-text-muted bg-component-bg p-4 rounded-lg border border-panel-border">
-              <p className="font-medium text-text-primary mb-3">Files that will be created:</p>
-              <ul className="space-y-2">
-                <li className="flex items-center gap-2">
-                  <div className="w-1 h-1 bg-text-muted rounded-full"></div>
-                  <code className="text-text-primary">index.html</code>
-                  <span className="text-text-muted">- Your website</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="w-1 h-1 bg-text-muted rounded-full"></div>
-                  <code className="text-text-primary">README.md</code>
-                  <span className="text-text-muted">- Project info</span>
-                </li>
-                {githubForm.deployPages && (
-                  <li className="flex items-center gap-2">
-                    <div className="w-1 h-1 bg-text-muted rounded-full"></div>
-                    <code className="text-text-primary">.github/workflows/static.yml</code>
-                    <span className="text-text-muted">- Deploy Pages</span>
-                  </li>
-                )}
-              </ul>
-              {githubForm.deployPages && (
-                <p className="mt-3 text-text-primary text-sm">
-                  Your site will be available at: <br />
-                  <code className="text-accent-color">https://{githubUser?.login}.github.io/{githubForm.name}</code>
-                </p>
-              )}
-            </div>
-          </div>
-          
-          <div className="flex gap-3 pt-4">
-            <button 
-              className="btn btn-ghost flex-1"
-              onClick={() => setShowGithubModal(false)}
-              disabled={isCreatingRepo}
-            >
-              Cancel
-            </button>
-            <button 
-              className="btn btn-primary flex-1 flex items-center justify-center gap-2"
-              onClick={handleCreateRepo}
-              disabled={isCreatingRepo || !githubForm.name.trim()}
-            >
-              {isCreatingRepo ? (
-                <>
-                  <div className="loading-spinner"></div>
-                  Creating...
-                </>
-              ) : (
-                <>
-                  <Github size={16} />
-                  Create Repository
-                </>
-              )}
-            </button>
+                  {/* Files Preview */}
+                  <div className="text-xs text-text-muted bg-component-bg p-4 rounded-lg border border-panel-border">
+                    <p className="font-medium text-text-primary mb-3">Files that will be created:</p>
+                    <ul className="space-y-2">
+                      <li className="flex items-center gap-2">
+                        <div className="w-1 h-1 bg-text-muted rounded-full"></div>
+                        <code className="text-text-primary">index.html</code>
+                        <span className="text-text-muted">- Your website</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <div className="w-1 h-1 bg-text-muted rounded-full"></div>
+                        <code className="text-text-primary">README.md</code>
+                        <span className="text-text-muted">- Project info</span>
+                      </li>
+                      {githubForm.deployPages && (
+                        <li className="flex items-center gap-2">
+                          <div className="w-1 h-1 bg-text-muted rounded-full"></div>
+                          <code className="text-text-primary">.github/workflows/static.yml</code>
+                          <span className="text-text-muted">- Deploy Pages</span>
+                        </li>
+                      )}
+                    </ul>
+                    {githubForm.deployPages && (
+                      <p className="mt-3 text-text-primary text-sm">
+                        Your site will be available at: <br />
+                        <code className="text-accent-color">https://{githubUser?.login}.github.io/{githubForm.name}</code>
+                      </p>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex gap-3 pt-4">
+                  <button 
+                    className="btn btn-ghost flex-1"
+                    onClick={() => setShowGithubModal(false)}
+                    disabled={isCreatingRepo}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    className="btn btn-primary flex-1 flex items-center justify-center gap-2"
+                    onClick={handleCreateRepo}
+                    disabled={isCreatingRepo || !githubForm.name.trim()}
+                  >
+                    {isCreatingRepo ? (
+                      <>
+                        <div className="loading-spinner"></div>
+                        Creating...
+                      </>
+                    ) : (
+                      <>
+                        <Github size={16} />
+                        Create Repository
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
     </div>
-  </div>
-)}
-</div>
   );
 }
