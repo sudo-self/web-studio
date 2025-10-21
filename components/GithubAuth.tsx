@@ -7,20 +7,23 @@ interface GithubAuthProps {
 }
 
 export default function GithubAuth({ onAuthSuccess }: GithubAuthProps) {
-  const startOAuth = async () => {
-    try {
-      const response = await fetch('/api/github/auth/init');
-      const data = await response.json();
-      
-      if (data.authUrl) {
-        window.location.href = data.authUrl;
-      } else {
-        throw new Error('Failed to get auth URL');
-      }
-    } catch (error) {
-      console.error('Failed to start OAuth:', error);
-      alert('Failed to connect to GitHub. Please try again.');
+  const startOAuth = () => {
+
+    const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
+    
+    if (!clientId) {
+      alert('GitHub OAuth is not configured. Please add NEXT_PUBLIC_GITHUB_CLIENT_ID to your environment variables.');
+      return;
     }
+
+    const redirectUri = `${window.location.origin}/auth/github/callback`;
+    const scope = 'repo,workflow,user';
+    const state = Math.random().toString(36).substring(2);
+    
+    localStorage.setItem('github_oauth_state', state);
+    
+    const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${state}`;
+    window.location.href = authUrl;
   };
 
   return (
