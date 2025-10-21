@@ -705,7 +705,7 @@ export default function ComponentsPanel({
     }
   }, []);
 
-  // Save favorites to localStorage
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
@@ -715,7 +715,7 @@ export default function ComponentsPanel({
     }
   }, [favorites]);
 
-  // Filter components based on search
+
   const filteredComponents = useMemo(() => {
     if (!searchTerm) return componentCategories;
     const filtered: ComponentCategories = {};
@@ -816,7 +816,7 @@ CRITICAL REQUIREMENTS:
         throw new Error(`Worker API error: ${response.status} - ${errorText}`);
       }
 
-      // Handle streaming response
+   
       const reader = response.body?.getReader();
       if (!reader) {
         throw new Error("No response body received");
@@ -839,11 +839,11 @@ CRITICAL REQUIREMENTS:
                 const data = JSON.parse(line.slice(6));
                 if (data.response) {
                   fullContent += data.response;
-                  // Update response in real-time for better UX
+               
                   setResponse(fullContent);
                 }
               } catch (e) {
-                // Skip invalid JSON lines
+             
               }
             }
           }
@@ -867,11 +867,11 @@ CRITICAL REQUIREMENTS:
 
       setResponse(cleaned);
 
-      // Insert the generated code with timestamp
+    
       const timestamp = new Date().toLocaleTimeString();
       onAiInsert(`\n<!-- AI Generated (${timestamp}): ${prompt.substring(0, 50)}... -->\n${cleaned}\n`);
 
-      // Update chat history if in chat mode
+  
       if (mode === "chat") {
         setChatHistory(prev => [
           ...prev,
@@ -923,7 +923,7 @@ CRITICAL REQUIREMENTS:
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1 text-xs font-medium text-text-secondary">
             <SquareStack size={12} />
-            <span>Components</span>
+            <span>STUDIO</span>
           </div>
           <div className="flex items-center gap-1">
             <button
@@ -1140,10 +1140,10 @@ CRITICAL REQUIREMENTS:
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
               <Bot size={18} style={{ color: "var(--accent-color)" }} />
-              <h3>AI Assistant</h3>
+              <h3>AI Builder</h3>
             </div>
             <div className="text-xs text-text-muted bg-component-bg px-2 py-1 rounded">
-              Llama 3.3 70B
+              ai.JesseJesse.com
             </div>
           </div>
         </div>
@@ -1174,13 +1174,7 @@ CRITICAL REQUIREMENTS:
         <div className="relative">
           <textarea
             className="prompt-textarea"
-            placeholder="Describe what you want to create...
-
-Examples:
-• Hero section with blue gradient
-• Pricing cards with 3 tiers
-• Contact form with modern styling
-• Navigation bar with dropdown"
+            placeholder="Describe what to create...
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={(e) => {
@@ -1194,7 +1188,7 @@ Examples:
             disabled={loading || isRequesting}
           />
           <div className="text-xs text-text-muted mt-1 px-1 flex justify-between">
-            <span>Press Ctrl/Cmd + Enter to send</span>
+            <span>Meta/LLM 70B Fast</span>
             {(loading || isRequesting) && <span className="text-accent-color">●</span>}
           </div>
         </div>
