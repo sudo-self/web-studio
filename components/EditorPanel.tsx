@@ -94,7 +94,7 @@ export default function EditorPanel({
 
       {/* Header */}
       <div className="panel-header flex justify-between items-center gap-2 flex-wrap p-3 border-b border-panel-border bg-panel-header">
-        <h2 className="m-0 text-sm font-semibold">EDIT HTML</h2>
+        <h2 className="m-0 text-sm font-semibold">HTML CODE</h2>
         <div className="flex gap-2 flex-wrap">
           <button
             className="btn btn-success"
