@@ -129,9 +129,6 @@ export default function EditorPanel({
       <div className="panel-header">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-3">
-            <svg className="w-5 h-5 text-interactive-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-            </svg>
             <h2 className="text-md font-semibold tracking-tight">HTML</h2>
           </div>
           <div className="flex items-center gap-4 text-xs text-text-tertiary">
