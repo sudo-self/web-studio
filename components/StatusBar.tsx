@@ -11,19 +11,21 @@ export default function StatusBar() {
         className="flex items-center gap-2 hover:text-green-400 transition-colors cursor-pointer"
       >
         <span className="font-semibold">AI Web Studio</span>
-        <span className="text-green-400">studio.jessejesse.com</span>
+        <span className="text-green-400">&#10085;</span>
       </a>
 
-   
+     
       <div className="font-semibold flex items-center gap-1 text-gray-400 hover:text-orange-400 transition-colors cursor-default">
         <img 
           src="./colorado.svg" 
           alt="Colorado" 
-          className="w-5 h-5"
+          className="w-8 h-8"
         />
+       
+        <span className="text-green-400">JesseJesse.com</span>
       </div>
 
-     
+ 
       <a
         href="https://github.com/sudo-self/web-studio"
         target="_blank"
