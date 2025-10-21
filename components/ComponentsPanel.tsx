@@ -1147,60 +1147,60 @@ CRITICAL REQUIREMENTS:
   };
 
   return (
-    <div className="flex flex-col h-full overflow-hidden relative">
-      {onResizeStart && (
-        <div
-          className="absolute -right-2 top-0 bottom-0 w-4 cursor-col-resize z-20 hover:bg-accent-color hover:bg-opacity-50 transition-colors"
-          onMouseDown={onResizeStart}
-        />
-      )}
+<div className="flex flex-col h-full overflow-hidden relative">
+  {onResizeStart && (
+    <div
+      className="absolute -right-2 top-0 bottom-0 w-4 cursor-col-resize z-20 hover:bg-accent-color hover:bg-opacity-50 transition-colors"
+      onMouseDown={onResizeStart}
+    />
+  )}
 
-      <div className="!p-2 border-b border-panel-border">
-        <div className="flex items-center justify-between">
-         <div className="flex items-center gap-2 text-xs font-semibold">
-  <img 
-    src="./icon-512.png" 
-    alt="Studio Logo" 
-    className="w-10 h-10 rounded-full"
-  />
-  <span className="text-green-400">STUDIO</span>
-</div>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setSearchTerm(searchTerm ? '' : ' ')}
-              className="!p-1.5 hover:bg-component-hover rounded transition-colors"
-              title="Search"
-            >
-              <Search size={15} />
-            </button>
-            <button
-              onClick={onOpenSettings}
-              className="!p-1.5 hover:bg-component-hover rounded transition-colors"
-              title="Settings"
-            >
-              <Settings size={15} />
-            </button>
-          </div>
-        </div>
-        {searchTerm !== '' && (
-          <div className="mt-2 relative">
-            <input
-              type="text"
-              placeholder="Type to search components..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-2 pr-6 py-1 bg-component-bg border border-panel-border rounded text-xs focus:outline-none focus:border-accent-color text-foreground"
-              autoFocus
-            />
-            <button
-              onClick={() => setSearchTerm('')}
-              className="absolute right-1 top-1/2 transform -translate-y-1/2 text-text-muted hover:text-foreground text-xs"
-            >
-              ×
-            </button>
-          </div>
-        )}
+  <div className="!p-2 border-b border-panel-border">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <img 
+          src="./icon-512.png" 
+          alt="Studio Logo" 
+          className="w-10 h-10 rounded-full"
+        />
+        <span className="text-green-400 font-semibold text-lg">STUDIO</span>
       </div>
+      <div className="flex items-center gap-1">
+        <button
+          onClick={() => setSearchTerm(searchTerm ? '' : ' ')}
+          className="!p-1.5 hover:bg-component-hover rounded transition-colors"
+          title="Search"
+        >
+          <Search size={15} />
+        </button>
+        <button
+          onClick={onOpenSettings}
+          className="!p-1.5 hover:bg-component-hover rounded transition-colors"
+          title="Settings"
+        >
+          <Settings size={15} />
+        </button>
+      </div>
+    </div>
+    {searchTerm !== '' && (
+      <div className="mt-2 relative">
+        <input
+          type="text"
+          placeholder="Type to search components..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full pl-2 pr-6 py-1 bg-component-bg border border-panel-border rounded text-xs focus:outline-none focus:border-accent-color text-foreground"
+          autoFocus
+        />
+        <button
+          onClick={() => setSearchTerm('')}
+          className="absolute right-1 top-1/2 transform -translate-y-1/2 text-text-muted hover:text-foreground text-xs"
+        >
+          ×
+        </button>
+      </div>
+    )}
+  </div>
 
       <div className="flex-1 overflow-auto min-h-0">
         <div className="components-list">
