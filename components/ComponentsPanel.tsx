@@ -1525,13 +1525,16 @@ CRITICAL REQUIREMENTS:
               ) : (
                 <>
                   <Github size={16} />
-                  Create Repository
-                </>
-              )}
-            </button>
+                        Create Repository
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
     </div>
-  </div>
-)}
+  );
+}
