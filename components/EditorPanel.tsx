@@ -106,11 +106,11 @@ export default function EditorPanel({
           <button className="btn btn-secondary" onClick={handleCopyCode}>
             Copy
           </button>
-          <button className="btn btn-danger" onClick={handleClearCode}>
-            Clear
-          </button>
           <button className="btn btn-secondary" onClick={handleExportCode}>
             Export
+          </button>
+            <button className="btn btn-danger" onClick={handleClearCode}>
+            Clear
           </button>
         </div>
       </div>
