@@ -951,14 +951,27 @@ CRITICAL REQUIREMENTS:
     }
   };
 
-  // GitHub functions
-  const getCurrentProjectData = () => {
-    // This would need to get the current code from your app state
-    // For now, return a basic HTML structure
-    return {
-      html: '<!DOCTYPE html>\n<html>\n<head>\n    <title>Web Studio Project</title>\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n</head>\n<body>\n    <h1>Project Created with AI Web Studio</h1>\n    <p>This project was created using studio.jessejesse.com</p>\n</body>\n</html>'
-    };
+ const getCurrentProjectData = () => {
+  // Get the current code from your app state
+  // You'll need to pass this as a prop or use a context
+  return {
+    html: code || `<!DOCTYPE html>
+<html>
+<head>
+    <title>${githubForm.name}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+    </style>
+</head>
+<body>
+    <h1>${githubForm.name}</h1>
+    <p>${githubForm.description}</p>
+    <p>Created with <a href="https://studio.jessejesse.com">AI Web Studio</a></p>
+</body>
+</html>`
   };
+};
 
   const createProjectFiles = (projectData: any, deployPages: boolean) => {
     const badge = '<img src="https://img.shields.io/badge/made%20with-studio.jessejesse.com-blue?style=flat" alt="made with studio.jessejesse.com" />';
