@@ -19,6 +19,12 @@ interface EditorPanelProps {
   onResizeStart?: (e: React.MouseEvent) => void;
 }
 
+interface Toast {
+  id: string;
+  message: string;
+  type: "success" | "error" | "warning";
+}
+
 const highlightCode = (code: string) => {
   try {
     return Prism.highlight(String(code || ""), Prism.languages.html, "html");
@@ -35,47 +41,70 @@ export default function EditorPanel({
   onResizeStart,
 }: EditorPanelProps) {
   const [formatting, setFormatting] = useState(false);
+  const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const handleRunCode = () => runCode();
+  const addToast = (message: string, type: "success" | "error" | "warning" = "success") => {
+    const id = Math.random().toString(36).substr(2, 9);
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(toast => toast.id !== id));
+    }, 4000);
+  };
+
+  const handleRunCode = () => {
+    runCode();
+    addToast("Code executed successfully");
+  };
 
   const handleFormatCode = async () => {
     try {
       setFormatting(true);
-    
       const formatted = await prettier.format(String(code || ""), {
         parser: "html",
         plugins: [parserHtml],
       });
       setCode(formatted);
+      addToast("Code formatted successfully");
     } catch (err) {
       console.error("Formatting failed:", err);
-      alert("Formatting failed. Check your HTML syntax.");
+      addToast("Formatting failed. Check your HTML syntax.", "error");
     } finally {
       setFormatting(false);
     }
   };
 
   const handleClearCode = () => {
-    if (confirm("Are you sure you want to clear the editor?")) setCode("");
+    if (window.confirm("Are you sure you want to clear the editor?")) {
+      setCode("");
+      addToast("Editor cleared", "warning");
+    }
   };
 
   const handleExportCode = () => {
-    const blob = new Blob([String(code || "")], { type: "text/html" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "code.html";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    try {
+      const blob = new Blob([String(code || "")], { type: "text/html" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "component.html";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      addToast("Code exported successfully");
+    } catch (err) {
+      addToast("Export failed", "error");
+    }
   };
 
-  const handleCopyCode = () => {
-    navigator.clipboard
-      .writeText(String(code || ""))
-      .then(() => alert("Code copied to clipboard!"))
-      .catch(console.error);
+  const handleCopyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(String(code || ""));
+      addToast("Code copied to clipboard!");
+    } catch (err) {
+      addToast("Failed to copy code", "error");
+      console.error("Copy failed:", err);
+    }
   };
 
   const lineNumbers = useMemo(() => {
@@ -83,62 +112,118 @@ export default function EditorPanel({
     return Array.from({ length: totalLines }, (_, i) => i + 1);
   }, [code]);
 
+  const characterCount = String(code || "").length;
+  const lineCount = String(code || "").split("\n").length;
+
   return (
-    <div className="flex flex-col h-full bg-panel-bg text-foreground rounded-lg overflow-hidden relative">
+    <div className="panel editor-panel relative">
+      {/* Resize Handle */}
       {onResizeStart && (
         <div
-          className="absolute -right-2 top-0 bottom-0 w-4 cursor-col-resize z-20 hover:bg-accent-color hover:bg-opacity-50 transition-colors"
+          className="absolute -right-2 top-0 bottom-0 w-4 cursor-col-resize z-20 hover:bg-interactive-accent/20 transition-colors duration-200 rounded"
           onMouseDown={onResizeStart}
         />
       )}
 
       {/* Header */}
-      <div className="panel-header flex justify-between items-center gap-2 flex-wrap p-3 border-b border-panel-border bg-panel-header">
-        <h2 className="m-0 text-sm font-semibold">HTML</h2>
-        <div className="flex gap-2 flex-wrap">
+      <div className="panel-header">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <svg className="w-5 h-5 text-interactive-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+            </svg>
+            <h2 className="text-lg font-semibold tracking-tight">HTML Editor</h2>
+          </div>
+          <div className="flex items-center gap-4 text-xs text-text-tertiary">
+            <div className="flex items-center gap-1">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              {lineCount} lines
+            </div>
+            <div className="flex items-center gap-1">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+              </svg>
+              {characterCount} chars
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex gap-2">
           <button
-            className="btn btn-secondary"
+            className={`btn ${formatting ? 'btn-secondary loading' : 'btn-outline'} btn-sm`}
             onClick={handleFormatCode}
             disabled={formatting}
           >
-            {formatting ? "Formatting..." : "Format"}
+            {formatting ? (
+              "Formatting..."
+            ) : (
+              <div className="flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Format
+              </div>
+            )}
           </button>
-          <button className="btn btn-secondary" onClick={handleCopyCode}>
-            Copy
+
+          <button className="btn btn-outline btn-sm" onClick={handleCopyCode}>
+            <div className="flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              Copy
+            </div>
           </button>
-          <button className="btn btn-secondary" onClick={handleExportCode}>
-            Export
+
+          <button className="btn btn-outline btn-sm" onClick={handleExportCode}>
+            <div className="flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+              </svg>
+              Export
+            </div>
           </button>
-            <button className="btn btn-danger" onClick={handleClearCode}>
-            Clear
+
+          <button className="btn btn-danger btn-sm" onClick={handleClearCode}>
+            <div className="flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              Clear
+            </div>
           </button>
         </div>
       </div>
 
       {/* Editor with line numbers */}
-      <div className="flex flex-1 overflow-auto">
-        <div className="bg-panel-header text-gray-400 text-right pr-3 select-none pt-[15px] border-r border-panel-border">
+      <div className="flex flex-1 overflow-auto bg-surface-primary rounded-lg border border-border-primary">
+        {/* Line Numbers */}
+        <div className="bg-surface-secondary text-text-tertiary text-right pr-4 pl-3 py-4 select-none border-r border-border-primary font-mono text-sm">
           {lineNumbers.map((line) => (
             <div
               key={line}
-              style={{ height: "1.5em", lineHeight: "1.5em", fontSize: 14 }}
+              className="h-6 leading-6 hover:text-text-secondary transition-colors"
+              style={{ lineHeight: "1.5em" }}
             >
               {line}
             </div>
           ))}
         </div>
 
-        <div className="flex-1">
+        {/* Code Editor */}
+        <div className="flex-1 relative">
           <Editor
             value={String(code || "")}
             onValueChange={(val) => setCode(String(val))}
             highlight={highlightCode}
-            padding={15}
+            padding={16}
             style={{
-              fontFamily: '"Fira Code", monospace',
+              fontFamily: '"Fira Code", "JetBrains Mono", "Cascadia Code", monospace',
               fontSize: 14,
-              backgroundColor: "var(--panel-bg)",
-              color: "var(--foreground)",
+              backgroundColor: "var(--surface-primary)",
+              color: "var(--text-primary)",
               minHeight: "100%",
               lineHeight: 1.5,
               flex: 1,
@@ -149,12 +234,45 @@ export default function EditorPanel({
         </div>
       </div>
 
+      {/* Toast Notifications */}
+      <div className="fixed top-4 right-4 z-50 space-y-2">
+        {toasts.map((toast) => (
+          <div
+            key={toast.id}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border transform transition-all duration-300 animate-in slide-in-from-right-8 ${
+              toast.type === "success" 
+                ? "bg-interactive-success/10 border-interactive-success/20 text-interactive-success" 
+                : toast.type === "error"
+                ? "bg-interactive-danger/10 border-interactive-danger/20 text-interactive-danger"
+                : "bg-interactive-warning/10 border-interactive-warning/20 text-interactive-warning"
+            }`}
+          >
+            <div className={`w-2 h-2 rounded-full ${
+              toast.type === "success" 
+                ? "bg-interactive-success" 
+                : toast.type === "error"
+                ? "bg-interactive-danger"
+                : "bg-interactive-warning"
+            }`} />
+            <span className="text-sm font-medium">{toast.message}</span>
+            <button
+              onClick={() => setToasts(prev => prev.filter(t => t.id !== toast.id))}
+              className="text-current hover:opacity-70 transition-opacity"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        ))}
+      </div>
+
       <style jsx global>{`
         .editor-pre,
         .editor-textarea {
           margin: 0 !important;
-          padding: 15px !important;
-          font-family: "Fira Code", monospace !important;
+          padding: 16px !important;
+          font-family: "Fira Code", "JetBrains Mono", "Cascadia Code", monospace !important;
           font-size: 14px !important;
           line-height: 1.5 !important;
           white-space: pre !important;
@@ -164,13 +282,13 @@ export default function EditorPanel({
         }
 
         .editor-pre {
-          background: var(--panel-bg) !important;
-          color: var(--foreground) !important;
+          background: var(--surface-primary) !important;
+          color: var(--text-primary) !important;
         }
 
         .editor-textarea {
           outline: none !important;
-          caret-color: var(--foreground) !important;
+          caret-color: var(--interactive-accent) !important;
           background: transparent !important;
           border: none !important;
           resize: none !important;
@@ -193,13 +311,13 @@ export default function EditorPanel({
           outline: none !important;
           border: none !important;
           background: transparent !important;
-          caret-color: var(--foreground) !important;
+          caret-color: var(--interactive-accent) !important;
           animation: cursor-blink 1.2s steps(2, start) infinite !important;
         }
 
         .react-simple-code-editor pre {
           margin: 0 !important;
-          padding: 15px !important;
+          padding: 16px !important;
           pointer-events: none !important;
           overflow: hidden !important;
         }
@@ -213,9 +331,29 @@ export default function EditorPanel({
           }
         }
 
-        /* Prism tokens */
+        .animate-in {
+          animation-duration: 300ms;
+          animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .slide-in-from-right-8 {
+          animation-name: slideInFromRight;
+        }
+        
+        @keyframes slideInFromRight {
+          from {
+            opacity: 0;
+            transform: translateX(100%);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        /* Prism tokens - Left unchanged as requested */
         .token.comment { color: #6a737d; }
-        .token.punctuation { color: var(--foreground); }
+        .token.punctuation { color: var(--text-primary); }
         .token.tag { color: #e06c75; }
         .token.attr-name { color: #d19a66; }
         .token.attr-value { color: #98c379; }
