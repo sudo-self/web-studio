@@ -925,6 +925,107 @@ const fetchUserInfo = async (token: string) => {
   }
 };
 
+const getCurrentProjectData = () => {
+
+  return {
+    html: code || '<!DOCTYPE html>\n<html>\n<head>\n    <title>Web Studio Project</title>\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n</head>\n<body>\n    <h1>Project Created with AI Web Studio</h1>\n</body>\n</html>'
+  };
+};
+
+const createProjectFiles = (projectData: any, deployPages: boolean) => {
+  const badge = '<img src="https://img.shields.io/badge/made%20with-studio.jessejesse.com-blue?style=flat" alt="made with studio.jessejesse.com" />';
+  
+  const files = [
+    {
+      path: 'index.html',
+      content: projectData.html
+    },
+    {
+      path: 'README.md',
+      content: `# ${githubForm.name}\n\n${githubForm.description}\n\n${badge}\n\n## About\n\nThis project was created with [studio.jessejesse.com](https://studio.jessejesse.com) - an AI-powered web development studio.\n\n## Getting Started\n\nOpen \\`index.html\\` in your browser to view the project.\n\n---\n*Created with ❤️ using AI Web Studio*`
+    }
+  ];
+
+  if (deployPages) {
+    files.push({
+      path: '.github/workflows/static.yml',
+      content: `name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: '.'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2`
+    });
+  }
+
+  return files;
+};
+
+const handleCreateRepo = async () => {
+  if (!githubToken) {
+    alert('Please connect to GitHub first');
+    return;
+  }
+
+  setIsCreatingRepo(true);
+  try {
+    const projectData = getCurrentProjectData();
+    const files = createProjectFiles(projectData, githubForm.deployPages);
+    
+    const response = await fetch('/api/github/create-repo', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        ...githubForm,
+        files: files,
+        accessToken: githubToken
+      }),
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      alert(`Repository created successfully!\n\nURL: ${result.html_url}\n${githubForm.deployPages ? `Pages: ${result.pages_url}` : ''}`);
+      setShowGithubModal(false);
+      
+    
+      if (result.html_url) {
+        window.open(result.html_url, '_blank');
+      }
+    } else {
+      throw new Error(result.error || 'Failed to create repository');
+    }
+  } catch (error: any) {
+    console.error('GitHub repo creation failed:', error);
+    alert(`Failed to create repository: ${error.message}`);
+  } finally {
+    setIsCreatingRepo(false);
+  }
+};
+
   return (
     <div className="flex flex-col h-full overflow-hidden relative">
       {onResizeStart && (
