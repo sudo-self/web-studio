@@ -1,4 +1,3 @@
-// app/auth/github/callback/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(req: NextRequest) {
@@ -19,7 +18,7 @@ export async function GET(req: NextRequest) {
       method: 'POST',
       headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        client_id: process.env.GITHUB_CLIENT_ID,
+        client_id: process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID,
         client_secret: process.env.GITHUB_CLIENT_SECRET,
         code,
         redirect_uri: `${req.nextUrl.origin}/auth/github/callback`,
@@ -32,12 +31,12 @@ export async function GET(req: NextRequest) {
       throw new Error(data.error_description || 'No access token received');
     }
 
-    // Redirect back to app with token in cookie
     const redirectUrl = new URL('/', req.url);
     const response = NextResponse.redirect(redirectUrl);
 
+    // Set token in cookie readable by JS
     response.cookies.set('github_token', data.access_token, {
-      httpOnly: true,
+      httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 30, // 30 days
@@ -52,5 +51,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 }
+
 
 
