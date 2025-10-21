@@ -79,7 +79,7 @@ const components: { [key: string]: ComponentInfo } = {
     code: `<!-- Hero Section -->
 <section style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 4rem 2rem; text-align: center;">
   <div style="max-width: 800px; margin: 0 auto;">
-    <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">Welcome to Our Website</h2>
+    <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">World Wide Web</h2>
     <p style="font-size: 1.2rem; margin-bottom: 2rem;">We create amazing digital experiences</p>
     <button style="background: white; color: #333; border: none; padding: 12px 30px; font-size: 1rem; border-radius: 5px; cursor: pointer;">Get Started</button>
   </div>
@@ -688,7 +688,7 @@ export default function ComponentsPanel({
   const [recentComponents, setRecentComponents] = useState<string[]>([]);
   const [isRequesting, setIsRequesting] = useState(false);
 
-  // Load favorites and recent components from localStorage
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
@@ -768,7 +768,7 @@ export default function ComponentsPanel({
 
   const askAi = async () => {
     if (!prompt.trim()) {
-      setResponse("⚠️ Please enter a prompt");
+      setResponse("Please enter a prompt");
       return;
     }
     if (isRequesting || loading) {
@@ -858,7 +858,7 @@ CRITICAL REQUIREMENTS:
         throw new Error("Worker returned empty response");
       }
 
-      // Clean the response
+   
       const cleaned = fullContent
         .replace(/```(html|css|js)?/gi, '')
         .replace(/```/g, '')
@@ -921,7 +921,7 @@ CRITICAL REQUIREMENTS:
 
       <div className="!p-2 border-b border-panel-border">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1 text-xs font-medium text-text-secondary">
+          <div className="flex items-center gap-1 text-xs text-green-400 font-medium text-text-secondary">
             <SquareStack size={12} />
             <span>STUDIO</span>
           </div>
