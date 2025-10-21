@@ -949,6 +949,26 @@ CRITICAL REQUIREMENTS:
   const createProjectFiles = (projectData: any, deployPages: boolean) => {
     const badge = '<img src="https://img.shields.io/badge/made%20with-studio.jessejesse.com-blue?style=flat" alt="made with studio.jessejesse.com" />';
     
+    // Use a simple string without complex escaping
+    const readmeContent = [
+      `# ${githubForm.name}`,
+      ``,
+      `${githubForm.description}`,
+      ``,
+      `${badge}`,
+      ``,
+      `## About`,
+      ``,
+      `This project was created with [studio.jessejesse.com](https://studio.jessejesse.com) - an AI-powered web development studio.`,
+      ``,
+      `## Getting Started`,
+      ``,
+      `Open index.html in your browser to view the project.`,
+      ``,
+      `---`,
+      `*Created with AI Web Studio*`
+    ].join('\n');
+
     const files = [
       {
         path: 'index.html',
@@ -956,7 +976,7 @@ CRITICAL REQUIREMENTS:
       },
       {
         path: 'README.md',
-        content: `# ${githubForm.name}\n\n${githubForm.description}\n\n${badge}\n\n## About\n\nThis project was created with [studio.jessejesse.com](https://studio.jessejesse.com) - an AI-powered web development studio.\n\n## Getting Started\n\nOpen \\`index.html\\` in your browser to view the project.\n\n---\n*Created with love using AI Web Studio*`
+        content: readmeContent
       }
     ];
 
@@ -1086,7 +1106,7 @@ jobs:
               onClick={() => setSearchTerm('')}
               className="absolute right-1 top-1/2 transform -translate-y-1/2 text-text-muted hover:text-foreground text-xs"
             >
-              Ã
+              ×
             </button>
           </div>
         )}
@@ -1323,7 +1343,7 @@ jobs:
           />
           <div className="text-xs text-text-muted mt-1 px-1 flex justify-between">
             <span>Cloudflare Workers AI</span>
-            {(loading || isRequesting) && <span className="text-accent-color">â</span>}
+            {(loading || isRequesting) && <span className="text-accent-color">●</span>}
           </div>
         </div>
 
