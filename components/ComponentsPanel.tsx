@@ -29,6 +29,7 @@ import {
   StarOff,
   Eye,
   X,
+  Github,
 } from "lucide-react";
 
 import { useSettings } from "@/contexts/SettingsContext";
@@ -74,7 +75,6 @@ const components: { [key: string]: ComponentInfo } = {
     description: "Website header with navigation",
     tags: ["layout", "navigation", "header"]
   },
-
   hero: {
     code: `<!-- Hero Section -->
 <section style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 4rem 2rem; text-align: center;">
@@ -87,7 +87,6 @@ const components: { [key: string]: ComponentInfo } = {
     description: "Hero section with call-to-action",
     tags: ["layout", "hero", "cta"]
   },
-
   about: {
     code: `<!-- About Section -->
 <section style="padding: 4rem 2rem; background-color: #f9f9f9;">
@@ -100,7 +99,6 @@ const components: { [key: string]: ComponentInfo } = {
     description: "About section with company information",
     tags: ["layout", "content", "about"]
   },
-
   services: {
     code: `<!-- Services Section -->
 <section style="padding: 4rem 2rem; background-color: white;">
@@ -121,7 +119,6 @@ const components: { [key: string]: ComponentInfo } = {
     description: "Services showcase section",
     tags: ["layout", "content", "services"]
   },
-
   contact: {
     code: `<!-- Contact Form -->
 <section style="padding: 4rem 2rem; background-color: #f9f9f9;">
@@ -143,7 +140,6 @@ const components: { [key: string]: ComponentInfo } = {
     description: "Contact form section",
     tags: ["forms", "contact"]
   },
-
   footer: {
     code: `<!-- Footer -->
 <footer style="background-color: #333; color: white; padding: 2rem; text-align: center;">
@@ -158,7 +154,6 @@ const components: { [key: string]: ComponentInfo } = {
     description: "Website footer",
     tags: ["layout", "footer"]
   },
-
   card: {
     code: `<!-- Card Component -->
 <div style="background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; max-width: 300px; margin: 0 auto;">
@@ -172,7 +167,6 @@ const components: { [key: string]: ComponentInfo } = {
     description: "Card component with image and text",
     tags: ["ui", "card", "content"]
   },
-
   gallery: {
     code: `<!-- Image Gallery -->
 <section style="padding: 2rem; background-color: white;">
@@ -187,7 +181,6 @@ const components: { [key: string]: ComponentInfo } = {
     description: "Image gallery grid",
     tags: ["content", "gallery", "images"]
   },
-
   seo: {
     code: `<!-- SEO Meta Tags -->
 <head>
@@ -209,7 +202,6 @@ const components: { [key: string]: ComponentInfo } = {
     description: "SEO meta tags for head section",
     tags: ["seo", "meta", "head"]
   },
-
   "seo-schema": {
     code: `<!-- Schema.org Structured Data -->
 <script type="application/ld+json">
@@ -228,7 +220,6 @@ const components: { [key: string]: ComponentInfo } = {
     description: "Schema.org structured data",
     tags: ["seo", "schema", "structured-data"]
   },
-
   "social-icons": {
     code: `<!-- Social Media Icons with Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -252,7 +243,6 @@ const components: { [key: string]: ComponentInfo } = {
     description: "Social media icons",
     tags: ["icons", "social", "ui"]
   },
-
   "feature-icons": {
     code: `<!-- Feature Icons Section -->
 <section style="padding: 4rem 2rem; background-color: #f8fafc;">
@@ -286,7 +276,6 @@ const components: { [key: string]: ComponentInfo } = {
     description: "Feature showcase with icons",
     tags: ["content", "features", "icons"]
   },
-
   "font-icons": {
     code: `<!-- Font Awesome Icons (CDN) -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -299,7 +288,6 @@ const components: { [key: string]: ComponentInfo } = {
     description: "Font Awesome icons",
     tags: ["icons", "ui"]
   },
-
   navbar: {
     code: `<!-- Modern Navigation Bar -->
 <nav style="background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 1rem 2rem;">
@@ -317,7 +305,6 @@ const components: { [key: string]: ComponentInfo } = {
     description: "Modern navigation bar",
     tags: ["navigation", "header", "ui"]
   },
-
   sidebar: {
     code: `<!-- Sidebar Navigation -->
 <div style="display: flex; min-height: 400px;">
@@ -338,7 +325,6 @@ const components: { [key: string]: ComponentInfo } = {
     description: "Sidebar navigation layout",
     tags: ["layout", "navigation", "sidebar"]
   },
-
   pricing: {
     code: `<!-- Pricing Cards -->
 <section style="padding: 4rem 2rem; background: #f8fafc;">
@@ -372,7 +358,6 @@ const components: { [key: string]: ComponentInfo } = {
     description: "Pricing cards section",
     tags: ["ui", "pricing", "cards"]
   },
-
   testimonials: {
     code: `<!-- Testimonials Section -->
 <section style="padding: 4rem 2rem; background: white;">
@@ -397,7 +382,6 @@ const components: { [key: string]: ComponentInfo } = {
     description: "Customer testimonials section",
     tags: ["content", "testimonials", "social-proof"]
   },
-
   stats: {
     code: `<!-- Statistics Section -->
 <section style="padding: 4rem 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
@@ -425,7 +409,6 @@ const components: { [key: string]: ComponentInfo } = {
     description: "Statistics counter section",
     tags: ["content", "stats", "numbers"]
   },
-
   "login-form": {
     code: `<!-- Login Form -->
 <div style="max-width: 400px; margin: 2rem auto; padding: 2rem; background: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
@@ -448,7 +431,6 @@ const components: { [key: string]: ComponentInfo } = {
     description: "Login form component",
     tags: ["forms", "login", "authentication"]
   },
-
   newsletter: {
     code: `<!-- Newsletter Signup -->
 <section style="padding: 4rem 2rem; background: #667eea; color: white;">
@@ -464,7 +446,6 @@ const components: { [key: string]: ComponentInfo } = {
     description: "Newsletter signup form",
     tags: ["forms", "newsletter", "marketing"]
   },
-
   team: {
     code: `<!-- Team Section -->
 <section style="padding: 4rem 2rem; background: #f8fafc;">
@@ -489,7 +470,6 @@ const components: { [key: string]: ComponentInfo } = {
     description: "Team member showcase",
     tags: ["content", "team", "about"]
   },
-
   faq: {
     code: `<!-- FAQ Section -->
 <section style="padding: 4rem 2rem; background: white;">
@@ -514,7 +494,6 @@ const components: { [key: string]: ComponentInfo } = {
     description: "FAQ accordion section",
     tags: ["content", "faq", "help"]
   },
-
   breadcrumb: {
     code: `<!-- Breadcrumb Navigation -->
 <nav style="padding: 1rem 2rem; background: #f7fafc;">
@@ -531,7 +510,6 @@ const components: { [key: string]: ComponentInfo } = {
     description: "Breadcrumb navigation",
     tags: ["navigation", "breadcrumb", "ui"]
   },
-
   modal: {
     code: `<!-- Modal Dialog -->
 <div style="background: rgba(0,0,0,0.5); position: fixed; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; z-index: 1000;">
@@ -547,7 +525,6 @@ const components: { [key: string]: ComponentInfo } = {
     description: "Modal dialog component",
     tags: ["ui", "modal", "dialog"]
   },
-
   progress: {
     code: `<!-- Progress Bars -->
 <div style="max-width: 600px; margin: 2rem auto; padding: 2rem; background: white; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
@@ -574,7 +551,6 @@ const components: { [key: string]: ComponentInfo } = {
     description: "Progress bar component",
     tags: ["ui", "progress", "skills"]
   },
-
   timeline: {
     code: `<!-- Timeline -->
 <div style="max-width: 800px; margin: 2rem auto; padding: 2rem;">
@@ -687,7 +663,13 @@ export default function ComponentsPanel({
   const [previewComponent, setPreviewComponent] = useState<string | null>(null);
   const [recentComponents, setRecentComponents] = useState<string[]>([]);
   const [isRequesting, setIsRequesting] = useState(false);
-
+  const [showGithubModal, setShowGithubModal] = useState(false);
+  const [githubForm, setGithubForm] = useState({
+    name: 'web-studio-project',
+    description: 'Project created with AI Web Studio',
+    isPublic: true,
+    deployPages: true
+  });
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -705,7 +687,6 @@ export default function ComponentsPanel({
     }
   }, []);
 
-
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
@@ -714,7 +695,6 @@ export default function ComponentsPanel({
       console.error('Failed to save favorites:', e);
     }
   }, [favorites]);
-
 
   const filteredComponents = useMemo(() => {
     if (!searchTerm) return componentCategories;
@@ -816,7 +796,6 @@ CRITICAL REQUIREMENTS:
         throw new Error(`Worker API error: ${response.status} - ${errorText}`);
       }
 
-   
       const reader = response.body?.getReader();
       if (!reader) {
         throw new Error("No response body received");
@@ -839,11 +818,10 @@ CRITICAL REQUIREMENTS:
                 const data = JSON.parse(line.slice(6));
                 if (data.response) {
                   fullContent += data.response;
-               
                   setResponse(fullContent);
                 }
               } catch (e) {
-             
+                // Ignore JSON parse errors for non-data lines
               }
             }
           }
@@ -858,7 +836,6 @@ CRITICAL REQUIREMENTS:
         throw new Error("Worker returned empty response");
       }
 
-   
       const cleaned = fullContent
         .replace(/```(html|css|js)?/gi, '')
         .replace(/```/g, '')
@@ -867,11 +844,9 @@ CRITICAL REQUIREMENTS:
 
       setResponse(cleaned);
 
-    
       const timestamp = new Date().toLocaleTimeString();
       onAiInsert(`\n<!-- AI Generated (${timestamp}): ${prompt.substring(0, 50)}... -->\n${cleaned}\n`);
 
-  
       if (mode === "chat") {
         setChatHistory(prev => [
           ...prev,
@@ -909,6 +884,46 @@ CRITICAL REQUIREMENTS:
       }, 1000);
     }
   };
+
+const [githubToken, setGithubToken] = useState<string | null>(null);
+const [githubUser, setGithubUser] = useState<any>(null);
+const [isCreatingRepo, setIsCreatingRepo] = useState(false);
+
+useEffect(() => {
+  // Check for existing token on mount
+  const token = localStorage.getItem('github_access_token');
+  if (token) {
+    setGithubToken(token);
+    // Optionally fetch user info
+    fetchUserInfo(token);
+  }
+}, []);
+
+useEffect(() => {
+  // Check for existing GitHub token on component mount
+  const token = localStorage.getItem('github_access_token');
+  if (token) {
+    setGithubToken(token);
+    fetchUserInfo(token);
+  }
+}, []);
+
+const fetchUserInfo = async (token: string) => {
+  try {
+    const response = await fetch('https://api.github.com/user', {
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    });
+    if (response.ok) {
+      const user = await response.json();
+      setGithubUser(user);
+    }
+  } catch (error) {
+    console.error('Failed to fetch user info:', error);
+  }
+};
 
   return (
     <div className="flex flex-col h-full overflow-hidden relative">
@@ -1135,22 +1150,22 @@ CRITICAL REQUIREMENTS:
         </div>
       )}
 
-   <div className="ai-section">
-  <div className="panel-header">
-    <div className="flex items-center justify-between w-full">
-      <div className="flex items-center gap-2">
-        <Bot size={18} style={{ color: "var(--accent-color)" }} />
-        <h3>Github Pages</h3>
-      </div>
-      <button 
-        className="btn btn-outline btn-sm flex items-center gap-2"
-        onClick={() => document.getElementById('github-modal').showModal()}
-      >
-        <Github size={14} />
-        Create Repo
-      </button>
-    </div>
-  </div>
+      <div className="ai-section">
+        <div className="panel-header">
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-2">
+              <Bot size={18} style={{ color: "var(--accent-color)" }} />
+              <h3>AI</h3>
+            </div>
+            <button 
+              className="btn btn-outline btn-sm flex items-center gap-2"
+              onClick={() => setShowGithubModal(true)}
+            >
+              <Github size={14} />
+              Create Repo
+            </button>
+          </div>
+        </div>
 
         <div className="mode-toggle">
           <label className="mode-option">
@@ -1241,61 +1256,182 @@ CRITICAL REQUIREMENTS:
           </div>
         )}
       </div>
+
+     {showGithubModal && (
+  <div className="modal-overlay">
+    <div className="modal-content">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-lg font-semibold text-text-primary flex items-center gap-2">
+          <Github size={20} />
+          Create GitHub Repository
+        </h3>
+        <button 
+          onClick={() => setShowGithubModal(false)}
+          className="btn btn-ghost btn-sm btn-icon"
+          disabled={isCreatingRepo}
+        >
+          <X size={16} />
+        </button>
+      </div>
+      
+      {!githubToken ? (
+        <div className="text-center py-4">
+          <Github size={48} className="mx-auto mb-4 text-text-muted" />
+          <h4 className="text-lg font-medium mb-2 text-text-primary">Connect GitHub</h4>
+          <p className="text-text-muted mb-6">Sign in with GitHub to create repositories and deploy to Pages</p>
+          <GithubAuth onAuthSuccess={(token) => {
+            setGithubToken(token);
+            fetchUserInfo(token);
+          }} />
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {/* User Info */}
+          <div className="flex items-center justify-between p-3 bg-component-bg rounded border border-panel-border">
+            <div className="flex items-center gap-3">
+              <img 
+                src={githubUser?.avatar_url} 
+                alt="GitHub Avatar" 
+                className="w-8 h-8 rounded-full"
+              />
+              <div>
+                <div className="text-sm font-medium text-text-primary">{githubUser?.login}</div>
+                <div className="text-xs text-text-muted">Connected to GitHub</div>
+              </div>
+            </div>
+            <button 
+              onClick={() => {
+                localStorage.removeItem('github_access_token');
+                setGithubToken(null);
+                setGithubUser(null);
+              }}
+              className="text-xs text-accent-color hover:underline"
+              disabled={isCreatingRepo}
+            >
+              Disconnect
+            </button>
+          </div>
+
+          {/* Repository Form */}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-2">
+                Repository Name
+              </label>
+              <input 
+                type="text" 
+                value={githubForm.name}
+                onChange={(e) => setGithubForm(prev => ({...prev, name: e.target.value}))}
+                className="w-full p-3 border border-panel-border rounded-lg bg-component-bg text-text-primary text-sm focus:outline-none focus:border-accent-color"
+                placeholder="my-awesome-project"
+                disabled={isCreatingRepo}
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-2">
+                Description
+              </label>
+              <input 
+                type="text" 
+                value={githubForm.description}
+                onChange={(e) => setGithubForm(prev => ({...prev, description: e.target.value}))}
+                className="w-full p-3 border border-panel-border rounded-lg bg-component-bg text-text-primary text-sm focus:outline-none focus:border-accent-color"
+                placeholder="Project created with AI Web Studio"
+                disabled={isCreatingRepo}
+              />
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <input 
+                type="checkbox" 
+                id="deploy-pages" 
+                checked={githubForm.deployPages}
+                onChange={(e) => setGithubForm(prev => ({...prev, deployPages: e.target.checked}))}
+                className="rounded border-panel-border bg-component-bg focus:ring-accent-color"
+                disabled={isCreatingRepo}
+              />
+              <label htmlFor="deploy-pages" className="text-sm text-text-primary">
+                Deploy to GitHub Pages
+              </label>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <input 
+                type="checkbox" 
+                id="is-public" 
+                checked={githubForm.isPublic}
+                onChange={(e) => setGithubForm(prev => ({...prev, isPublic: e.target.checked}))}
+                className="rounded border-panel-border bg-component-bg focus:ring-accent-color"
+                disabled={isCreatingRepo}
+              />
+              <label htmlFor="is-public" className="text-sm text-text-primary">
+                Public repository
+              </label>
+            </div>
+
+            {/* Files Preview */}
+            <div className="text-xs text-text-muted bg-component-bg p-4 rounded-lg border border-panel-border">
+              <p className="font-medium text-text-primary mb-3">Files that will be created:</p>
+              <ul className="space-y-2">
+                <li className="flex items-center gap-2">
+                  <div className="w-1 h-1 bg-text-muted rounded-full"></div>
+                  <code className="text-text-primary">index.html</code>
+                  <span className="text-text-muted">- Your website</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="w-1 h-1 bg-text-muted rounded-full"></div>
+                  <code className="text-text-primary">README.md</code>
+                  <span className="text-text-muted">- Project info</span>
+                </li>
+                {githubForm.deployPages && (
+                  <li className="flex items-center gap-2">
+                    <div className="w-1 h-1 bg-text-muted rounded-full"></div>
+                    <code className="text-text-primary">.github/workflows/static.yml</code>
+                    <span className="text-text-muted">- Deploy Pages</span>
+                  </li>
+                )}
+              </ul>
+              {githubForm.deployPages && (
+                <p className="mt-3 text-text-primary text-sm">
+                  Your site will be available at: <br />
+                  <code className="text-accent-color">https://{githubUser?.login}.github.io/{githubForm.name}</code>
+                </p>
+              )}
+            </div>
+          </div>
+          
+          <div className="flex gap-3 pt-4">
+            <button 
+              className="btn btn-ghost flex-1"
+              onClick={() => setShowGithubModal(false)}
+              disabled={isCreatingRepo}
+            >
+              Cancel
+            </button>
+            <button 
+              className="btn btn-primary flex-1 flex items-center justify-center gap-2"
+              onClick={handleCreateRepo}
+              disabled={isCreatingRepo || !githubForm.name.trim()}
+            >
+              {isCreatingRepo ? (
+                <>
+                  <div className="loading-spinner"></div>
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <Github size={16} />
+                  Create Repository
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
+  </div>
+)}
+</div>
   );
 }
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
