@@ -1140,10 +1140,10 @@ CRITICAL REQUIREMENTS:
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
               <Bot size={18} style={{ color: "var(--accent-color)" }} />
-              <h3>AI Builder</h3>
+              <h3>AI</h3>
             </div>
             <div className="text-xs text-text-muted bg-component-bg px-2 py-1 rounded">
-              META 70B Fast
+              @sudo-self
             </div>
           </div>
         </div>
@@ -1174,7 +1174,7 @@ CRITICAL REQUIREMENTS:
         <div className="relative">
           <textarea
             className="prompt-textarea"
-            placeholder="Describe what you want to create..."
+            placeholder="describe what to create..."
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={(e) => {
@@ -1188,7 +1188,7 @@ CRITICAL REQUIREMENTS:
             disabled={loading || isRequesting}
           />
           <div className="text-xs text-text-muted mt-1 px-1 flex justify-between">
-            <span>@CF Workers AI</span>
+            <span>Cloudflare Workers AI</span>
             {(loading || isRequesting) && <span className="text-accent-color">●</span>}
           </div>
         </div>
