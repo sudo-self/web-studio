@@ -1225,14 +1225,14 @@ CRITICAL REQUIREMENTS:
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
               <Bot size={18} style={{ color: "var(--accent-color)" }} />
-              <h3>AI</h3>
+              <h3>AI Builder</h3>
             </div>
             <button 
               className="btn btn-outline btn-sm flex items-center gap-2"
               onClick={() => setShowGithubModal(true)}
             >
               <Github size={14} />
-              Create Repo
+              Deploy Project
             </button>
           </div>
         </div>
