@@ -646,21 +646,19 @@ const generateHtml = (bodyContent: string) => `
   </html>
 `;
 
-const startOAuth = () => {
-  const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
-  const redirectUri = `${window.location.origin}/auth/github/callback`;
-  const scope = "repo,workflow,user";
-  const state = Math.random().toString(36).substring(2);
-
-  // Store state in cookie with proper attributes
-  document.cookie = `github_oauth_state=${state}; path=/; Secure; SameSite=Lax`;
-
-  const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(
-    redirectUri
-  )}&scope=${scope}&state=${state}`;
-
-  window.location.href = authUrl;
-};
+// Simple GithubAuth component
+const GithubAuth = ({ onAuthSuccess }: { onAuthSuccess: (token: string) => void }) => {
+  const startOAuth = () => {
+    const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
+    const redirectUri = `${window.location.origin}/auth/github/callback`;
+    const scope = 'repo,workflow,user';
+    const state = Math.random().toString(36).substring(2);
+    
+    localStorage.setItem('github_oauth_state', state);
+    
+    const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${state}`;
+    window.location.href = authUrl;
+  };
 
   return (
     <button
@@ -672,7 +670,6 @@ const startOAuth = () => {
     </button>
   );
 };
-
 
 export default function ComponentsPanel({
   onInsert,
@@ -814,7 +811,7 @@ export default function ComponentsPanel({
     setLoading(true);
     setResponse("");
     try {
-      console.log("ð Sending AI request:", { 
+      console.log("Sending AI request:", { 
         prompt: prompt.substring(0, 100), 
         mode, 
         timestamp: new Date().toISOString()
@@ -913,7 +910,7 @@ CRITICAL REQUIREMENTS:
       setPrompt("");
 
     } catch (err) {
-      console.error("ð¥ AI request failed:", err);
+      console.error("AI request failed:", err);
       let userMessage = "An error occurred";
       
       if (err instanceof Error) {
@@ -930,7 +927,7 @@ CRITICAL REQUIREMENTS:
         }
       }
       
-      setResponse(`â Error: ${userMessage}`);
+      setResponse(`Error: ${userMessage}`);
       
     } finally {
       setLoading(false);
