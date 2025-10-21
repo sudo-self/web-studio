@@ -653,10 +653,14 @@ const GithubAuth = ({ onAuthSuccess }: { onAuthSuccess: (token: string) => void 
     const redirectUri = `${window.location.origin}/auth/github/callback`;
     const scope = 'repo,workflow,user';
     const state = Math.random().toString(36).substring(2);
-    
-    localStorage.setItem('github_oauth_state', state);
-    
-    const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${state}`;
+
+    // Store state in a cookie instead of localStorage
+    document.cookie = `github_oauth_state=${state}; path=/; SameSite=Lax; Secure`;
+
+    const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(
+      redirectUri
+    )}&scope=${scope}&state=${state}`;
+
     window.location.href = authUrl;
   };
 
@@ -670,6 +674,7 @@ const GithubAuth = ({ onAuthSuccess }: { onAuthSuccess: (token: string) => void 
     </button>
   );
 };
+
 
 export default function ComponentsPanel({
   onInsert,
