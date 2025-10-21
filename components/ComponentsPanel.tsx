@@ -1158,8 +1158,8 @@ CRITICAL REQUIREMENTS:
       <div className="!p-2 border-b border-panel-border">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1 text-xs text-green-400 font-medium text-text-secondary">
-            <SquareStack size={12} />
-            <span>studio.JesseJesse.com</span>
+            <SquareStack size={15} />
+            <span>STUDIO</span>
           </div>
           <div className="flex items-center gap-1">
             <button
