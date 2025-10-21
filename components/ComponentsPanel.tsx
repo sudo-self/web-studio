@@ -1143,7 +1143,7 @@ CRITICAL REQUIREMENTS:
               <h3>AI Builder</h3>
             </div>
             <div className="text-xs text-text-muted bg-component-bg px-2 py-1 rounded">
-              ai.JesseJesse.com
+              META 70B Fast
             </div>
           </div>
         </div>
@@ -1157,7 +1157,7 @@ CRITICAL REQUIREMENTS:
               onChange={() => setMode("response")}
               disabled={loading || isRequesting}
             />
-            Stateless
+            No Memory
           </label>
           <label className="mode-option">
             <input
@@ -1167,7 +1167,7 @@ CRITICAL REQUIREMENTS:
               onChange={() => setMode("chat")}
               disabled={loading || isRequesting}
             />
-            Chat
+            Chat Mode
           </label>
         </div>
 
@@ -1188,7 +1188,7 @@ CRITICAL REQUIREMENTS:
             disabled={loading || isRequesting}
           />
           <div className="text-xs text-text-muted mt-1 px-1 flex justify-between">
-            <span>studio.JesseJesse.com</span>
+            <span>@CF Workers AI</span>
             {(loading || isRequesting) && <span className="text-accent-color">●</span>}
           </div>
         </div>
