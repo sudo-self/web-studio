@@ -128,6 +128,9 @@ export default function EditorPanel({
       {/* Header */}
       <div className="panel-header">
         <div className="flex items-center gap-3">
+                    <svg className="w-8 h-8 text-interactive-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          </svg>
           <h2 className="text-lg font-semibold tracking-tight">CODE</h2>
         </div>
         
