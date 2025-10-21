@@ -1030,49 +1030,52 @@ jobs:
     return files;
   };
 
-  const handleCreateRepo = async () => {
-    if (!githubToken) {
-      alert('Please connect to GitHub first');
-      return;
-    }
+const handleCreateRepo = async () => {
+  if (!githubToken) {
+    alert('Please connect to GitHub first');
+    return;
+  }
 
-    setIsCreatingRepo(true);
-    try {
-      const projectData = getCurrentProjectData();
-      const files = createProjectFiles(projectData, githubForm.deployPages);
+  setIsCreatingRepo(true);
+  try {
+    const projectData = getCurrentProjectData();
+    const files = createProjectFiles(projectData, githubForm.deployPages);
+    
+    const response = await fetch('/api/github/create-repo', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: githubForm.name,
+        description: githubForm.description,
+        isPublic: githubForm.isPublic,
+        deployPages: githubForm.deployPages,
+        files: files,
+        accessToken: githubToken // Make sure this is passed
+      }),
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      alert(`Repository created successfully!\n\nURL: ${result.html_url}\n${result.pages_url ? `Pages: ${result.pages_url}` : ''}`);
+      setShowGithubModal(false);
       
-      const response = await fetch('/api/github/create-repo', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...githubForm,
-          files: files,
-          accessToken: githubToken
-        }),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        alert(`Repository created successfully!\n\nURL: ${result.html_url}\n${githubForm.deployPages ? `Pages: ${result.pages_url}` : ''}`);
-        setShowGithubModal(false);
-        
-        // Open the new repo in a new tab
-        if (result.html_url) {
-          window.open(result.html_url, '_blank');
-        }
-      } else {
-        throw new Error(result.error || 'Failed to create repository');
+      // Open the new repo in a new tab
+      if (result.html_url) {
+        window.open(result.html_url, '_blank');
       }
-    } catch (error: any) {
-      console.error('GitHub repo creation failed:', error);
-      alert(`Failed to create repository: ${error.message}`);
-    } finally {
-      setIsCreatingRepo(false);
+    } else {
+      throw new Error(result.error || 'Failed to create repository');
     }
-  };
+  } catch (error: any) {
+    console.error('GitHub repo creation failed:', error);
+    alert(`Failed to create repository: ${error.message}`);
+  } finally {
+    setIsCreatingRepo(false);
+  }
+};
 
   return (
     <div className="flex flex-col h-full overflow-hidden relative">
