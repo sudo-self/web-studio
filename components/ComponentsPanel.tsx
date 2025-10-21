@@ -1157,13 +1157,13 @@ CRITICAL REQUIREMENTS:
 
   <div className="!p-2 border-b border-panel-border">
     <div className="flex items-center justify-between">
-      <div className="flex items-center gap-3 -mt-1"> 
+      <div className="flex items-center gap-3">
         <img 
           src="./icon-512.png" 
           alt="Studio Logo" 
-          className="w-10 h-10 rounded-full"
+          className="w-8 h-8 rounded-full"
         />
-        <span className="text-green-400 font-semibold text-lg">STUDIO</span>
+        <h2 className="m-0 text-sm font-semibold">studio</h2>
       </div>
       <div className="flex items-center gap-1">
         <button
