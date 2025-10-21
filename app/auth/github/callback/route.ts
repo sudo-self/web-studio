@@ -5,24 +5,14 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const code = url.searchParams.get("code");
-  const state = url.searchParams.get("state");
   
-  // Get state from localStorage via cookie (we'll set this differently)
-  const savedState = req.cookies.get("github_oauth_state")?.value;
+  console.log("GitHub Callback - Received code:", code);
 
-  console.log("GitHub Callback:", { code, state, savedState });
-
-  if (!code || !state || state !== savedState) {
-    console.error("GitHub OAuth failed: Invalid state or missing code", {
-      code: !!code,
-      state: !!state,
-      savedState: !!savedState,
-      stateMatch: state === savedState
-    });
-    
+  if (!code) {
+    console.error("GitHub OAuth failed: Missing code");
     const redirectUrl = new URL("/", req.url);
     redirectUrl.searchParams.set("github_error", "auth_failed");
-    redirectUrl.searchParams.set("error_detail", "Invalid state or missing code");
+    redirectUrl.searchParams.set("error_detail", "Missing authorization code");
     return NextResponse.redirect(redirectUrl);
   }
 
@@ -52,18 +42,14 @@ export async function GET(req: NextRequest) {
     const redirectUrl = new URL("/", req.url);
     redirectUrl.searchParams.set("github_token", data.access_token);
 
-    // Clear the state cookie
-    const response = NextResponse.redirect(redirectUrl);
-    response.cookies.delete("github_oauth_state");
-    
-    return response;
+    return NextResponse.redirect(redirectUrl);
   } catch (err) {
     console.error("GitHub OAuth error:", err);
     const redirectUrl = new URL("/", req.url);
     redirectUrl.searchParams.set("github_error", "auth_failed");
     redirectUrl.searchParams.set(
       "error_detail",
-      err instanceof Error ? err.message : "unknown"
+      err instanceof Error ? err.message : "unknown error"
     );
     return NextResponse.redirect(redirectUrl);
   }
