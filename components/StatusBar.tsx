@@ -28,14 +28,11 @@ export default function StatusBar() {
 
       {/* Center Section - Colorado Flag */}
       <div className="group flex items-center gap-3 px-6 py-2 rounded-lg transition-all duration-300 hover:bg-surface-tertiary border border-transparent hover:border-interactive-accent/30 cursor-default">
-        <div className="relative">
-          <img 
-            src="./colorado.svg" 
-            alt="Colorado" 
-            className="w-10 h-10 transition-all duration-300 group-hover:scale-110 group-hover:brightness-110"
-          />
-          <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-interactive-success rounded-full border-2 border-surface-primary" />
-        </div>
+        <img 
+          src="./colorado.svg" 
+          alt="Colorado" 
+          className="w-10 h-10 transition-all duration-300 group-hover:scale-110 group-hover:brightness-110"
+        />
         <div className="flex flex-col">
           <span className="font-bold text-text-primary group-hover:text-interactive-accent transition-colors tracking-wide">
             &#9825;
