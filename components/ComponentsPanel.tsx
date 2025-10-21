@@ -649,29 +649,27 @@ const generateHtml = (bodyContent: string) => `
 
 // Simple GithubAuth component
 const GithubAuth = ({ onAuthSuccess }: { onAuthSuccess: (token: string) => void }) => {
-  const startOAuth = () => {
-    const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
-    const redirectUri = `${window.location.origin}/auth/github/callback`;
-    const scope = 'repo,workflow,user';
-    const state = Math.random().toString(36).substring(2);
-    
-    localStorage.setItem('github_oauth_state', state);
-    
-    const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${state}`;
-    window.location.href = authUrl;
-  };
+ const startOAuth = () => {
+  const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
+  if (!clientId) {
+    alert('GitHub OAuth not configured');
+    return;
+  }
 
-  return (
-    <button
-      className="btn btn-primary w-full flex items-center justify-center gap-2"
-      onClick={startOAuth}
-    >
-      <Github size={16} />
-      Sign in with GitHub
-    </button>
-  );
+  const redirectUri = `${window.location.origin}/auth/github/callback`;
+  const state = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  
+
+  localStorage.setItem('github_oauth_state', state);
+  document.cookie = `github_oauth_state=${state}; path=/; max-age=300; SameSite=Lax`;
+  
+  const scope = 'repo,workflow,user';
+  const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${state}`;
+  
+  console.log("Starting OAuth flow:", { clientId, redirectUri, state });
+  window.location.href = authUrl;
 };
-
+  
 export default function ComponentsPanel({
   onInsert,
   onAiInsert,
