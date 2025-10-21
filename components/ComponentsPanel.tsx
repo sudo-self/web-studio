@@ -1157,9 +1157,14 @@ CRITICAL REQUIREMENTS:
 
       <div className="!p-2 border-b border-panel-border">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1 text-xs text-green-400 font-semibold text-text-secondary">
-            <span>studio.JesseJesse.com</span>
-          </div>
+         <div className="flex items-center gap-2 text-xs font-semibold">
+  <img 
+    src="./logo-512.png" 
+    alt="Studio Logo" 
+    className="w-5 h-5 rounded-full"
+  />
+  <span className="text-green-400">STUDIO</span>
+</div>
           <div className="flex items-center gap-1">
             <button
               onClick={() => setSearchTerm(searchTerm ? '' : ' ')}
