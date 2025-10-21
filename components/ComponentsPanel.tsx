@@ -385,44 +385,44 @@ export default function ComponentsPanel({
       html: htmlContent
     };
   };
+  
+const createProjectFiles = (projectData: any, deployPages: boolean) => {
+const badge = '<img src="https://img.shields.io/badge/made%20with-studio.jessejesse.com-blue?style=flat" alt="made with studio.jessejesse.com" />';
+  
+  const readmeContent = [
+    `# ${githubForm.name}`,
+    ``,
+    `${githubForm.description}`,
+    ``,
+    `${badge}`,
+    ``,
+    `## About`,
+    ``,
+    `This project was created with [studio.jessejesse.com](https://studio.jessejesse.com) - an AI-powered web development studio.`,
+    ``,
+    `## Getting Started`,
+    ``,
+    `Open index.html in your browser to view the project.`,
+    ``,
+    `---`,
+    `*Created with AI Web Studio*`
+  ].join('\n');
 
-  const createProjectFiles = (projectData: any, deployPages: boolean) => {
-    const badge = '<img src="https://img.shields.io/badge/made%20with-studio.jessejesse.com-blue?style=flat" alt="made with studio.jessejesse.com" />';
-    
-    const readmeContent = [
-      `# ${githubForm.name}`,
-      ``,
-      `${githubForm.description}`,
-      ``,
-      `${badge}`,
-      ``,
-      `## About`,
-      ``,
-      `This project was created with [studio.jessejesse.com](https://studio.jessejesse.com) - an AI-powered web development studio.`,
-      ``,
-      `## Getting Started`,
-      ``,
-      `Open index.html in your browser to view the project.`,
-      ``,
-      `---`,
-      `*Created with AI Web Studio*`
-    ].join('\n');
+  const files = [
+    {
+      path: 'index.html',
+      content: projectData.html
+    },
+    {
+      path: 'README.md',
+      content: readmeContent
+    }
+  ];
 
-    const files = [
-      {
-        path: 'index.html',
-        content: projectData.html
-      },
-      {
-        path: 'README.md',
-        content: readmeContent
-      }
-    ];
-
-    if (deployPages) {
-      files.push({
-        path: '.github/workflows/static.yml',
-        content: `name: Deploy to GitHub Pages
+  if (deployPages) {
+    files.push({
+      path: '.github/workflows/deploy-pages.yml',
+      content: `name: Deploy to GitHub Pages
 
 on:
   push:
@@ -435,25 +435,28 @@ permissions:
   id-token: write
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        
       - name: Setup Pages
-        uses: actions/configure-pages@v3
+        uses: actions/configure-pages@v4
+        
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v3
         with:
           path: '.'
+          
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2`
-      });
-    }
+        uses: actions/deploy-pages@v4`
+    });
+  }
 
-    return files;
-  };
+  return files;
+};
 
   const handleCreateRepo = async () => {
     if (!githubToken) {
