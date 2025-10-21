@@ -923,7 +923,7 @@ CRITICAL REQUIREMENTS:
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1 text-xs text-green-400 font-medium text-text-secondary">
             <SquareStack size={12} />
-            <span>STUDIO</span>
+            <span>studio.JesseJesse.com</span>
           </div>
           <div className="flex items-center gap-1">
             <button
