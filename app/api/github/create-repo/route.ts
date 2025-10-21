@@ -1,53 +1,87 @@
+// --- app/api/github/create-repo/route.ts ---
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const token = req.headers.get("authorization")?.replace("Bearer ", "");
-    if (!token) return NextResponse.json({ success: false, error: "Missing token" });
+    const { name, description, isPublic, files, accessToken } = await req.json();
 
-    const { name, description, isPublic, files } = await req.json();
+    if (!accessToken) {
+      return NextResponse.json({ 
+        success: false, 
+        error: "Missing GitHub access token" 
+      }, { status: 401 });
+    }
 
+    // Create repository
     const repoRes = await fetch("https://api.github.com/user/repos", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
+        "Accept": "application/vnd.github.v3+json",
       },
       body: JSON.stringify({
         name,
-        description,
+        description: description || "Project created with AI Web Studio",
         private: !isPublic,
         auto_init: false,
       }),
     });
 
     const repoData = await repoRes.json();
-    if (!repoRes.ok) throw new Error(repoData.message);
+    
+    if (!repoRes.ok) {
+      console.error("GitHub repo creation failed:", repoData);
+      return NextResponse.json({ 
+        success: false, 
+        error: repoData.message || "Failed to create repository" 
+      }, { status: repoRes.status });
+    }
 
-    for (const file of files) {
-      await fetch(
+    // Create files in the repository
+    const fileCreationPromises = files.map(async (file: any) => {
+      const fileRes = await fetch(
         `https://api.github.com/repos/${repoData.full_name}/contents/${file.path}`,
         {
           method: "PUT",
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
+            "Accept": "application/vnd.github.v3+json",
           },
           body: JSON.stringify({
             message: `Add ${file.path}`,
-            content: Buffer.from(file.content).toString("base64"),
+            content: btoa(unescape(encodeURIComponent(file.content))),
           }),
         }
       );
-    }
+
+      if (!fileRes.ok) {
+        const errorData = await fileRes.json();
+        console.error(`Failed to create file ${file.path}:`, errorData);
+        throw new Error(`Failed to create ${file.path}: ${errorData.message}`);
+      }
+
+      return fileRes.json();
+    });
+
+    await Promise.all(fileCreationPromises);
+
+    const pagesUrl = `https://${repoData.owner.login}.github.io/${name}`;
 
     return NextResponse.json({
       success: true,
       html_url: repoData.html_url,
-      pages_url: `https://${repoData.owner.login}.github.io/${name}`,
+      pages_url: repoData.private ? null : pagesUrl,
+      full_name: repoData.full_name,
     });
+
   } catch (err: any) {
-    return NextResponse.json({ success: false, error: err.message });
+    console.error("Repository creation error:", err);
+    return NextResponse.json({ 
+      success: false, 
+      error: err.message || "Unknown error occurred" 
+    }, { status: 500 });
   }
 }
 
