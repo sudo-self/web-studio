@@ -8,10 +8,10 @@ import StatusBar from "@/components/StatusBar";
 import SettingsPanel from "@/components/SettingsPanel";
 
 export default function Home() {
-  const [code, setCode] = useState(`<!-- Welcome to the AI Website Builder! -->
+  const [code, setCode] = useState(`<!-- Welcome to studio.jessejesse.com -->
 <div style="text-align: center; padding: 2rem;">
-  <h1>Welcome to Your Website</h1>
-  <p>Start building by using components from the left or the AI assistant!</p>
+  <h1>Your Awesome Website</h1>
+ <p>Start building by adding components from the sidebar, using the AI assistant, or writing code directly in the editor.</p>
 </div>`);
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -25,28 +25,28 @@ export default function Home() {
   const startXRef = useRef<number>(0);
   const startWidthsRef = useRef(panelWidths);
 
-  // Run code (preview)
+ 
   const runCode = () => {
     console.log("Code updated:", code);
   };
 
-  // Format code (required for EditorPanel)
+
   const formatCode = () => {
     const formatted = code.replace(/(>)(<)/g, "$1\n$2");
     setCode(formatted);
   };
 
-  // Insert a component into the editor
+
   const insertComponent = (html: string) => {
     setCode((prev) => prev + "\n" + html);
   };
 
-  // Insert AI-generated code
+
   const insertAiCode = (html: string) => {
     setCode((prev) => prev + "\n" + html);
   };
 
-  // Start resizing a panel
+
   const handleResizeStart = (panel: string, e: React.MouseEvent) => {
     e.preventDefault();
     setResizingPanel(panel);
@@ -57,7 +57,7 @@ export default function Home() {
     document.body.style.userSelect = "none";
   };
 
-  // Handle panel resizing
+
   useEffect(() => {
     if (!resizingPanel) return;
 
@@ -103,9 +103,9 @@ export default function Home() {
   return (
     <>
       <div className="app-container">
-        {/* Main Content Area */}
+    
         <div className="main-content">
-          {/* Components Panel */}
+      
           <div
             className="panel components-panel"
             style={{
@@ -123,13 +123,13 @@ export default function Home() {
             />
           </div>
 
-          {/* Resize handle between components and editor */}
+       
           <div
             className="w-2 cursor-col-resize bg-panel-border hover:bg-accent-color transition-colors"
             onMouseDown={(e) => handleResizeStart("components", e)}
           />
 
-          {/* Editor Panel */}
+       
           <div
             className="panel editor-panel"
             style={{
@@ -143,18 +143,18 @@ export default function Home() {
               code={code}
               setCode={setCode}
               runCode={runCode}
-              formatCode={formatCode} // <-- REQUIRED
+              formatCode={formatCode} 
               onResizeStart={(e) => handleResizeStart("editor", e)}
             />
           </div>
 
-          {/* Resize handle between editor and preview */}
+       
           <div
             className="w-2 cursor-col-resize bg-panel-border hover:bg-accent-color transition-colors"
             onMouseDown={(e) => handleResizeStart("editor", e)}
           />
 
-          {/* Preview Panel */}
+       
           <div
             className="panel preview-panel"
             style={{ flex: 1, minWidth: "300px" }}
@@ -163,11 +163,11 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Status Bar */}
+     
         <StatusBar />
       </div>
 
-      {/* Settings Panel */}
+     
       <SettingsPanel
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
