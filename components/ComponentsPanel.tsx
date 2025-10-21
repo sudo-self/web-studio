@@ -52,6 +52,7 @@ interface ComponentsPanelProps {
   onAiInsert: (code: string) => void;
   onOpenSettings: () => void;
   onResizeStart?: (e: React.MouseEvent) => void;
+  currentCode?: string; 
 }
 
 interface ChatMessage {
@@ -676,6 +677,7 @@ export default function ComponentsPanel({
   onAiInsert,
   onOpenSettings,
   onResizeStart,
+  currentCode = "" 
 }: ComponentsPanelProps) {
   const { settings } = useSettings();
   const [prompt, setPrompt] = useState("");
@@ -955,25 +957,54 @@ CRITICAL REQUIREMENTS:
     }
   };
 
- const getCurrentProjectData = () => {
-  // Get the current code from your app state
-  // You'll need to pass this as a prop or use a context
-  return {
-    html: code || `<!DOCTYPE html>
+const getCurrentProjectData = () => {
+  // Use the currentCode prop that will be passed from the parent
+  const htmlContent = currentCode || `<!DOCTYPE html>
 <html>
 <head>
     <title>${githubForm.name}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            margin: 0; 
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+            background: #fff;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        h1 {
+            color: #2c5aa0;
+            margin-bottom: 1rem;
+        }
+        .badge {
+            display: inline-block;
+            background: #2c5aa0;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            margin: 1rem 0;
+        }
     </style>
 </head>
 <body>
-    <h1>${githubForm.name}</h1>
-    <p>${githubForm.description}</p>
-    <p>Created with <a href="https://studio.jessejesse.com">AI Web Studio</a></p>
+    <div class="container">
+        <h1>${githubForm.name}</h1>
+        <p>${githubForm.description}</p>
+        <div class="badge">Made with AI Web Studio</div>
+        <p>This project was created using <a href="https://studio.jessejesse.com" target="_blank">studio.jessejesse.com</a></p>
+    </div>
 </body>
-</html>`
+</html>`;
+
+  return {
+    html: htmlContent
   };
 };
 
