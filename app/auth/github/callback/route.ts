@@ -1,3 +1,5 @@
+// app/auth/github/callback/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -6,55 +8,71 @@ export async function GET(request: NextRequest) {
   const state = searchParams.get('state');
   const error = searchParams.get('error');
 
+  console.log('GitHub callback received:', { code: !!code, state, error });
+
   // Handle errors
   if (error) {
-    return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}?github_error=${error}`
-    );
+    console.error('GitHub OAuth error:', error);
+    const redirectUrl = new URL('/', request.url);
+    redirectUrl.searchParams.set('github_error', error);
+    return NextResponse.redirect(redirectUrl);
   }
 
   if (!code) {
-    return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}?github_error=no_code`
-    );
+    console.error('No code received from GitHub');
+    const redirectUrl = new URL('/', request.url);
+    redirectUrl.searchParams.set('github_error', 'no_code');
+    return NextResponse.redirect(redirectUrl);
   }
 
   try {
     // Exchange code for access token
-    const response = await fetch('/api/github/auth', {
+    const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
-      body: JSON.stringify({ code }),
+      body: JSON.stringify({
+        client_id: process.env.GITHUB_CLIENT_ID,
+        client_secret: process.env.GITHUB_CLIENT_SECRET,
+        code,
+      }),
     });
 
-    const data = await response.json();
+    const data = await tokenResponse.json();
+    console.log('GitHub token exchange response:', { success: !!data.access_token });
 
-    if (!response.ok) {
-      throw new Error(data.error || 'Authentication failed');
+    if (data.error) {
+      console.error('GitHub token error:', data);
+      throw new Error(data.error_description || data.error);
     }
 
-    // Store token and redirect back to app
+    if (!data.access_token) {
+      throw new Error('No access token received');
+    }
+
+    // Redirect back to app with token
     const redirectUrl = new URL('/', request.url);
     redirectUrl.searchParams.set('github_token', data.access_token);
     
-    const responseRedirect = NextResponse.redirect(redirectUrl);
+    const response = NextResponse.redirect(redirectUrl);
     
-    // Optionally set cookie for the token
-    responseRedirect.cookies.set('github_token', data.access_token, {
+    // Set secure cookie
+    response.cookies.set('github_token', data.access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 30, // 30 days
+      path: '/',
     });
 
-    return responseRedirect;
+    return response;
 
   } catch (error) {
     console.error('GitHub OAuth callback error:', error);
-    return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}?github_error=auth_failed`
-    );
+    const redirectUrl = new URL('/', request.url);
+    redirectUrl.searchParams.set('github_error', 'auth_failed');
+    return NextResponse.redirect(redirectUrl);
   }
 }
