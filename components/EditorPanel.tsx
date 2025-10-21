@@ -41,7 +41,7 @@ export default function EditorPanel({
   const handleFormatCode = async () => {
     try {
       setFormatting(true);
-      // Await formatting to ensure string type
+    
       const formatted = await prettier.format(String(code || ""), {
         parser: "html",
         plugins: [parserHtml],
@@ -94,11 +94,8 @@ export default function EditorPanel({
 
       {/* Header */}
       <div className="panel-header flex justify-between items-center gap-2 flex-wrap p-3 border-b border-panel-border bg-panel-header">
-        <h2 className="m-0 text-sm font-semibold">Code Editor</h2>
+        <h2 className="m-0 text-sm font-semibold">EDIT HTML</h2>
         <div className="flex gap-2 flex-wrap">
-          <button className="btn btn-primary" onClick={handleRunCode}>
-            Run Code
-          </button>
           <button
             className="btn btn-success"
             onClick={handleFormatCode}
@@ -113,7 +110,7 @@ export default function EditorPanel({
             Clear
           </button>
           <button className="btn btn-warning" onClick={handleExportCode}>
-            Export
+            Download
           </button>
         </div>
       </div>
