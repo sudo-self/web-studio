@@ -1174,7 +1174,7 @@ CRITICAL REQUIREMENTS:
         <div className="relative">
           <textarea
             className="prompt-textarea"
-            placeholder="Describe what to create...
+            placeholder="Describe what you want to create..."
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={(e) => {
@@ -1188,7 +1188,7 @@ CRITICAL REQUIREMENTS:
             disabled={loading || isRequesting}
           />
           <div className="text-xs text-text-muted mt-1 px-1 flex justify-between">
-            <span>Meta/LLM 70B Fast</span>
+            <span>describe what to create</span>
             {(loading || isRequesting) && <span className="text-accent-color">●</span>}
           </div>
         </div>
