@@ -11,21 +11,21 @@ export default function StatusBar() {
 
       {/* Center Section */}
       <div className="font-semibold flex items-center gap-1 text-gray-400">
-        GITHUB <span className="text-green-400">&#10085;</span>
+        STUDIO <span className="text-green-400">&#10085;</span>
         <a
-          href="https://ai.jessejesse.com"
+          href="https://studio.jessejesse.com"
           target="_blank"
           rel="noopener noreferrer"
           className="text-green-400 hover:text-pink-400 transition-colors"
         >
-         sudo-self
+         JesseJesse.com
         </a>
       </div>
 
       {/* Right Section */}
       <div className="flex items-center gap-1">
-        <span className="font-semibold">GEMINI</span>
-        <span className="text-green-400">2.0</span>
+        <span className="font-semibold">@cf/meta/llama</span>
+        <span className="text-green-400">3.3</span>
       </div>
     </div>
   );
