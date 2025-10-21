@@ -88,8 +88,6 @@ const components: { [key: string]: ComponentInfo } = {
     description: "Hero section with call-to-action",
     tags: ["layout", "hero", "cta"]
   },
-  // ... (keep all your existing component definitions, but make sure they all have proper closing braces and commas)
-  // I'm truncating for brevity, but make sure ALL your components are properly formatted
   footer: {
     code: `<!-- Footer -->
 <footer style="background-color: #333; color: white; padding: 2rem; text-align: center;">
@@ -121,7 +119,6 @@ const getComponentIcon = (componentKey: string): ReactElement => {
     header: <FileText size={16} />,
     hero: <Sparkles size={16} />,
     footer: <SquareStack size={16} />,
-    // Add other icons as needed
   };
   return icons[componentKey] || <FileText size={16} />;
 };
@@ -150,13 +147,21 @@ const generateHtml = (bodyContent: string) => `
 const GithubAuth = ({ onAuthSuccess }: { onAuthSuccess: (token: string) => void }) => {
   const startOAuth = () => {
     const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
+    if (!clientId) {
+      alert('GitHub OAuth not configured - check environment variables');
+      return;
+    }
+
     const redirectUri = `${window.location.origin}/auth/github/callback`;
+    
+    // Use sessionStorage for better state management
+    const state = Math.random().toString(36).substring(2, 15);
+    sessionStorage.setItem('github_oauth_state', state);
+    
     const scope = 'repo,workflow,user';
-    const state = Math.random().toString(36).substring(2);
-    
-    localStorage.setItem('github_oauth_state', state);
-    
     const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${state}`;
+    
+    console.log("Starting OAuth flow to:", authUrl);
     window.location.href = authUrl;
   };
 
@@ -202,13 +207,33 @@ export default function ComponentsPanel({
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    
     const params = new URLSearchParams(window.location.search);
     const token = params.get("github_token");
+    const error = params.get("github_error");
+    const errorDetail = params.get("error_detail");
+
+    console.log("URL Params:", { token, error, errorDetail });
+
+    if (error) {
+      console.error("GitHub OAuth Error:", error, errorDetail);
+      alert(`GitHub authentication failed: ${errorDetail || error}`);
+      
+      // Clean URL
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+      return;
+    }
+
     if (token) {
+      console.log("GitHub token received");
       localStorage.setItem("github_access_token", token);
       setGithubToken(token);
       fetchUserInfo(token);
-      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      // Clean URL without page reload
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
     }
   }, []);
 
@@ -668,7 +693,6 @@ CRITICAL REQUIREMENTS:
 
       <div className="flex-1 overflow-auto min-h-0">
         <div className="components-list">
-          {/* Your existing components list JSX */}
           {Object.entries(filteredComponents).map(([category, keys]) => (
             <div key={category} className="component-category">
               <div className="category-title">{category}</div>
@@ -826,7 +850,6 @@ CRITICAL REQUIREMENTS:
               </div>
             ) : (
               <div className="space-y-6">
-                {/* User Info */}
                 <div className="flex items-center justify-between p-3 bg-component-bg rounded border border-panel-border">
                   <div className="flex items-center gap-3">
                     <img 
@@ -852,7 +875,6 @@ CRITICAL REQUIREMENTS:
                   </button>
                 </div>
 
-                {/* Repository Form */}
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-text-primary mb-2">
@@ -910,7 +932,6 @@ CRITICAL REQUIREMENTS:
                     </label>
                   </div>
 
-                  {/* Files Preview */}
                   <div className="text-xs text-text-muted bg-component-bg p-4 rounded-lg border border-panel-border">
                     <p className="font-medium text-text-primary mb-3">Files that will be created:</p>
                     <ul className="space-y-2">
