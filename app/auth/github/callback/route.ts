@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
 
   console.log('GitHub callback received:', { code: !!code, state, error });
 
-  // Handle errors
+  // Handle errors from GitHub
   if (error) {
     console.error('GitHub OAuth error:', error);
     const redirectUrl = new URL('/', request.url);
@@ -26,6 +26,15 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    // CRITICAL: Include redirect_uri in token exchange
+    const redirectUri = `${request.nextUrl.origin}/auth/github/callback`;
+    
+    console.log('Exchanging code for token with:', {
+      clientId: process.env.GITHUB_CLIENT_ID ? 'present' : 'missing',
+      clientSecret: process.env.GITHUB_CLIENT_SECRET ? 'present' : 'missing',
+      redirectUri
+    });
+
     // Exchange code for access token
     const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
       method: 'POST',
@@ -37,11 +46,16 @@ export async function GET(request: NextRequest) {
         client_id: process.env.GITHUB_CLIENT_ID,
         client_secret: process.env.GITHUB_CLIENT_SECRET,
         code,
+        redirect_uri: redirectUri, // THIS IS REQUIRED
       }),
     });
 
     const data = await tokenResponse.json();
-    console.log('GitHub token exchange response:', { success: !!data.access_token });
+    console.log('GitHub token exchange response:', { 
+      success: !!data.access_token,
+      error: data.error,
+      error_description: data.error_description 
+    });
 
     if (data.error) {
       console.error('GitHub token error:', data);
@@ -52,13 +66,13 @@ export async function GET(request: NextRequest) {
       throw new Error('No access token received');
     }
 
-    // Redirect back to app with token
+    // Redirect back to app with token in URL params (temporary)
     const redirectUrl = new URL('/', request.url);
     redirectUrl.searchParams.set('github_token', data.access_token);
     
     const response = NextResponse.redirect(redirectUrl);
     
-    // Set secure cookie
+    // Also set secure cookie as backup
     response.cookies.set('github_token', data.access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -71,8 +85,10 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('GitHub OAuth callback error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'unknown';
     const redirectUrl = new URL('/', request.url);
     redirectUrl.searchParams.set('github_error', 'auth_failed');
+    redirectUrl.searchParams.set('error_detail', errorMessage);
     return NextResponse.redirect(redirectUrl);
   }
 }
