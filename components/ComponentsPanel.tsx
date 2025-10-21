@@ -152,10 +152,10 @@ const GithubAuth = ({ onAuthSuccess }: { onAuthSuccess: (token: string) => void 
       return;
     }
 
-
+    // Use the exact domain for redirect
     const redirectUri = `https://studio.jessejesse.com/auth/github/callback`;
     
-   
+    // Use sessionStorage for better state management
     const state = Math.random().toString(36).substring(2, 15);
     sessionStorage.setItem('github_oauth_state', state);
     
@@ -165,17 +165,6 @@ const GithubAuth = ({ onAuthSuccess }: { onAuthSuccess: (token: string) => void 
     console.log("Starting OAuth flow to:", authUrl);
     window.location.href = authUrl;
   };
-
-  return (
-    <button
-      className="btn btn-primary w-full flex items-center justify-center gap-2"
-      onClick={startOAuth}
-    >
-      <Github size={16} />
-      Sign in with GitHub
-    </button>
-  );
-};
 
   return (
     <button
