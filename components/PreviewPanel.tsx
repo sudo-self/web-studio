@@ -99,7 +99,7 @@ export default function PreviewPanel({ code, onResizeStart }: PreviewPanelProps)
         <h2 className="text-lg font-semibold">PREVIEW</h2>
         <div className="flex gap-3 flex-wrap">
           <button className="btn btn-primary" onClick={handleRefresh}>Refresh</button>
-          <button className="btn btn-warning" onClick={() => setShowEmbed(!showEmbed)}>
+          <button className="btn btn-primary" onClick={() => setShowEmbed(!showEmbed)}>
             {showEmbed ? "Close Code" : "Show Code"}
           </button>
           <button className="btn btn-success" onClick={handleFullscreen}>
