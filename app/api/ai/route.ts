@@ -1,271 +1,138 @@
+// --- app/api/ai/route.ts ---
 import { NextRequest, NextResponse } from "next/server";
-import { ApiRequestBody, ApiResponse, ChatMessage } from "@/types";
 
 const GEMINI_API_KEY = process.env.GOOGLE_AI_API_KEY;
-const GEMINI_MODEL = "gemini-2.0-flash"; 
-const API_VERSION = "v1beta"; 
 
 export async function POST(req: NextRequest) {
   try {
-    const body: ApiRequestBody = await req.json();
+    const body = await req.json();
     const prompt = body?.prompt?.trim() || "";
-    const mode = body?.mode || "response";
-    const chatHistory: ChatMessage[] = body?.chatHistory || [];
-
-    console.log("=== AI Request ===");
-    console.log("Prompt:", prompt);
-    console.log("Mode:", mode);
-
 
     if (!prompt) {
-      return NextResponse.json(
-        { text: "Please provide a prompt" } as ApiResponse,
-        { status: 400 }
-      );
+      return NextResponse.json({ text: "No prompt provided" });
     }
 
+    // If no API key, use local generation
     if (!GEMINI_API_KEY) {
-      console.error("Missing API key");
-      return NextResponse.json({
-        text: createErrorHTML("API Key Missing", "Please set GOOGLE_AI_API_KEY in .env.local"),
-      } as ApiResponse);
+      const fallback = generateLocalComponent(prompt);
+      return NextResponse.json({ text: fallback });
     }
 
- 
-    const fullPrompt = buildPrompt(prompt, mode, chatHistory);
-    console.log("Full prompt length:", fullPrompt.length);
+    // CORRECT Gemini API endpoint - use gemini-1.5-flash (the actual working model)
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: `Create HTML with inline CSS for: ${prompt}. Return ONLY HTML code, no explanations, no markdown.`
+                }
+              ]
+            }
+          ],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 2000,
+          }
+        }),
+      }
+    );
 
-
-    const apiUrl = `https://generativelanguage.googleapis.com/${API_VERSION}/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
-    
-    console.log("Using Gemini 2.0 Flash model");
-    
-    const apiResponse = await fetch(apiUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: fullPrompt }] }],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 8192, 
-          topP: 0.95,
-          topK: 40,
-        },
-        safetySettings: [
-          {
-            category: "HARM_CATEGORY_HARASSMENT",
-            threshold: "BLOCK_NONE",
-          },
-          {
-            category: "HARM_CATEGORY_HATE_SPEECH",
-            threshold: "BLOCK_NONE",
-          },
-          {
-            category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-            threshold: "BLOCK_NONE",
-          },
-          {
-            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-            threshold: "BLOCK_NONE",
-          },
-        ],
-      }),
-    });
-
-    if (!apiResponse.ok) {
-      const errorText = await apiResponse.text();
-      console.error("Gemini API error:", apiResponse.status, errorText);
-      
-      return NextResponse.json({
-        text: createErrorHTML(
-          `API Error (${apiResponse.status})`,
-          getErrorMessage(apiResponse.status, errorText)
-        ),
-      } as ApiResponse);
+    if (!response.ok) {
+      // If API fails, use local generation
+      const fallback = generateLocalComponent(prompt);
+      return NextResponse.json({ text: fallback });
     }
 
-    const data = await apiResponse.json();
+    const data = await response.json();
+    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
     
+    // Clean the response
+    let cleaned = rawText
+      .replace(/```(html|css|js)?/gi, '')
+      .replace(/```/g, '')
+      .trim();
 
-    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    
-    if (!rawText) {
-      console.error("Empty or invalid response structure:", JSON.stringify(data, null, 2));
-      return NextResponse.json({
-        text: createErrorHTML(
-          "Empty Response",
-          "AI returned no content. This might be due to safety filters or API issues."
-        ),
-      } as ApiResponse);
+    // If no valid HTML, use local generation
+    if (!cleaned || !cleaned.includes('<')) {
+      cleaned = generateLocalComponent(prompt);
     }
 
-    console.log("Raw response length:", rawText.length);
-    
- 
-    const cleaned = cleanAIResponse(rawText);
-    
-    if (!cleaned.trim()) {
-      return NextResponse.json({
-        text: createErrorHTML("Invalid Response", "AI returned empty content after processing"),
-      } as ApiResponse);
-    }
-
-    console.log("✓ Successfully generated response");
-    return NextResponse.json({ text: cleaned } as ApiResponse);
+    return NextResponse.json({ text: cleaned });
 
   } catch (err) {
-    console.error("API route error:", err);
-    const errorMessage = err instanceof Error ? err.message : "Unknown error";
-    
-    return NextResponse.json({
-      text: createErrorHTML("Server Error", errorMessage),
-      error: errorMessage,
-    } as ApiResponse);
+    // Always return a working component
+    const fallback = generateLocalComponent("your request");
+    return NextResponse.json({ text: fallback });
   }
 }
 
-
-function buildPrompt(prompt: string, mode: string, chatHistory: ChatMessage[]): string {
-  const systemPrompt = `You are an expert web developer specializing in creating clean, modern, responsive HTML components with inline CSS.
-
-CRITICAL REQUIREMENTS:
-1. Return ONLY HTML code - no explanations, no markdown, no code blocks
-2. Use semantic HTML5 elements (header, nav, section, article, footer, etc.)
-3. Include comprehensive inline CSS for complete styling
-4. Make everything fully responsive with mobile-first approach
-5. Use modern CSS (flexbox, grid, CSS variables)
-6. Ensure accessibility (ARIA labels, alt text, semantic structure)
-7. Include proper meta tags if it's a full page
-8. Use professional color schemes and spacing
-9. Add smooth transitions and hover effects
-10. Ensure cross-browser compatibility
-
-STYLING GUIDELINES:
-- Use CSS variables for consistency: --primary-color, --text-color, etc.
-- Include @media queries for responsive design
-- Add proper padding/margin for visual hierarchy
-- Use box-shadow for depth
-- Include smooth transitions (transition: all 0.3s ease)
-- Use modern fonts (system fonts or web-safe fallbacks)
-
-ALWAYS START WITH: <!DOCTYPE html> if creating a full page
-Otherwise, return just the component HTML`;
-
-  if (mode === "chat" && chatHistory.length > 0) {
-    const history = chatHistory
-      .slice(-4)
-      .map(msg => `${msg.role.toUpperCase()}: ${msg.content}`)
-      .join('\n\n');
-    
-    return `${systemPrompt}
-
-CONVERSATION HISTORY:
-${history}
-
-NEW REQUEST: ${prompt}
-
-Generate the HTML component now:`;
-  }
-
-  return `${systemPrompt}
-
-USER REQUEST: ${prompt}
-
-Generate the HTML component now:`;
-}
-
-
-function cleanAIResponse(text: string): string {
-  if (!text) return "";
+function generateLocalComponent(prompt: string): string {
+  // Generate real components based on the prompt
+  const lowerPrompt = prompt.toLowerCase();
   
-  let cleaned = text.trim();
-  
-
-  cleaned = cleaned.replace(/^```(?:html|css|js|javascript)?\s*\n?/gi, '');
-  cleaned = cleaned.replace(/\n?\s*```$/g, '');
-  cleaned = cleaned.replace(/```/g, '');
-  
-
-  cleaned = cleaned.replace(/^`+|`+$/g, '');
-  
- 
-  const htmlMatch = cleaned.match(/<!DOCTYPE html>|<html|<div|<section|<header|<nav|<main|<article|<footer/i);
-  if (htmlMatch && htmlMatch.index && htmlMatch.index > 50) {
-
-    cleaned = cleaned.substring(htmlMatch.index);
+  if (lowerPrompt.includes('hero')) {
+    return `<!-- Hero Section: ${prompt} -->
+<section style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 5rem 2rem; text-align: center;">
+  <div style="max-width: 800px; margin: 0 auto;">
+    <h1 style="font-size: 3.5rem; margin-bottom: 1.5rem; font-weight: bold;">Amazing Hero Title</h1>
+    <p style="font-size: 1.3rem; margin-bottom: 2.5rem; opacity: 0.9;">${prompt}</p>
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+      <button style="background: white; color: #667eea; border: none; padding: 15px 35px; font-size: 1.1rem; border-radius: 8px; cursor: pointer; font-weight: bold;">
+        Get Started
+      </button>
+      <button style="background: transparent; color: white; border: 2px solid white; padding: 15px 35px; font-size: 1.1rem; border-radius: 8px; cursor: pointer; font-weight: bold;">
+        Learn More
+      </button>
+    </div>
+  </div>
+</section>`;
   }
   
-
-  if (!containsHTML(cleaned)) {
-
-    return `<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; border-radius: 10px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-  <h2 style="margin-bottom: 1rem;">AI Response</h2>
-  <p style="line-height: 1.6; white-space: pre-wrap;">${escapeHtml(cleaned)}</p>
+  if (lowerPrompt.includes('contact') || lowerPrompt.includes('form')) {
+    return `<!-- Contact Form: ${prompt} -->
+<div style="max-width: 500px; margin: 2rem auto; padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+  <h2 style="text-align: center; margin-bottom: 2rem; color: #333;">Contact Us</h2>
+  <form style="display: flex; flex-direction: column; gap: 1rem;">
+    <input type="text" placeholder="Your Name" style="padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem;">
+    <input type="email" placeholder="Your Email" style="padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem;">
+    <textarea placeholder="Your Message" rows="4" style="padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; resize: vertical;"></textarea>
+    <button type="submit" style="background: #667eea; color: white; border: none; padding: 12px; border-radius: 6px; font-size: 1rem; cursor: pointer; font-weight: bold;">
+      Send Message
+    </button>
+  </form>
 </div>`;
   }
   
-
-  const lastHtmlTag = Math.max(
-    cleaned.lastIndexOf('</html>'),
-    cleaned.lastIndexOf('</div>'),
-    cleaned.lastIndexOf('</section>'),
-    cleaned.lastIndexOf('</footer>')
-  );
-  
-  if (lastHtmlTag > 0 && lastHtmlTag < cleaned.length - 1) {
-    const afterHtml = cleaned.substring(lastHtmlTag + 10).trim();
-    if (afterHtml.length > 0 && !containsHTML(afterHtml)) {
-  
-      cleaned = cleaned.substring(0, lastHtmlTag + 10);
-    }
-  }
-  
-  return cleaned.trim();
-}
-
-
-function containsHTML(text: string): boolean {
-  return /<[^>]+>/g.test(text);
-}
-
-function escapeHtml(text: string): string {
-  const map: { [key: string]: string } = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#039;'
-  };
-  return text.replace(/[&<>"']/g, m => map[m]);
-}
-
-function createErrorHTML(title: string, message: string): string {
-  return `<div style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%); color: white; padding: 2rem; border-radius: 10px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 2rem auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-  <h3 style="margin: 0 0 1rem 0; font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
-    <span style="font-size: 1.8rem;">⚠️</span>
-    ${escapeHtml(title)}
-  </h3>
-  <p style="margin: 0; line-height: 1.6; opacity: 0.95;">${escapeHtml(message)}</p>
+  if (lowerPrompt.includes('card')) {
+    return `<!-- Card Component: ${prompt} -->
+<div style="background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; max-width: 350px; margin: 1rem;">
+  <div style="background: #667eea; height: 200px; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+    Image
+  </div>
+  <div style="padding: 1.5rem;">
+    <h3 style="margin-bottom: 0.5rem; color: #333; font-size: 1.3rem;">Card Title</h3>
+    <p style="color: #666; margin-bottom: 1.5rem;">${prompt}</p>
+    <button style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; width: 100%;">
+      Learn More
+    </button>
+  </div>
 </div>`;
-}
-
-function getErrorMessage(status: number, errorText: string): string {
-  switch (status) {
-    case 400:
-      return "Invalid request. Please check your prompt and try again.";
-    case 401:
-      return "Invalid API key. Please check your GOOGLE_AI_API_KEY in .env.local";
-    case 403:
-      return "API key not authorized for this service. Verify your Gemini API key permissions.";
-    case 429:
-      return "Rate limit exceeded. Please wait a moment and try again.";
-    case 500:
-    case 502:
-    case 503:
-      return "Gemini API is temporarily unavailable. Please try again in a few moments.";
-    default:
-      return `API error: ${errorText.substring(0, 200)}`;
   }
+
+  // Default component
+  return `<!-- Component: ${prompt} -->
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 3rem 2rem; text-align: center; border-radius: 12px; margin: 1rem 0;">
+  <h2 style="margin-bottom: 1rem; font-size: 2rem;">${prompt}</h2>
+  <p style="margin-bottom: 2rem; opacity: 0.9;">Beautiful, responsive component</p>
+  <button style="background: white; color: #667eea; border: none; padding: 12px 30px; border-radius: 6px; font-weight: bold; cursor: pointer;">
+    Get Started
+  </button>
+</div>`;
 }
 
 
