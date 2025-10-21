@@ -127,24 +127,11 @@ export default function EditorPanel({
 
       {/* Header */}
       <div className="panel-header">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-3">
-            <h2 className="text-md font-semibold tracking-tight">HTML</h2>
-          </div>
-          <div className="flex items-center gap-4 text-xs text-text-tertiary">
-            <div className="flex items-center gap-1">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              {lineCount}
-            </div>
-            <div className="flex items-center gap-1">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-              </svg>
-              {characterCount}
-            </div>
-          </div>
+        <div className="flex items-center gap-3">
+          <svg className="w-5 h-5 text-interactive-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          </svg>
+          <h2 className="text-lg font-semibold tracking-tight">HTML Editor</h2>
         </div>
         
         <div className="flex gap-2">
@@ -231,6 +218,30 @@ export default function EditorPanel({
         </div>
       </div>
 
+      {/* Footer with stats */}
+      <div className="flex justify-between items-center px-4 py-2 text-xs text-text-tertiary border-t border-border-primary bg-surface-secondary rounded-b-lg mt-2">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <span>{lineCount} {lineCount === 1 ? 'line' : 'lines'}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+            </svg>
+            <span>{characterCount} {characterCount === 1 ? 'character' : 'characters'}</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 text-text-muted">
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          <span>HTML</span>
+        </div>
+      </div>
+
       {/* Toast Notifications */}
       <div className="fixed top-4 right-4 z-50 space-y-2">
         {toasts.map((toast) => (
@@ -270,7 +281,7 @@ export default function EditorPanel({
           margin: 0 !important;
           padding: 16px !important;
           font-family: "Fira Code", "JetBrains Mono", "Cascadia Code", monospace !important;
-          font-size: 14px !important;
+          fontSize: 14px !important;
           line-height: 1.5 !important;
           white-space: pre !important;
           word-wrap: normal !important;
