@@ -1,99 +1,63 @@
+// app/api/github/create-repo/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(request: NextRequest) {
-  try {
-    const { name, description, isPublic, deployPages, files, accessToken } = await request.json();
+interface FileData {
+  path: string;
+  content: string;
+}
 
-    if (!accessToken) {
-      return NextResponse.json(
-        { success: false, error: 'No access token provided' },
-        { status: 401 }
-      );
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { token, name, description, isPublic, files }: { token: string; name: string; description: string; isPublic: boolean; files: FileData[] } = body;
+
+    if (!token || !name) {
+      return NextResponse.json({ error: 'Missing token or repository name' }, { status: 400 });
     }
 
-    // 1. Create repository
-    const repoResponse = await fetch('https://api.github.com/user/repos', {
+    // Step 1: Create GitHub repository
+    const repoRes = await fetch('https://api.github.com/user/repos', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        Authorization: `token ${token}`,
         'Content-Type': 'application/json',
-        'Accept': 'application/vnd.github.v3+json',
       },
       body: JSON.stringify({
         name,
-        description: description || 'Project created with AI Web Studio',
+        description,
         private: !isPublic,
-        auto_init: false
-      })
+        auto_init: false,
+      }),
     });
 
-    if (!repoResponse.ok) {
-      const errorData = await repoResponse.text();
-      console.error('GitHub repo creation failed:', errorData);
-      throw new Error(`GitHub API error: ${repoResponse.status} - ${repoResponse.statusText}`);
+    const repoData = await repoRes.json();
+
+    if (repoData.message) {
+      return NextResponse.json({ error: repoData.message }, { status: 400 });
     }
 
-    const repo = await repoResponse.json();
-
-    // 2. Create files in repository
+    // Step 2: Add files to repository
     for (const file of files) {
-      const fileResponse = await fetch(`https://api.github.com/repos/${repo.full_name}/contents/${file.path}`, {
+      await fetch(`https://api.github.com/repos/${repoData.owner.login}/${name}/contents/${file.path}`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
+          Authorization: `token ${token}`,
           'Content-Type': 'application/json',
-          'Accept': 'application/vnd.github.v3+json',
         },
         body: JSON.stringify({
           message: `Add ${file.path}`,
-          content: Buffer.from(file.content).toString('base64')
-        })
+          content: Buffer.from(file.content).toString('base64'),
+        }),
       });
-
-      if (!fileResponse.ok) {
-        const errorData = await fileResponse.text();
-        console.error(`Failed to create file ${file.path}:`, errorData);
-        throw new Error(`Failed to create file ${file.path}`);
-      }
-    }
-
-    // 3. Enable GitHub Pages if requested
-    if (deployPages) {
-      // Wait a bit for the files to be processed
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const pagesResponse = await fetch(`https://api.github.com/repos/${repo.full_name}/pages`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/vnd.github.v3+json',
-        },
-        body: JSON.stringify({
-          source: {
-            branch: 'main',
-            path: '/'
-          }
-        })
-      });
-
-      if (!pagesResponse.ok && pagesResponse.status !== 409) { // 409 means pages already exists
-        console.warn('GitHub Pages setup failed, but continuing...');
-      }
     }
 
     return NextResponse.json({
       success: true,
-      html_url: repo.html_url,
-      pages_url: `https://${repo.owner.login}.github.io/${repo.name}`,
-      repo_name: repo.full_name
+      html_url: repoData.html_url,
+      pages_url: `https://${repoData.owner.login}.github.io/${name}`,
     });
-
-  } catch (error: any) {
-    console.error('Repository creation error:', error);
-    return NextResponse.json(
-      { success: false, error: error.message || 'Failed to create repository' },
-      { status: 500 }
-    );
+  } catch (err) {
+    return NextResponse.json({ error: err instanceof Error ? err.message : 'Unknown error' }, { status: 500 });
   }
 }
+
