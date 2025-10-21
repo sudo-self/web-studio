@@ -10,8 +10,9 @@ export default function StatusBar() {
         rel="noopener noreferrer"
         className="flex items-center gap-2 hover:text-green-400 transition-colors cursor-pointer"
       >
+        <span className="text-pink-400">&#10085;</span>
         <span className="font-semibold">AI Web Studio</span>
-        <span className="text-green-400">&#10085;</span>
+        
       </a>
 
      
@@ -19,10 +20,10 @@ export default function StatusBar() {
         <img 
           src="./colorado.svg" 
           alt="Colorado" 
-          className="w-8 h-8"
+          className="w-10 h-10"
         />
        
-        <span className="text-green-400">JesseJesse.com</span>
+         <span className="font-semibold">JesseJesse.com</span>
       </div>
 
  
