@@ -1352,12 +1352,12 @@ CRITICAL REQUIREMENTS:
           </div>
           <div>
             <h3 className="text-lg font-semibold text-text-primary">Create a Github Repository</h3>
-            <p className="text-xs text-text-muted mt-1">Deploy your Website with GitHub Pages</p>
+            <p className="text-xs text-accent-color text-text-muted mt-1">Deploy your Website with GitHub Pages</p>
           </div>
         </div>
         <button 
           onClick={() => setShowGithubModal(false)}
-          className="btn btn-ghost btn-sm btn-icon hover:bg-component-hover"
+          className="btn btn-primary btn-sm btn-icon hover:bg-component-hover"
           disabled={isCreatingRepo}
         >
           <X size={16} />
@@ -1370,10 +1370,6 @@ CRITICAL REQUIREMENTS:
           <div className="p-4 bg-component-bg rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
             <Github size={32} className="text-text-muted" />
           </div>
-          <h4 className="text-lg font-semibold mb-2 text-text-primary">Connect GitHub</h4>
-          <p className="text-text-muted mb-6 text-sm leading-relaxed">
-            Sign in to create a project repo<br />and publish your site to GitHub Pages
-          </p>
           <GithubAuth onAuthSuccess={(token) => {
             setGithubToken(token);
             localStorage.setItem('github_access_token', token);
