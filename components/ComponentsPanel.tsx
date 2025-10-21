@@ -699,16 +699,20 @@ export default function ComponentsPanel({
   const [githubUser, setGithubUser] = useState<any>(null);
   const [isCreatingRepo, setIsCreatingRepo] = useState(false);
 
-  useEffect(() => {
+ useEffect(() => {
   if (typeof window === "undefined") return;
+  
   const params = new URLSearchParams(window.location.search);
   const token = params.get("github_token");
+  
   if (token) {
     localStorage.setItem("github_access_token", token);
     setGithubToken(token);
     fetchUserInfo(token);
-    // Clear URL
-    window.history.replaceState({}, document.title, window.location.pathname);
+    
+    // Clean URL without page reload
+    const newUrl = window.location.pathname;
+    window.history.replaceState({}, document.title, newUrl);
   }
 }, []);
 
