@@ -1,11 +1,16 @@
-// components/GithubAuth.tsx
+"use client";
+
 import { Github } from 'lucide-react';
 
-const GithubAuth = ({ onAuthSuccess }: { onAuthSuccess: (token: string) => void }) => {
+interface GithubAuthProps {
+  onAuthSuccess: (token: string) => void;
+}
+
+export default function GithubAuth({ onAuthSuccess }: GithubAuthProps) {
   const startOAuth = () => {
     const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
     const redirectUri = `${window.location.origin}/auth/github/callback`;
-    const scope = 'repo,workflow';
+    const scope = 'repo,workflow,user';
     const state = Math.random().toString(36).substring(2);
     
     localStorage.setItem('github_oauth_state', state);
@@ -23,4 +28,4 @@ const GithubAuth = ({ onAuthSuccess }: { onAuthSuccess: (token: string) => void 
       Sign in with GitHub
     </button>
   );
-};
+}
