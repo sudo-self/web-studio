@@ -120,6 +120,7 @@ export default function Home() {
               onAiInsert={insertAiCode}
               onOpenSettings={() => setIsSettingsOpen(true)}
               onResizeStart={(e) => handleResizeStart("components", e)}
+              currentCode={code} // ← This is the crucial fix
             />
           </div>
 
