@@ -34,10 +34,7 @@ export default function StatusBar() {
           className="w-10 h-10 transition-all duration-300 group-hover:scale-110 group-hover:brightness-110"
         />
         <div className="flex flex-col">
-          <span className="font-bold text-text-primary group-hover:text-interactive-accent transition-colors tracking-wide">
-            &#9825;
-          </span>
-          <span className="text-xs text-text-tertiary group-hover:text-text-secondary transition-colors">
+          <span className="text-xs text-text-tertiary group-hover:text-text-orange-400 transition-colors">
             JesseJesse.com
           </span>
         </div>
