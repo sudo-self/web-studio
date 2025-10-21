@@ -1158,7 +1158,6 @@ CRITICAL REQUIREMENTS:
       <div className="!p-2 border-b border-panel-border">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1 text-xs text-green-400 font-semibold text-text-secondary">
-            <SquareStack size={15} />
             <span>studio.JesseJesse.com</span>
           </div>
           <div className="flex items-center gap-1">
@@ -1167,14 +1166,14 @@ CRITICAL REQUIREMENTS:
               className="!p-1.5 hover:bg-component-hover rounded transition-colors"
               title="Search"
             >
-              <Search size={12} />
+              <Search size={15} />
             </button>
             <button
               onClick={onOpenSettings}
               className="!p-1.5 hover:bg-component-hover rounded transition-colors"
               title="Settings"
             >
-              <Settings size={12} />
+              <Settings size={15} />
             </button>
           </div>
         </div>
@@ -1246,7 +1245,7 @@ CRITICAL REQUIREMENTS:
               onChange={() => setMode("response")}
               disabled={loading || isRequesting}
             />
-            No Memory
+            Stateless
           </label>
           <label className="mode-option">
             <input
@@ -1331,14 +1330,14 @@ CRITICAL REQUIREMENTS:
   <div className="modal-overlay">
     <div className="modal-content">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6 pb-4 border-b border-panel-border">
+      <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-accent-color bg-opacity-10 rounded-lg">
             <Github size={20} className="text-accent-color" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-text-primary">Create Repository</h3>
-            <p className="text-xs text-text-muted mt-1">Deploy with GitHub Pages</p>
+            <h3 className="text-lg font-semibold text-text-primary">Create a Github Repository</h3>
+            <p className="text-xs text-text-muted mt-1">Deploy your Website with GitHub Pages</p>
           </div>
         </div>
         <button 
@@ -1349,7 +1348,7 @@ CRITICAL REQUIREMENTS:
           <X size={16} />
         </button>
       </div>
-      
+
       {!githubToken ? (
         /* Auth State */
         <div className="text-center py-6">
