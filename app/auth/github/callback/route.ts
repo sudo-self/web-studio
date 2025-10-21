@@ -17,6 +17,9 @@ export async function GET(req: NextRequest) {
   }
 
   try {
+    // Use the exact same redirect URI that was used in the OAuth request
+    const redirectUri = `https://studio.jessejesse.com/auth/github/callback`;
+
     const tokenRes = await fetch("https://github.com/login/oauth/access_token", {
       method: "POST",
       headers: {
@@ -27,7 +30,7 @@ export async function GET(req: NextRequest) {
         client_id: process.env.GITHUB_CLIENT_ID,
         client_secret: process.env.GITHUB_CLIENT_SECRET,
         code,
-        redirect_uri: `${req.nextUrl.origin}/auth/github/callback`,
+        redirect_uri: redirectUri,
       }),
     });
 
