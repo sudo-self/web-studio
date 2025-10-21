@@ -1,24 +1,28 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
-  const code = url.searchParams.get('code');
-  const state = url.searchParams.get('state');
-  const savedState = req.cookies.get('github_oauth_state')?.value;
+  const code = url.searchParams.get("code");
+  const state = url.searchParams.get("state");
+
+  // Parse cookies from the request headers
+  const cookies = req.headers.get("cookie") || "";
+  const match = cookies.match(/github_oauth_state=([^;]+)/);
+  const savedState = match ? match[1] : null;
 
   if (!code || !state || state !== savedState) {
-    const redirectUrl = new URL('/', req.url);
-    redirectUrl.searchParams.set('github_error', 'auth_failed');
-    redirectUrl.searchParams.set('error_detail', 'Invalid state or missing code');
+    const redirectUrl = new URL("/", req.url);
+    redirectUrl.searchParams.set("github_error", "auth_failed");
+    redirectUrl.searchParams.set("error_detail", "Invalid state or missing code");
     return NextResponse.redirect(redirectUrl);
   }
 
   try {
-    const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
-      method: 'POST',
-      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+    const tokenRes = await fetch("https://github.com/login/oauth/access_token", {
+      method: "POST",
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
       body: JSON.stringify({
-        client_id: process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID,
+        client_id: process.env.GITHUB_CLIENT_ID,
         client_secret: process.env.GITHUB_CLIENT_SECRET,
         code,
         redirect_uri: `${req.nextUrl.origin}/auth/github/callback`,
@@ -26,31 +30,27 @@ export async function GET(req: NextRequest) {
     });
 
     const data = await tokenRes.json();
+    if (!data.access_token) throw new Error(data.error_description || "No access token received");
 
-    if (!data.access_token) {
-      throw new Error(data.error_description || 'No access token received');
-    }
-
-    const redirectUrl = new URL('/', req.url);
-    const response = NextResponse.redirect(redirectUrl);
-
-    // Set token in cookie readable by JS
-    response.cookies.set('github_token', data.access_token, {
-      httpOnly: false,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+    // Save token in cookie
+    const response = NextResponse.redirect(new URL("/", req.url));
+    response.cookies.set("github_token", data.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
       maxAge: 60 * 60 * 24 * 30, // 30 days
-      path: '/',
+      path: "/",
     });
 
     return response;
   } catch (err) {
-    const redirectUrl = new URL('/', req.url);
-    redirectUrl.searchParams.set('github_error', 'auth_failed');
-    redirectUrl.searchParams.set('error_detail', err instanceof Error ? err.message : 'unknown');
+    const redirectUrl = new URL("/", req.url);
+    redirectUrl.searchParams.set("github_error", "auth_failed");
+    redirectUrl.searchParams.set("error_detail", err instanceof Error ? err.message : "unknown");
     return NextResponse.redirect(redirectUrl);
   }
 }
+
 
 
 
