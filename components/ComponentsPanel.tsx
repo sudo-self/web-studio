@@ -1171,9 +1171,9 @@ CRITICAL REQUIREMENTS:
         <img 
           src="./icon-512.png" 
           alt="Studio Logo" 
-          className="w-8 h-8 rounded-full"
+          className="w-10 h-10 rounded-full"
         />
-        <h2 className="m-0 text-sm font-semibold">studio</h2>
+        <h2 className="m-0 text-lg font-semibold">STUDIO</h2>
       </div>
       <div className="flex items-center gap-1">
         <button
