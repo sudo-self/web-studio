@@ -1135,18 +1135,22 @@ CRITICAL REQUIREMENTS:
         </div>
       )}
 
-      <div className="ai-section">
-        <div className="panel-header">
-          <div className="flex items-center justify-between w-full">
-            <div className="flex items-center gap-2">
-              <Bot size={18} style={{ color: "var(--accent-color)" }} />
-              <h3>AI</h3>
-            </div>
-            <div className="text-xs text-text-muted bg-component-bg px-2 py-1 rounded">
-              @sudo-self
-            </div>
-          </div>
-        </div>
+   <div className="ai-section">
+  <div className="panel-header">
+    <div className="flex items-center justify-between w-full">
+      <div className="flex items-center gap-2">
+        <Bot size={18} style={{ color: "var(--accent-color)" }} />
+        <h3>Github Pages</h3>
+      </div>
+      <button 
+        className="btn btn-outline btn-sm flex items-center gap-2"
+        onClick={() => document.getElementById('github-modal').showModal()}
+      >
+        <Github size={14} />
+        Create Repo
+      </button>
+    </div>
+  </div>
 
         <div className="mode-toggle">
           <label className="mode-option">
