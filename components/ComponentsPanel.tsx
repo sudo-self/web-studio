@@ -1277,7 +1277,7 @@ CRITICAL REQUIREMENTS:
             disabled={loading || isRequesting}
           />
           <div className="text-xs text-text-muted mt-1 px-1 flex justify-between">
-            <span>Cloudflare Workers AI</span>
+            <span>@cf/meta/llama-3.3-70b-instruct-fp8-fast</span>
             {(loading || isRequesting) && <span className="text-accent-color">●</span>}
           </div>
         </div>
