@@ -98,12 +98,12 @@ export default function PreviewPanel({ code, onResizeStart }: PreviewPanelProps)
       <div className="panel-header flex justify-between items-center p-3 border-b border-panel-border">
         <h2 className="text-lg font-semibold">PREVIEW</h2>
         <div className="flex gap-3 flex-wrap">
-          <button className="btn btn-primary" onClick={handleRefresh}>Refresh</button>
-          <button className="btn btn-primary" onClick={() => setShowEmbed(!showEmbed)}>
-            {showEmbed ? "Close Code" : "Show Code"}
+          <button className="btn btn-secondary" onClick={handleRefresh}>Refresh</button>
+          <button className="btn btn-secondary" onClick={() => setShowEmbed(!showEmbed)}>
+            {showEmbed ? "Close" : "Embed"}
           </button>
           <button className="btn btn-success" onClick={handleFullscreen}>
-            {isFullscreen ? "Exit Full" : "Fullscreen"}
+            {isFullscreen ? "Exit" : "Fullscreen"}
           </button>
         </div>
       </div>
@@ -112,8 +112,8 @@ export default function PreviewPanel({ code, onResizeStart }: PreviewPanelProps)
       {showEmbed && (
         <div className="bg-gray-900 text-white p-4 border-b border-panel-border max-h-48 overflow-auto flex-shrink-0">
           <div className="flex justify-between items-center mb-3">
-            <strong className="text-sm font-semibold">Embed Code</strong>
-            <button className="btn btn-primary btn-sm" onClick={handleCopy}>Copy</button>
+            <strong className="text-sm font-semibold">Component</strong>
+            <button className="btn btn-success btn-sm" onClick={handleCopy}>COPY</button>
           </div>
           <pre className="m-0 text-xs font-mono bg-transparent overflow-x-auto whitespace-pre-wrap leading-5">
             <code>{code}</code>
