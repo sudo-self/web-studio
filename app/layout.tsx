@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Website Builder",
+  title: "studio.JesseJesse.com",
   description: "Build websites with AI assistance",
   icons: {
     icon: "/app/favicon.ico",
