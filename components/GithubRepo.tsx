@@ -68,7 +68,9 @@ const GithubRepo: React.FC<GithubRepoProps> = ({ onRepoCreated }) => {
       }
     } catch (error) {
       console.error('GitHub repo creation failed:', error);
-      showNotification(`Failed to create repository: ${error.message}`, 'error');
+      // FIX: Type-safe error message handling
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      showNotification(`Failed to create repository: ${errorMessage}`, 'error');
     } finally {
       setIsLoading(false);
     }
@@ -77,6 +79,26 @@ const GithubRepo: React.FC<GithubRepoProps> = ({ onRepoCreated }) => {
   const createProjectFiles = (projectData: any, deployPages: boolean) => {
     const badge = '<img src="https://img.shields.io/badge/made%20with-studio.jessejesse.com-orange?style=plastic" alt="made with - studio.jessejesse.com" />';
     
+    // Use array join to avoid template literal issues
+    const readmeContent = [
+      `# ${formData.name}`,
+      ``,
+      `${formData.description}`,
+      ``,
+      `${badge}`,
+      ``,
+      `## About`,
+      ``,
+      `This project was created with [studio.jessejesse.com](https://studio.jessejesse.com) - an AI-powered web development studio.`,
+      ``,
+      `## Getting Started`,
+      ``,
+      `Open index.html in your browser to view the project.`,
+      ``,
+      `---`,
+      `*Created with AI Web Studio*`
+    ].join('\n');
+
     const files = [
       {
         path: 'index.html',
@@ -84,7 +106,7 @@ const GithubRepo: React.FC<GithubRepoProps> = ({ onRepoCreated }) => {
       },
       {
         path: 'README.md',
-        content: `# ${formData.name}\n\n${formData.description}\n\n${badge}\n\n## About\n\nThis project was created with [studio.jessejesse.com](https://studio.jessejesse.com) - an AI-powered web development studio.\n\n## Getting Started\n\nOpen \`index.html\` in your browser to view the project.\n\n---\n*Created with ❤️ using AI Web Studio*`
+        content: readmeContent
       }
     ];
 
