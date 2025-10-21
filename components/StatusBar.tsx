@@ -24,8 +24,8 @@ export default function StatusBar() {
 
       {/* Right Section */}
       <div className="flex items-center gap-1">
-        <span className="font-semibold">@cf/meta/llama</span>
-        <span className="text-green-400">3.3</span>
+        <span className="font-semibold">GITHUB</span>
+        <span className="text-green-400">@sudo-self</span>
       </div>
     </div>
   );
