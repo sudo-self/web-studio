@@ -1188,7 +1188,7 @@ CRITICAL REQUIREMENTS:
             disabled={loading || isRequesting}
           />
           <div className="text-xs text-text-muted mt-1 px-1 flex justify-between">
-            <span>describe what to create</span>
+            <span>studio.JesseJesse.com</span>
             {(loading || isRequesting) && <span className="text-accent-color">●</span>}
           </div>
         </div>
