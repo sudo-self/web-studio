@@ -655,10 +655,10 @@ const GithubAuth = ({ onAuthSuccess }: { onAuthSuccess: (token: string) => void 
       return;
     }
 
-    // Use the exact domain for redirect
+ 
     const redirectUri = `https://studio.jessejesse.com/auth/github/callback`;
     
-    // Use sessionStorage for better state management
+   
     const state = Math.random().toString(36).substring(2, 15);
     sessionStorage.setItem('github_oauth_state', state);
     
@@ -1232,7 +1232,7 @@ CRITICAL REQUIREMENTS:
               onClick={() => setShowGithubModal(true)}
             >
               <Github size={14} />
-              Deploy Project
+             Create Repo
             </button>
           </div>
         </div>
@@ -1327,179 +1327,211 @@ CRITICAL REQUIREMENTS:
         )}
       </div>
 
-      {showGithubModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-text-primary flex items-center gap-2">
-                <Github size={20} />
-                Create GitHub Repository
-              </h3>
+{showGithubModal && (
+  <div className="modal-overlay">
+    <div className="modal-content">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6 pb-4 border-b border-panel-border">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-accent-color bg-opacity-10 rounded-lg">
+            <Github size={20} className="text-accent-color" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-text-primary">Create Repository</h3>
+            <p className="text-xs text-text-muted mt-1">Deploy with GitHub Pages</p>
+          </div>
+        </div>
+        <button 
+          onClick={() => setShowGithubModal(false)}
+          className="btn btn-ghost btn-sm btn-icon hover:bg-component-hover"
+          disabled={isCreatingRepo}
+        >
+          <X size={16} />
+        </button>
+      </div>
+      
+      {!githubToken ? (
+        /* Auth State */
+        <div className="text-center py-6">
+          <div className="p-4 bg-component-bg rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+            <Github size={32} className="text-text-muted" />
+          </div>
+          <h4 className="text-lg font-semibold mb-2 text-text-primary">Connect GitHub</h4>
+          <p className="text-text-muted mb-6 text-sm leading-relaxed">
+            Sign in to create a project repo<br />and publish your site to GitHub Pages
+          </p>
+          <GithubAuth onAuthSuccess={(token) => {
+            setGithubToken(token);
+            localStorage.setItem('github_access_token', token);
+            fetchUserInfo(token);
+          }} />
+        </div>
+      ) : (
+        /* Repository Creation Form */
+        <div className="space-y-6">
+          {/* User Info Card */}
+          <div className="bg-component-bg rounded-xl border border-panel-border p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <img 
+                  src={githubUser?.avatar_url} 
+                  alt="GitHub Avatar" 
+                  className="w-10 h-10 rounded-full border-2 border-panel-border"
+                />
+                <div>
+                  <div className="text-sm font-semibold text-text-primary">{githubUser?.login}</div>
+                  <div className="text-xs text-text-muted flex items-center gap-1">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    Connected to GitHub
+                  </div>
+                </div>
+              </div>
               <button 
-                onClick={() => setShowGithubModal(false)}
-                className="btn btn-ghost btn-sm btn-icon"
+                onClick={() => {
+                  localStorage.removeItem('github_access_token');
+                  setGithubToken(null);
+                  setGithubUser(null);
+                }}
+                className="text-xs text-text-muted hover:text-accent-color transition-colors px-3 py-1 rounded-lg hover:bg-component-hover"
                 disabled={isCreatingRepo}
               >
-                <X size={16} />
+                Disconnect
               </button>
             </div>
+          </div>
+
+          {/* Form Fields */}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-2">
+                Repo Name
+              </label>
+              <input 
+                type="text" 
+                value={githubForm.name}
+                onChange={(e) => setGithubForm(prev => ({...prev, name: e.target.value}))}
+                className="w-full p-3 border border-panel-border rounded-lg bg-component-bg text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent-color focus:border-transparent transition-all"
+                placeholder="my-awesome-project"
+                disabled={isCreatingRepo}
+              />
+            </div>
             
-            {!githubToken ? (
-              <div className="text-center py-4">
-                <Github size={48} className="mx-auto mb-4 text-text-muted" />
-                <h4 className="text-lg font-medium mb-2 text-text-primary">Connect GitHub</h4>
-                <p className="text-text-muted mb-6">Sign in with GitHub to create repositories and deploy to Pages</p>
-                <GithubAuth onAuthSuccess={(token) => {
-                  setGithubToken(token);
-                  localStorage.setItem('github_access_token', token);
-                  fetchUserInfo(token);
-                }} />
-              </div>
-            ) : (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between p-3 bg-component-bg rounded border border-panel-border">
-                  <div className="flex items-center gap-3">
-                    <img 
-                      src={githubUser?.avatar_url} 
-                      alt="GitHub Avatar" 
-                      className="w-8 h-8 rounded-full"
-                    />
-                    <div>
-                      <div className="text-sm font-medium text-text-primary">{githubUser?.login}</div>
-                      <div className="text-xs text-text-muted">Connected to GitHub</div>
-                    </div>
-                  </div>
-                  <button 
-                    onClick={() => {
-                      localStorage.removeItem('github_access_token');
-                      setGithubToken(null);
-                      setGithubUser(null);
-                    }}
-                    className="text-xs text-accent-color hover:underline"
-                    disabled={isCreatingRepo}
-                  >
-                    Disconnect
-                  </button>
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-2">
+                Description
+              </label>
+              <input 
+                type="text" 
+                value={githubForm.description}
+                onChange={(e) => setGithubForm(prev => ({...prev, description: e.target.value}))}
+                className="w-full p-3 border border-panel-border rounded-lg bg-component-bg text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent-color focus:border-transparent transition-all"
+                placeholder="Project created with AI Web Studio"
+                disabled={isCreatingRepo}
+              />
+            </div>
+            
+            {/* Checkboxes */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <label className="flex items-center gap-3 p-3 bg-component-bg rounded-lg border border-panel-border hover:border-accent-color transition-colors cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  id="deploy-pages" 
+                  checked={githubForm.deployPages}
+                  onChange={(e) => setGithubForm(prev => ({...prev, deployPages: e.target.checked}))}
+                  className="rounded border-panel-border bg-component-bg text-accent-color focus:ring-accent-color"
+                  disabled={isCreatingRepo}
+                />
+                <div>
+                  <div className="text-sm font-medium text-text-primary">Deploy to Pages</div>
+                  <div className="text-xs text-text-muted">Auto-deploy</div>
                 </div>
+              </label>
+              
+              <label className="flex items-center gap-3 p-3 bg-component-bg rounded-lg border border-panel-border hover:border-accent-color transition-colors cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  id="is-public" 
+                  checked={githubForm.isPublic}
+                  onChange={(e) => setGithubForm(prev => ({...prev, isPublic: e.target.checked}))}
+                  className="rounded border-panel-border bg-component-bg text-accent-color focus:ring-accent-color"
+                  disabled={isCreatingRepo}
+                />
+                <div>
+                  <div className="text-sm font-medium text-text-primary">Public Repo</div>
+                  <div className="text-xs text-text-muted">Visible to everyone</div>
+                </div>
+              </label>
+            </div>
 
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-text-primary mb-2">
-                      Repository Name
-                    </label>
-                    <input 
-                      type="text" 
-                      value={githubForm.name}
-                      onChange={(e) => setGithubForm(prev => ({...prev, name: e.target.value}))}
-                      className="w-full p-3 border border-panel-border rounded-lg bg-component-bg text-text-primary text-sm focus:outline-none focus:border-accent-color"
-                      placeholder="my-awesome-project"
-                      disabled={isCreatingRepo}
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-text-primary mb-2">
-                      Description
-                    </label>
-                    <input 
-                      type="text" 
-                      value={githubForm.description}
-                      onChange={(e) => setGithubForm(prev => ({...prev, description: e.target.value}))}
-                      className="w-full p-3 border border-panel-border rounded-lg bg-component-bg text-text-primary text-sm focus:outline-none focus:border-accent-color"
-                      placeholder="Project created with AI Web Studio"
-                      disabled={isCreatingRepo}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <input 
-                      type="checkbox" 
-                      id="deploy-pages" 
-                      checked={githubForm.deployPages}
-                      onChange={(e) => setGithubForm(prev => ({...prev, deployPages: e.target.checked}))}
-                      className="rounded border-panel-border bg-component-bg focus:ring-accent-color"
-                      disabled={isCreatingRepo}
-                    />
-                    <label htmlFor="deploy-pages" className="text-sm text-text-primary">
-                      Deploy to GitHub Pages
-                    </label>
-                  </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <input 
-                      type="checkbox" 
-                      id="is-public" 
-                      checked={githubForm.isPublic}
-                      onChange={(e) => setGithubForm(prev => ({...prev, isPublic: e.target.checked}))}
-                      className="rounded border-panel-border bg-component-bg focus:ring-accent-color"
-                      disabled={isCreatingRepo}
-                    />
-                    <label htmlFor="is-public" className="text-sm text-text-primary">
-                      Public repository
-                    </label>
-                  </div>
-
-                  <div className="text-xs text-text-muted bg-component-bg p-4 rounded-lg border border-panel-border">
-                    <p className="font-medium text-text-primary mb-3">Files that will be created:</p>
-                    <ul className="space-y-2">
-                      <li className="flex items-center gap-2">
-                        <div className="w-1 h-1 bg-text-muted rounded-full"></div>
-                        <code className="text-text-primary">index.html</code>
-                        <span className="text-text-muted">- Your website</span>
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <div className="w-1 h-1 bg-text-muted rounded-full"></div>
-                        <code className="text-text-primary">README.md</code>
-                        <span className="text-text-muted">- Project info</span>
-                      </li>
-                      {githubForm.deployPages && (
-                        <li className="flex items-center gap-2">
-                          <div className="w-1 h-1 bg-text-muted rounded-full"></div>
-                          <code className="text-text-primary">.github/workflows/static.yml</code>
-                          <span className="text-text-muted">- Deploy Pages</span>
-                        </li>
-                      )}
-                    </ul>
-                    {githubForm.deployPages && (
-                      <p className="mt-3 text-text-primary text-sm">
-                        Your site will be available at: <br />
-                        <code className="text-accent-color">https://{githubUser?.login}.github.io/{githubForm.name}</code>
-                      </p>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="flex gap-3 pt-4">
-                  <button 
-                    className="btn btn-ghost flex-1"
-                    onClick={() => setShowGithubModal(false)}
-                    disabled={isCreatingRepo}
-                  >
-                    Cancel
-                  </button>
-                  <button 
-                    className="btn btn-primary flex-1 flex items-center justify-center gap-2"
-                    onClick={handleCreateRepo}
-                    disabled={isCreatingRepo || !githubForm.name.trim()}
-                  >
-                    {isCreatingRepo ? (
-                      <>
-                        <div className="loading-spinner"></div>
-                        Creating...
-                      </>
-                    ) : (
-                      <>
-                        <Github size={16} />
-                        Create Repository
-                      </>
-                    )}
-                  </button>
-                </div>
+            {/* Files Preview */}
+            <div className="bg-component-bg rounded-xl border border-panel-border overflow-hidden">
+              <div className="p-4 border-b border-panel-border">
+                <p className="font-semibold text-text-primary flex items-center gap-2">
+                  <FileText size={16} />
+                  Files to be created
+                </p>
               </div>
-            )}
+              <div className="p-4">
+                <ul className="space-y-3">
+                  <li className="flex items-center gap-3 p-2 rounded-lg hover:bg-component-hover transition-colors">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <code className="text-sm text-text-primary font-medium">index.html</code>
+                    <span className="text-xs text-text-muted ml-auto">Your website</span>
+                  </li>
+                  <li className="flex items-center gap-3 p-2 rounded-lg hover:bg-component-hover transition-colors">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <code className="text-sm text-text-primary font-medium">README.md</code>
+                    <span className="text-xs text-text-muted ml-auto">Project documentation</span>
+                  </li>
+                  {githubForm.deployPages && (
+                    <li className="flex items-center gap-3 p-2 rounded-lg hover:bg-component-hover transition-colors">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                      <code className="text-sm text-text-primary font-medium">.github/workflows/deploy.yml</code>
+                      <span className="text-xs text-text-muted ml-auto">Deployment workflow</span>
+                    </li>
+                  )}
+                </ul>
+                {githubForm.deployPages && (
+                  <div className="mt-4 p-3 bg-accent-color bg-opacity-5 rounded-lg border border-accent-color border-opacity-20">
+                    <p className="text-sm text-text-primary font-medium mb-1">Your Website will be available at:</p>
+                    <code className="text-xs text-accent-color break-all">
+                      https://{githubUser?.login}.github.io/{githubForm.name}
+                    </code>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          {/* Action Buttons */}
+          <div className="flex gap-3 pt-2">
+            <button 
+              className="btn btn-outline flex-1"
+              onClick={() => setShowGithubModal(false)}
+              disabled={isCreatingRepo}
+            >
+              Cancel
+            </button>
+            <button 
+              className="btn btn-primary flex-1 flex items-center justify-center gap-2"
+              onClick={handleCreateRepo}
+              disabled={isCreatingRepo || !githubForm.name.trim()}
+            >
+              {isCreatingRepo ? (
+                <>
+                  <div className="loading-spinner"></div>
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <Github size={16} />
+                  Create Repository
+                </>
+              )}
+            </button>
           </div>
         </div>
       )}
     </div>
-  );
-}
+  </div>
+)}
