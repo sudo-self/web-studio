@@ -248,8 +248,10 @@ export default function ComponentsPanel({
         endpoint: settings.aiEndpoint,
         timestamp: new Date().toISOString()
       });
+      
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000);
+      
       const res = await fetch(settings.aiEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -260,26 +262,45 @@ export default function ComponentsPanel({
         }),
         signal: controller.signal,
       });
+      
       clearTimeout(timeoutId);
+
       if (!res.ok) {
         const errorText = await res.text();
         console.error("❌ AI API error:", res.status, errorText);
         throw new Error(`Server returned ${res.status}: ${res.statusText}`);
       }
+
       const data = await res.json();
       console.log("✅ AI response received:", { 
         hasText: !!data.text, 
-        length: data.text?.length 
+        length: data.text?.length,
+        data: data // Log full response to debug
       });
-      const aiText = data.text || "";
-      if (!aiText.trim()) {
-        throw new Error("AI returned empty response");
+
+      // FIX: Check if there's an error from the API
+      if (data.error) {
+        throw new Error(data.error);
       }
+
+      const aiText = data.text || "";
+      
+      if (!aiText.trim()) {
+        throw new Error("AI returned empty response - check your API key and model configuration");
+      }
+
       setResponse(aiText);
+      
+      // Only insert if we have actual AI-generated content
       if (aiText.includes('<') && aiText.includes('>')) {
         const timestamp = new Date().toLocaleTimeString();
         onAiInsert(`\n<!-- AI Generated (${timestamp}): ${prompt.substring(0, 50)}... -->\n${aiText}\n`);
+      } else {
+        // If it's not HTML, show it in the response but don't insert
+        console.warn("AI returned non-HTML content:", aiText);
+        setResponse(`⚠️ AI returned non-HTML content:\n\n${aiText}`);
       }
+
       if (mode === "chat") {
         setChatHistory(prev => [
           ...prev,
@@ -287,24 +308,34 @@ export default function ComponentsPanel({
           { role: "assistant", content: aiText }
         ]);
       }
+      
       setPrompt("");
+
     } catch (err) {
       console.error("💥 AI request failed:", err);
       let userMessage = "An error occurred";
+      
       if (err instanceof Error) {
         if (err.name === 'AbortError') {
           userMessage = "Request timed out. Please try again.";
         } else if (err.message.includes('Failed to fetch')) {
-          userMessage = "Network error. Check your connection.";
+          userMessage = "Network error. Check your connection and API endpoint.";
         } else if (err.message.includes('401') || err.message.includes('403')) {
-          userMessage = "Authentication failed. Check your API key.";
+          userMessage = "Authentication failed. Check your GOOGLE_AI_API_KEY in environment variables.";
         } else if (err.message.includes('429')) {
-          userMessage = "Rate limit exceeded. Wait 10 seconds before trying again.";
+          userMessage = "Rate limit exceeded. Wait a moment before trying again.";
+        } else if (err.message.includes('404')) {
+          userMessage = "API endpoint not found. Check your model configuration.";
         } else {
           userMessage = err.message;
         }
       }
+      
       setResponse(`❌ Error: ${userMessage}`);
+      
+      // DON'T insert error messages into editor
+      // Let the user see the error and fix the actual issue
+
     } finally {
       setLoading(false);
       setTimeout(() => {
