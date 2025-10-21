@@ -96,7 +96,7 @@ export default function PreviewPanel({ code, onResizeStart }: PreviewPanelProps)
 
       {/* Header */}
       <div className="panel-header flex justify-between items-center p-3 border-b border-panel-border">
-        <h2 className="text-lg font-semibold">Preview</h2>
+        <h2 className="text-lg font-semibold">PREVIEW</h2>
         <div className="flex gap-3 flex-wrap">
           <button className="btn btn-primary" onClick={handleRefresh}>Refresh</button>
           <button className="btn btn-warning" onClick={() => setShowEmbed(!showEmbed)}>
