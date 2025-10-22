@@ -312,28 +312,46 @@ export default function Home() {
   const startXRef = useRef<number>(0);
   const startWidthsRef = useRef(panelWidths);
 
- 
+  // Debug useEffect to monitor code changes
+  useEffect(() => {
+    console.log("🔍 Home: Code state updated, length:", code.length);
+    console.log("🔍 Home: Last 200 chars:", code.slice(-200));
+  }, [code]);
+
   const runCode = () => {
-    console.log("Code updated:", code);
+    console.log("🏃 Home: Running code, current length:", code.length);
+    // Force a state update to trigger preview refresh
+    setCode(prev => prev + "");
   };
 
-
   const formatCode = () => {
+    console.log("📝 Home: Formatting code");
     const formatted = code.replace(/(>)(<)/g, "$1\n$2");
     setCode(formatted);
   };
 
-
   const insertComponent = (html: string) => {
-    setCode((prev) => prev + "\n" + html);
+    console.log("📥 Home: Inserting component");
+    console.log("📥 Home: HTML to insert (first 100 chars):", html.substring(0, 100));
+    
+    setCode(prev => {
+      const newCode = prev + "\n" + html;
+      console.log("📥 Home: New code length:", newCode.length);
+      return newCode;
+    });
   };
 
- 
   const insertAiCode = (html: string) => {
-    setCode((prev) => prev + "\n" + html);
+    console.log("🤖 Home: Inserting AI code");
+    console.log("🤖 Home: AI HTML to insert (first 100 chars):", html.substring(0, 100));
+    
+    setCode(prev => {
+      const newCode = prev + "\n" + html;
+      console.log("🤖 Home: New code length:", newCode.length);
+      return newCode;
+    });
   };
 
-  
   const handleResizeStart = (panel: string, e: React.MouseEvent) => {
     e.preventDefault();
     setResizingPanel(panel);
@@ -343,7 +361,6 @@ export default function Home() {
     document.body.style.cursor = "col-resize";
     document.body.style.userSelect = "none";
   };
-
 
   useEffect(() => {
     if (!resizingPanel) return;
@@ -387,12 +404,40 @@ export default function Home() {
     };
   }, [resizingPanel]);
 
+  // Test function to verify insertion works
+  const testInsert = () => {
+    const testHTML = `\n<!-- TEST INSERT -->\n<div style="background: #ff4444; color: white; padding: 20px; margin: 10px; border: 2px solid #cc0000; border-radius: 8px; font-weight: bold;">
+      🎉 TEST COMPONENT INSERTED SUCCESSFULLY! If you see this, insertion works!
+    </div>`;
+    
+    console.log("🧪 Home: Testing insert with:", testHTML);
+    setCode(prev => prev + testHTML);
+  };
+
   return (
     <>
       <div className="app-container">
+        {/* Test button - remove this after debugging */}
+        <button
+          onClick={testInsert}
+          style={{
+            position: 'fixed',
+            top: '10px',
+            right: '10px',
+            zIndex: 1000,
+            background: '#ff4444',
+            color: 'white',
+            border: 'none',
+            padding: '8px 12px',
+            borderRadius: '4px',
+            fontSize: '12px',
+            cursor: 'pointer'
+          }}
+        >
+          Test Insert
+        </button>
       
         <div className="main-content">
-      
           <div
             className="panel components-panel"
             style={{
@@ -411,13 +456,11 @@ export default function Home() {
             />
           </div>
 
-       
           <div
             className="resize-handle"
             onMouseDown={(e) => handleResizeStart("components", e)}
           />
 
-       
           <div
             className="panel editor-panel"
             style={{
@@ -436,13 +479,11 @@ export default function Home() {
             />
           </div>
 
-         
           <div
             className="resize-handle"
             onMouseDown={(e) => handleResizeStart("editor", e)}
           />
 
-       
           <div
             className="panel preview-panel"
             style={{ flex: 1, minWidth: "400px" }}
@@ -451,7 +492,6 @@ export default function Home() {
           </div>
         </div>
 
-    
         <StatusBar />
       </div>
 
