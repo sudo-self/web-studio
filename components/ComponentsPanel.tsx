@@ -1413,14 +1413,10 @@ CRITICAL REQUIREMENTS:
         </div>
       </div>
 
-      {/* AI Section */}
+          {/* AI Section */}
       <div className="ai-section">
         <div className="panel-header">
           <div className="flex items-center justify-between w-full">
-            <div className="flex items-center gap-2">
-              <Bot size={18} style={{ color: "var(--accent-color)" }} />
-              <h3>AI Builder</h3>
-            </div>
             <div className="flex items-center gap-2">
               <BuildPrompts onPromptSelect={setPrompt} />
               <button 
