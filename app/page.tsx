@@ -9,14 +9,299 @@ import SettingsPanel from "@/components/SettingsPanel";
 
 export default function Home() {
   const [code, setCode] = useState(`<!-- Welcome to studio.jessejesse.com -->
-<div style="text-align: center; padding: 2rem;">
-  <h1>Your Awesome Website</h1>
- <p>Start building by adding components from the sidebar, using the AI assistant, or writing code directly in the editor.</p>
+<div class="welcome-container">
+  <div class="welcome-content">
+    <!-- Main Header -->
+    <header class="welcome-header">
+      <div class="logo-container">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          </svg>
+        </div>
+        <h1 class="welcome-title">Welcome to Web Studio</h1>
+      </div>
+      <p class="welcome-subtitle">Create beautiful websites by dragging components, using AI assistance, or writing code directly in the editor.</p>
+    </header>
+
+    <!-- Get Started Button -->
+    <button class="welcome-btn" onclick="alert('Let\\'s start building! 🚀')">
+      <span class="btn-content">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+        Start Building
+      </span>
+    </button>
+
+    <!-- Feature Navigation -->
+    <nav class="feature-nav">
+      <a href="#" class="feature-link">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+          </svg>
+        </div>
+        <span class="feature-text">Components</span>
+      </a>
+
+      <a href="#" class="feature-link">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+          </svg>
+        </div>
+        <span class="feature-text">AI Assistant</span>
+      </a>
+
+      <a href="#" class="feature-link">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          </svg>
+        </div>
+        <span class="feature-text">Code Editor</span>
+      </a>
+    </nav>
+
+    <!-- Quick Stats -->
+    <div class="quick-stats">
+      <div class="stat-item">
+        <div class="stat-number">50+</div>
+        <div class="stat-label">Components</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">AI</div>
+        <div class="stat-label">Powered</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">100%</div>
+        <div class="stat-label">Customizable</div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .welcome-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 3rem 2rem;
+      background: var(--surface-secondary);
+      font-family: var(--font-sans);
+    }
+
+    .welcome-content {
+      max-width: 600px;
+      text-align: center;
+      animation: fadeInUp 0.8s ease-out;
+    }
+
+    .welcome-header {
+      margin-bottom: 3rem;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .logo-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--interactive-accent), var(--interactive-accent-hover));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+    }
+
+    .logo-icon svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .welcome-title {
+      font-size: 3rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin: 0;
+      letter-spacing: -0.025em;
+      background: linear-gradient(135deg, var(--text-primary), var(--interactive-accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .welcome-subtitle {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin: 0;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .welcome-btn {
+      background: linear-gradient(135deg, var(--interactive-accent), var(--interactive-accent-hover));
+      color: white;
+      border: none;
+      padding: 1rem 2.5rem;
+      font-size: 1.125rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 12px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 14px rgba(139, 92, 246, 0.4);
+      margin-bottom: 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .welcome-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(139, 92, 246, 0.6);
+    }
+
+    .welcome-btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-content {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .btn-icon {
+      width: 20px;
+      height: 20px;
+    }
+
+    .feature-nav {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      margin-bottom: 3rem;
+      flex-wrap: wrap;
+    }
+
+    .feature-link {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1.5rem;
+      border-radius: 12px;
+      text-decoration: none;
+      color: var(--text-secondary);
+      transition: all 0.3s ease;
+      border: 1px solid transparent;
+      min-width: 120px;
+    }
+
+    .feature-link:hover {
+      background: var(--surface-primary);
+      color: var(--interactive-accent);
+      border-color: var(--interactive-accent);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(139, 92, 246, 0.15);
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--surface-primary);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--interactive-accent);
+      transition: all 0.3s ease;
+    }
+
+    .feature-link:hover .feature-icon {
+      background: var(--interactive-accent);
+      color: white;
+    }
+
+    .feature-icon svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .feature-text {
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+
+    .quick-stats {
+      display: flex;
+      gap: 3rem;
+      justify-content: center;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border-primary);
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--interactive-accent);
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+      font-size: 0.875rem;
+      color: var(--text-tertiary);
+      font-weight: 500;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .welcome-title {
+        font-size: 2.25rem;
+      }
+      
+      .welcome-subtitle {
+        font-size: 1.125rem;
+      }
+      
+      .feature-nav {
+        gap: 1rem;
+      }
+      
+      .quick-stats {
+        gap: 2rem;
+      }
+    }
+  </style>
 </div>`);
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [panelWidths, setPanelWidths] = useState({
-    components: 280,
+    components: 300,
     editor: 600,
     preview: 400,
   });
@@ -41,12 +326,12 @@ export default function Home() {
     setCode((prev) => prev + "\n" + html);
   };
 
-
+ 
   const insertAiCode = (html: string) => {
     setCode((prev) => prev + "\n" + html);
   };
 
-
+  
   const handleResizeStart = (panel: string, e: React.MouseEvent) => {
     e.preventDefault();
     setResizingPanel(panel);
@@ -69,13 +354,13 @@ export default function Home() {
 
         if (resizingPanel === "components") {
           const newWidth = Math.max(
-            200,
+            240,
             Math.min(500, startWidthsRef.current.components + deltaX)
           );
           newWidths.components = newWidth;
         } else if (resizingPanel === "editor") {
           const newWidth = Math.max(
-            300,
+            400,
             Math.min(800, startWidthsRef.current.editor + deltaX)
           );
           newWidths.editor = newWidth;
@@ -103,14 +388,14 @@ export default function Home() {
   return (
     <>
       <div className="app-container">
-    
+      
         <div className="main-content">
       
           <div
             className="panel components-panel"
             style={{
               width: `${panelWidths.components}px`,
-              minWidth: "200px",
+              minWidth: "240px",
               maxWidth: "500px",
               flex: "0 0 auto",
             }}
@@ -120,13 +405,13 @@ export default function Home() {
               onAiInsert={insertAiCode}
               onOpenSettings={() => setIsSettingsOpen(true)}
               onResizeStart={(e) => handleResizeStart("components", e)}
-              currentCode={code} // ← This is the crucial fix
+              currentCode={code}
             />
           </div>
 
        
           <div
-            className="w-2 cursor-col-resize bg-panel-border hover:bg-accent-color transition-colors"
+            className="resize-handle"
             onMouseDown={(e) => handleResizeStart("components", e)}
           />
 
@@ -135,7 +420,7 @@ export default function Home() {
             className="panel editor-panel"
             style={{
               width: `${panelWidths.editor}px`,
-              minWidth: "300px",
+              minWidth: "400px",
               maxWidth: "800px",
               flex: "0 0 auto",
             }}
@@ -144,42 +429,71 @@ export default function Home() {
               code={code}
               setCode={setCode}
               runCode={runCode}
-              formatCode={formatCode} 
+              formatCode={formatCode}
               onResizeStart={(e) => handleResizeStart("editor", e)}
             />
           </div>
 
-       
+         
           <div
-            className="w-2 cursor-col-resize bg-panel-border hover:bg-accent-color transition-colors"
+            className="resize-handle"
             onMouseDown={(e) => handleResizeStart("editor", e)}
           />
 
        
           <div
             className="panel preview-panel"
-            style={{ flex: 1, minWidth: "300px" }}
+            style={{ flex: 1, minWidth: "400px" }}
           >
             <PreviewPanel code={code} />
           </div>
         </div>
 
-     
+    
         <StatusBar />
       </div>
 
-     
+      {/* Settings Modal */}
       <SettingsPanel
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
       />
 
       <style jsx global>{`
-        .bg-panel-border {
-          background-color: var(--panel-border);
+        .resize-handle {
+          width: 8px;
+          cursor: col-resize;
+          background: var(--border-primary);
+          transition: all 0.2s ease;
+          position: relative;
         }
-        .bg-accent-color {
-          background-color: var(--accent-color);
+
+        .resize-handle:hover {
+          background: var(--interactive-accent);
+        }
+
+        .resize-handle::before {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 2px;
+          height: 20px;
+          background: var(--text-tertiary);
+          border-radius: 1px;
+          opacity: 0.6;
+        }
+
+        .resize-handle:hover::before {
+          background: white;
+          opacity: 1;
+        }
+
+        /* Ensure smooth resizing experience */
+        body.resizing {
+          cursor: col-resize !important;
+          user-select: none !important;
         }
       `}</style>
     </>
