@@ -583,13 +583,187 @@ const components: { [key: string]: ComponentInfo } = {
     tags: ["content", "timeline", "history"]
   }
 };
+  "primary-button": {
+    code: `<!-- Primary Button -->
+<button style="background: #667eea; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 1rem; font-weight: 500; cursor: pointer; transition: all 0.2s ease;">
+  Primary Button
+</button>`,
+    description: "Primary action button",
+    tags: ["ui", "button", "interactive"]
+  },
+  "secondary-button": {
+    code: `<!-- Secondary Button -->
+<button style="background: transparent; color: #667eea; border: 2px solid #667eea; padding: 10px 22px; border-radius: 6px; font-size: 1rem; font-weight: 500; cursor: pointer; transition: all 0.2s ease;">
+  Secondary Button
+</button>`,
+    description: "Secondary action button",
+    tags: ["ui", "button", "interactive"]
+  },
+  "button-group": {
+    code: `<!-- Button Group -->
+<div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+  <button style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">Primary</button>
+  <button style="background: transparent; color: #667eea; border: 2px solid #667eea; padding: 8px 18px; border-radius: 6px; cursor: pointer;">Secondary</button>
+  <button style="background: #e2e8f0; color: #4a5568; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">Default</button>
+</div>`,
+    description: "Group of buttons",
+    tags: ["ui", "button", "group"]
+  }
+};
+const components = {
+  // ... existing components
+  "readme-basic": {
+    code: `<!-- Basic README Template -->
+<div style="max-width: 800px; margin: 0 auto; padding: 2rem; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+  <h1 style="color: #333; border-bottom: 2px solid #667eea; padding-bottom: 0.5rem;">Project Name</h1>
+  
+  <div style="background: #f8fafc; padding: 1rem; border-radius: 6px; margin: 1rem 0;">
+    <p style="margin: 0; color: #4a5568;">A brief description of your project.</p>
+  </div>
+
+  <h2 style="color: #333; margin-top: 2rem;">Features</h2>
+  <ul style="color: #4a5568;">
+    <li>Feature 1</li>
+    <li>Feature 2</li>
+    <li>Feature 3</li>
+  </ul>
+
+  <h2 style="color: #333; margin-top: 2rem;">Installation</h2>
+  <pre style="background: #2d3748; color: #e2e8f0; padding: 1rem; border-radius: 6px;">
+npm install</pre>
+
+  <h2 style="color: #333; margin-top: 2rem;">Usage</h2>
+  <pre style="background: #2d3748; color: #e2e8f0; padding: 1rem; border-radius: 6px;">
+npm start</pre>
+</div>`,
+    description: "Basic README template",
+    tags: ["documentation", "readme", "markdown"]
+  },
+  "readme-advanced": {
+    code: `<!-- Advanced README Template -->
+<div style="max-width: 800px; margin: 0 auto; padding: 2rem; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+  <div style="text-align: center; margin-bottom: 3rem;">
+    <h1 style="color: #333; margin-bottom: 0.5rem;">Project Name</h1>
+    <p style="color: #666; font-size: 1.2rem;">A modern web application</p>
+    <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1rem;">
+      <span style="background: #667eea; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.875rem;">JavaScript</span>
+      <span style="background: #48bb78; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.875rem;">HTML5</span>
+      <span style="background: #ed8936; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.875rem;">CSS3</span>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin: 2rem 0;">
+    <div style="text-align: center;">
+      <h3 style="color: #333;">Fast</h3>
+      <p style="color: #666;">Lightning fast performance</p>
+    </div>
+    <div style="text-align: center;">
+      <h3 style="color: #333;">Responsive</h3>
+      <p style="color: #666;">Works on all devices</p>
+    </div>
+    <div style="text-align: center;">
+      <h3 style="color: #333;">Modern</h3>
+      <p style="color: #666;">Clean, modern design</p>
+    </div>
+  </div>
+
+  <h2 style="color: #333; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">Quick Start</h2>
+  <div style="background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden;">
+    <div style="background: #edf2f7; padding: 0.5rem 1rem; font-weight: 500; color: #4a5568;">Terminal</div>
+    <pre style="margin: 0; padding: 1rem; background: #2d3748; color: #e2e8f0;">
+git clone https://github.com/user/repo.git
+cd project
+npm install
+npm run dev</pre>
+  </div>
+</div>`,
+    description: "Advanced README with badges",
+    tags: ["documentation", "readme", "badges"]
+  }
+};
+
+  "search-bar": {
+    code: `<!-- Search Bar -->
+<div style="max-width: 400px; margin: 2rem auto;">
+  <div style="position: relative;">
+    <input type="text" placeholder="Search..." style="width: 100%; padding: 12px 45px 12px 16px; border: 2px solid #e2e8f0; border-radius: 25px; font-size: 1rem; transition: border-color 0.2s ease;">
+    <button style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: #667eea; color: white; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.3-4.3"></path>
+      </svg>
+    </button>
+  </div>
+</div>`,
+    description: "Search input with button",
+    tags: ["forms", "search", "input"]
+  },
+  "toggle-switch": {
+    code: `<!-- Toggle Switch -->
+<label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+  <div style="position: relative;">
+    <input type="checkbox" style="display: none;">
+    <div style="width: 50px; height: 24px; background: #e2e8f0; border-radius: 12px; position: relative; transition: background 0.2s ease;">
+      <div style="position: absolute; left: 2px; top: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: transform 0.2s ease;"></div>
+    </div>
+  </div>
+  <span style="color: #333;">Toggle setting</span>
+</label>`,
+    description: "Toggle switch component",
+    tags: ["forms", "toggle", "ui"]
+  }
+};
+
+  "mega-menu": {
+    code: `<!-- Mega Menu -->
+<nav style="background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+  <div style="max-width: 1200px; margin: 0 auto; padding: 1rem 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div style="font-size: 1.5rem; font-weight: bold; color: #333;">Logo</div>
+      <div style="display: flex; gap: 2rem;">
+        <div style="position: relative;">
+          <button style="background: none; border: none; color: #333; font-weight: 500; cursor: pointer; padding: 0.5rem 1rem;">Products</button>
+        </div>
+        <a href="#" style="text-decoration: none; color: #333; font-weight: 500; padding: 0.5rem 1rem;">Solutions</a>
+        <a href="#" style="text-decoration: none; color: #333; font-weight: 500; padding: 0.5rem 1rem;">Pricing</a>
+      </div>
+    </div>
+  </div>
+</nav>`,
+    description: "Mega menu navigation",
+    tags: ["navigation", "menu", "header"]
+  },
+  "breadcrumb-advanced": {
+    code: `<!-- Advanced Breadcrumb -->
+<nav style="padding: 1rem 2rem; background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+  <div style="max-width: 1200px; margin: 0 auto;">
+    <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+      <a href="#" style="color: #667eea; text-decoration: none; display: flex; align-items: center; gap: 0.25rem;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+        Home
+      </a>
+      <span style="color: #a0aec0;">/</span>
+      <a href="#" style="color: #667eea; text-decoration: none;">Products</a>
+      <span style="color: #a0aec0;">/</span>
+      <span style="color: #718096;">Current Page</span>
+    </div>
+  </div>
+</nav>`,
+    description: "Breadcrumb with icons",
+    tags: ["navigation", "breadcrumb", "icons"]
+  }
+};
 
 const componentCategories: ComponentCategories = {
   "Layout": ["header", "hero", "about", "services", "contact", "footer", "sidebar"],
-  "Navigation": ["navbar", "breadcrumb"],
+  "Navigation": ["navbar", "breadcrumb", "breadcrumb-advanced", "mega-menu"],
   "Content": ["card", "gallery", "team", "testimonials", "stats", "timeline", "faq"],
-  "Forms": ["contact", "login-form", "newsletter"],
-  "UI Components": ["modal", "progress", "pricing"],
+  "Forms": ["contact", "login-form", "newsletter", "search-bar", "toggle-switch"],
+  "UI Components": ["modal", "progress", "pricing", "primary-button", "secondary-button", "button-group"],
+  "Documentation": ["readme-basic", "readme-advanced"],
   "SEO": ["seo", "seo-schema"],
   "Icons": ["social-icons", "feature-icons", "font-icons"]
 };
@@ -622,9 +796,21 @@ const getComponentIcon = (componentKey: string): ReactElement => {
     modal: <SquareStack size={16} />,
     progress: <TrendingUp size={16} />,
     timeline: <Clock size={16} />,
+    "primary-button": <SquareStack size={16} />,
+    "secondary-button": <SquareStack size={16} />,
+    "button-group": <SquareStack size={16} />,
+    "readme-basic": <FileText size={16} />,
+    "readme-advanced": <FileText size={16} />,
+    "search-bar": <Search size={16} />,
+    "toggle-switch": <Settings size={16} />,
+    "mega-menu": <Navigation size={16} />,
+    "breadcrumb-advanced": <Navigation size={16} />,
   };
   return icons[componentKey] || <FileText size={16} />;
 };
+
+
+
 
 const generateHtml = (bodyContent: string) => `
   <!DOCTYPE html>
