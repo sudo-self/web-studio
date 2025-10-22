@@ -581,8 +581,8 @@ const components: { [key: string]: ComponentInfo } = {
 </div>`,
     description: "Timeline component",
     tags: ["content", "timeline", "history"]
-  }
-};
+  },
+
   "primary-button": {
     code: `<!-- Primary Button -->
 <button style="background: #667eea; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 1rem; font-weight: 500; cursor: pointer; transition: all 0.2s ease;">
@@ -608,10 +608,8 @@ const components: { [key: string]: ComponentInfo } = {
 </div>`,
     description: "Group of buttons",
     tags: ["ui", "button", "group"]
-  }
-};
-const components = {
-  // ... existing components
+  },
+
   "readme-basic": {
     code: `<!-- Basic README Template -->
 <div style="max-width: 800px; margin: 0 auto; padding: 2rem; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
@@ -639,6 +637,7 @@ npm start</pre>
     description: "Basic README template",
     tags: ["documentation", "readme", "markdown"]
   },
+  
   "readme-advanced": {
     code: `<!-- Advanced README Template -->
 <div style="max-width: 800px; margin: 0 auto; padding: 2rem; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
@@ -679,9 +678,8 @@ npm run dev</pre>
 </div>`,
     description: "Advanced README with badges",
     tags: ["documentation", "readme", "badges"]
-  }
-};
-
+  },
+  
   "search-bar": {
     code: `<!-- Search Bar -->
 <div style="max-width: 400px; margin: 2rem auto;">
@@ -711,8 +709,7 @@ npm run dev</pre>
 </label>`,
     description: "Toggle switch component",
     tags: ["forms", "toggle", "ui"]
-  }
-};
+  },
 
   "mega-menu": {
     code: `<!-- Mega Menu -->
