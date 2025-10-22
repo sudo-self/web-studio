@@ -18,7 +18,7 @@ const promptCategories = {
     "Create a grid-based portfolio layout",
     "Build a split-screen layout for comparison pages",
     "Design a sticky header that changes on scroll",
-    "Create a masonry grid layout for image galleries"
+    "Create a masonry grid layout for image galleries",
   ],
   "UI Components": [
     "Create a modern button with hover effects",
@@ -30,7 +30,7 @@ const promptCategories = {
     "Create a pagination component",
     "Build a tooltip that appears on hover",
     "Design a loading spinner animation",
-    "Create a notification toast component"
+    "Create a notification toast component",
   ],
   "Forms & Inputs": [
     "Create a contact form with validation",
@@ -42,7 +42,7 @@ const promptCategories = {
     "Create a range slider for price filtering",
     "Build a color picker component",
     "Design a rating stars component",
-    "Create a tags input field"
+    "Create a tags input field",
   ],
   "Data Display": [
     "Create a data table with sorting and filtering",
@@ -54,7 +54,7 @@ const promptCategories = {
     "Create a comment section with nested replies",
     "Build a product catalog with filters",
     "Design a weather widget",
-    "Create a countdown timer"
+    "Create a countdown timer",
   ],
   "Interactive Elements": [
     "Create an image carousel/slider",
@@ -66,7 +66,7 @@ const promptCategories = {
     "Create a map integration with markers",
     "Build a drawing canvas",
     "Design a quiz/interactive assessment",
-    "Create a real-time chat interface"
+    "Create a real-time chat interface",
   ],
   "E-commerce": [
     "Create a product card with add-to-cart",
@@ -78,7 +78,7 @@ const promptCategories = {
     "Create a order tracking component",
     "Build a product review section",
     "Design a size/color selector",
-    "Create a related products carousel"
+    "Create a related products carousel",
   ],
   "Blog & Content": [
     "Create a blog post card layout",
@@ -90,8 +90,8 @@ const promptCategories = {
     "Create a code syntax highlighter",
     "Build a social sharing buttons",
     "Design a comment form with preview",
-    "Create a reading progress indicator"
-  ]
+    "Create a reading progress indicator",
+  ],
 };
 
 export default function BuildPrompts({ onPromptSelect }: BuildPromptsProps) {
@@ -106,28 +106,34 @@ export default function BuildPrompts({ onPromptSelect }: BuildPromptsProps) {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="btn btn-outline btn-sm flex items-center gap-2"
+        className="flex items-center gap-2 px-3 py-1.5 text-sm border rounded-md transition-colors 
+        border-gray-300 bg-white text-gray-800 hover:bg-gray-100 
+        dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
       >
         <Lightbulb size={14} />
         Prompts
-        <ChevronDown 
-          size={14} 
-          className={`transition-transform ${isOpen ? 'rotate-180' : ''}`}
+        <ChevronDown
+          size={14}
+          className={`transition-transform ${isOpen ? "rotate-180" : ""}`}
         />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-96 max-h-96 overflow-y-auto bg-surface-primary border border-border-primary rounded-lg shadow-lg z-50">
+        <div
+          className="absolute top-full left-0 mt-2 w-96 max-h-96 overflow-y-auto rounded-lg shadow-xl z-50 
+          border border-gray-200 bg-white text-gray-800 
+          dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+        >
           <div className="p-4">
-            <h4 className="text-sm font-semibold text-text-primary mb-3 flex items-center gap-2">
+            <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
               <Lightbulb size={16} />
               AI Builder Prompts
             </h4>
-            
+
             <div className="space-y-4">
               {Object.entries(promptCategories).map(([category, prompts]) => (
                 <div key={category}>
-                  <h5 className="text-xs font-medium text-text-secondary uppercase tracking-wide mb-2">
+                  <h5 className="text-xs font-medium uppercase tracking-wide mb-2 text-gray-500 dark:text-gray-400">
                     {category}
                   </h5>
                   <div className="space-y-1">
@@ -135,7 +141,9 @@ export default function BuildPrompts({ onPromptSelect }: BuildPromptsProps) {
                       <button
                         key={index}
                         onClick={() => handlePromptClick(prompt)}
-                        className="w-full text-left p-2 text-sm text-text-primary hover:bg-surface-secondary rounded transition-colors"
+                        className="w-full text-left p-2 text-sm rounded transition-colors
+                        hover:bg-gray-100 
+                        dark:hover:bg-gray-800"
                       >
                         {prompt}
                       </button>
@@ -150,3 +158,4 @@ export default function BuildPrompts({ onPromptSelect }: BuildPromptsProps) {
     </div>
   );
 }
+
