@@ -1341,56 +1341,55 @@ CRITICAL REQUIREMENTS:
   };
 
   return (
-<div className="flex flex-col h-full overflow-hidden relative">
-  {onResizeStart && (
-    <div
-      className="absolute -right-2 top-0 bottom-0 w-4 cursor-col-resize z-20 hover:bg-accent-color hover:bg-opacity-50 transition-colors"
-      onMouseDown={onResizeStart}
-    />
-  )}
-
-  <div className="!p-2 border-b border-panel-border">
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        
-        <h3 className="m-0 text-xs font-semibold">studio.JesseJesse.com</h3>
-      </div>
-      <div className="flex items-center gap-1">
-        <button
-          onClick={() => setSearchTerm(searchTerm ? '' : ' ')}
-          className="!p-1.5 hover:bg-component-hover rounded transition-colors"
-          title="Search"
-        >
-          <Search size={15} />
-        </button>
-        <button
-          onClick={onOpenSettings}
-          className="!p-1.5 hover:bg-component-hover rounded transition-colors"
-          title="Settings"
-        >
-          <Settings size={15} />
-        </button>
-      </div>
-    </div>
-    {searchTerm !== '' && (
-      <div className="mt-2 relative">
-        <input
-          type="text"
-          placeholder="Type to search components..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-2 pr-6 py-1 bg-component-bg border border-panel-border rounded text-xs focus:outline-none focus:border-accent-color text-foreground"
-          autoFocus
+    <div className="flex flex-col h-full overflow-hidden relative">
+      {onResizeStart && (
+        <div
+          className="absolute -right-2 top-0 bottom-0 w-4 cursor-col-resize z-20 hover:bg-accent-color hover:bg-opacity-50 transition-colors"
+          onMouseDown={onResizeStart}
         />
-        <button
-          onClick={() => setSearchTerm('')}
-          className="absolute right-1 top-1/2 transform -translate-y-1/2 text-text-muted hover:text-foreground text-xs"
-        >
-          ×
-        </button>
+      )}
+
+      <div className="!p-2 border-b border-panel-border">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <h3 className="m-0 text-xs font-semibold">studio.JesseJesse.com</h3>
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setSearchTerm(searchTerm ? '' : ' ')}
+              className="!p-1.5 hover:bg-component-hover rounded transition-colors"
+              title="Search"
+            >
+              <Search size={15} />
+            </button>
+            <button
+              onClick={onOpenSettings}
+              className="!p-1.5 hover:bg-component-hover rounded transition-colors"
+              title="Settings"
+            >
+              <Settings size={15} />
+            </button>
+          </div>
+        </div>
+        {searchTerm !== '' && (
+          <div className="mt-2 relative">
+            <input
+              type="text"
+              placeholder="Type to search components..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-2 pr-6 py-1 bg-component-bg border border-panel-border rounded text-xs focus:outline-none focus:border-accent-color text-foreground"
+              autoFocus
+            />
+            <button
+              onClick={() => setSearchTerm('')}
+              className="absolute right-1 top-1/2 transform -translate-y-1/2 text-text-muted hover:text-foreground text-xs"
+            >
+              ×
+            </button>
+          </div>
+        )}
       </div>
-    )}
-  </div>
 
       <div className="flex-1 overflow-auto min-h-0">
         <div className="components-list">
@@ -1414,22 +1413,26 @@ CRITICAL REQUIREMENTS:
         </div>
       </div>
 
-     <div className="flex items-center justify-between w-full">
-  <div className="flex items-center gap-2">
-    <Bot size={18} style={{ color: "var(--accent-color)" }} />
-    <h3>AI Builder</h3>
-  </div>
-  <div className="flex items-center gap-2">
-    <BuildPrompts onPromptSelect={setPrompt} />
-    <button 
-      className="btn btn-outline btn-sm flex items-center gap-2"
-      onClick={() => setShowGithubModal(true)}
-    >
-      <Github size={14} />
-      Create Repo
-    </button>
-  </div>
-</div>
+      {/* AI Section */}
+      <div className="ai-section">
+        <div className="panel-header">
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-2">
+              <Bot size={18} style={{ color: "var(--accent-color)" }} />
+              <h3>AI Builder</h3>
+            </div>
+            <div className="flex items-center gap-2">
+              <BuildPrompts onPromptSelect={setPrompt} />
+              <button 
+                className="btn btn-outline btn-sm flex items-center gap-2"
+                onClick={() => setShowGithubModal(true)}
+              >
+                <Github size={14} />
+                Create Repo
+              </button>
+            </div>
+          </div>
+        </div>
 
         <div className="mode-toggle">
           <label className="mode-option">
@@ -1544,177 +1547,175 @@ CRITICAL REQUIREMENTS:
               </button>
             </div>
 
-      {!githubToken ? (
-        /* Auth State */
-        <div className="text-center py-6">
-          <div className="p-4 bg-component-bg rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-            <Github size={32} className="text-text-muted" />
-          </div>
-          <GithubAuth onAuthSuccess={(token) => {
-            setGithubToken(token);
-            localStorage.setItem('github_access_token', token);
-            fetchUserInfo(token);
-          }} />
-        </div>
-      ) : (
-        /* Repository Creation Form */
-        <div className="space-y-6">
-          {/* User Info Card */}
-          <div className="bg-component-bg rounded-xl border border-panel-border p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <img 
-                  src={githubUser?.avatar_url} 
-                  alt="GitHub Avatar" 
-                  className="w-10 h-10 rounded-full border-2 border-panel-border"
-                />
-                <div>
-                  <div className="text-sm font-semibold text-text-primary">{githubUser?.login}</div>
-                  <div className="text-xs text-text-muted flex items-center gap-1">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    Connected to GitHub
+            {!githubToken ? (
+              <div className="text-center py-6">
+                <div className="p-4 bg-component-bg rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                  <Github size={32} className="text-text-muted" />
+                </div>
+                <GithubAuth onAuthSuccess={(token) => {
+                  setGithubToken(token);
+                  localStorage.setItem('github_access_token', token);
+                  fetchUserInfo(token);
+                }} />
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* User Info Card */}
+                <div className="bg-component-bg rounded-xl border border-panel-border p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <img 
+                        src={githubUser?.avatar_url} 
+                        alt="GitHub Avatar" 
+                        className="w-10 h-10 rounded-full border-2 border-panel-border"
+                      />
+                      <div>
+                        <div className="text-sm font-semibold text-text-primary">{githubUser?.login}</div>
+                        <div className="text-xs text-text-muted flex items-center gap-1">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          Connected to GitHub
+                        </div>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        localStorage.removeItem('github_access_token');
+                        setGithubToken(null);
+                        setGithubUser(null);
+                      }}
+                      className="text-xs text-text-muted hover:text-accent-color transition-colors px-3 py-1 rounded-lg hover:bg-component-hover"
+                      disabled={isCreatingRepo}
+                    >
+                      Disconnect
+                    </button>
                   </div>
                 </div>
-              </div>
-              <button 
-                onClick={() => {
-                  localStorage.removeItem('github_access_token');
-                  setGithubToken(null);
-                  setGithubUser(null);
-                }}
-                className="text-xs text-text-muted hover:text-accent-color transition-colors px-3 py-1 rounded-lg hover:bg-component-hover"
-                disabled={isCreatingRepo}
-              >
-                Disconnect
-              </button>
-            </div>
-          </div>
 
-          {/* Form Fields */}
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
-                Repo Name
-              </label>
-              <input 
-                type="text" 
-                value={githubForm.name}
-                onChange={(e) => setGithubForm(prev => ({...prev, name: e.target.value}))}
-                className="w-full p-3 border border-panel-border rounded-lg bg-component-bg text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent-color focus:border-transparent transition-all"
-                placeholder="my-awesome-project"
-                disabled={isCreatingRepo}
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
-                Description
-              </label>
-              <input 
-                type="text" 
-                value={githubForm.description}
-                onChange={(e) => setGithubForm(prev => ({...prev, description: e.target.value}))}
-                className="w-full p-3 border border-panel-border rounded-lg bg-component-bg text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent-color focus:border-transparent transition-all"
-                placeholder="Project created with AI Web Studio"
-                disabled={isCreatingRepo}
-              />
-            </div>
-            
-            {/* Checkboxes */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <label className="flex items-center gap-3 p-3 bg-component-bg rounded-lg border border-panel-border hover:border-accent-color transition-colors cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  id="deploy-pages" 
-                  checked={githubForm.deployPages}
-                  onChange={(e) => setGithubForm(prev => ({...prev, deployPages: e.target.checked}))}
-                  className="rounded border-panel-border bg-component-bg text-accent-color focus:ring-accent-color"
-                  disabled={isCreatingRepo}
-                />
-                <div>
-                  <div className="text-sm font-medium text-text-primary">Deploy to Pages</div>
-                  <div className="text-xs text-text-muted">Auto-deploy</div>
-                </div>
-              </label>
-              
-              <label className="flex items-center gap-3 p-3 bg-component-bg rounded-lg border border-panel-border hover:border-accent-color transition-colors cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  id="is-public" 
-                  checked={githubForm.isPublic}
-                  onChange={(e) => setGithubForm(prev => ({...prev, isPublic: e.target.checked}))}
-                  className="rounded border-panel-border bg-component-bg text-accent-color focus:ring-accent-color"
-                  disabled={isCreatingRepo}
-                />
-                <div>
-                  <div className="text-sm font-medium text-text-primary">Public Repo</div>
-                  <div className="text-xs text-text-muted">Visible to everyone</div>
-                </div>
-              </label>
-            </div>
-
-            {/* Files Preview */}
-            <div className="bg-component-bg rounded-xl border border-panel-border overflow-hidden">
-              <div className="p-4 border-b border-panel-border">
-                <p className="font-semibold text-text-primary flex items-center gap-2">
-                  <FileText size={16} />
-                  Files to be created
-                </p>
-              </div>
-              <div className="p-4">
-                <ul className="space-y-3">
-                  <li className="flex items-center gap-3 p-2 rounded-lg hover:bg-component-hover transition-colors">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <code className="text-sm text-text-primary font-medium">index.html</code>
-                    <span className="text-xs text-text-muted ml-auto">Your website</span>
-                  </li>
-                  <li className="flex items-center gap-3 p-2 rounded-lg hover:bg-component-hover transition-colors">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <code className="text-sm text-text-primary font-medium">README.md</code>
-                    <span className="text-xs text-text-muted ml-auto">Project documentation</span>
-                  </li>
-                  {githubForm.deployPages && (
-                    <li className="flex items-center gap-3 p-2 rounded-lg hover:bg-component-hover transition-colors">
-                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                      <code className="text-sm text-text-primary font-medium">.github/workflows/deploy.yml</code>
-                      <span className="text-xs text-text-muted ml-auto">Deployment workflow</span>
-                    </li>
-                  )}
-                </ul>
-                {githubForm.deployPages && (
-                  <div className="mt-4 p-3 bg-accent-color bg-opacity-5 rounded-lg border border-accent-color border-opacity-20">
-                    <p className="text-sm text-text-primary font-medium mb-1">Your Website will be available at:</p>
-                    <code className="text-xs text-accent-color break-all">
-                      https://{githubUser?.login}.github.io/{githubForm.name}
-                    </code>
+                {/* Form Fields */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-text-primary mb-2">
+                      Repo Name
+                    </label>
+                    <input 
+                      type="text" 
+                      value={githubForm.name}
+                      onChange={(e) => setGithubForm(prev => ({...prev, name: e.target.value}))}
+                      className="w-full p-3 border border-panel-border rounded-lg bg-component-bg text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent-color focus:border-transparent transition-all"
+                      placeholder="my-awesome-project"
+                      disabled={isCreatingRepo}
+                    />
                   </div>
-                )}
-              </div>
-            </div>
-          </div>
-          
-          {/* Action Buttons */}
-          <div className="flex gap-3 pt-2">
-            <button 
-              className="btn btn-outline flex-1"
-              onClick={() => setShowGithubModal(false)}
-              disabled={isCreatingRepo}
-            >
-              Cancel
-            </button>
-            <button 
-              className="btn btn-primary flex-1 flex items-center justify-center gap-2"
-              onClick={handleCreateRepo}
-              disabled={isCreatingRepo || !githubForm.name.trim()}
-            >
-              {isCreatingRepo ? (
-                <>
-                  <div className="loading-spinner"></div>
-                  Creating...
-                </>
-              ) : (
-                <>
-                  <Github size={16} />
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-text-primary mb-2">
+                      Description
+                    </label>
+                    <input 
+                      type="text" 
+                      value={githubForm.description}
+                      onChange={(e) => setGithubForm(prev => ({...prev, description: e.target.value}))}
+                      className="w-full p-3 border border-panel-border rounded-lg bg-component-bg text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent-color focus:border-transparent transition-all"
+                      placeholder="Project created with AI Web Studio"
+                      disabled={isCreatingRepo}
+                    />
+                  </div>
+                  
+                  {/* Checkboxes */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <label className="flex items-center gap-3 p-3 bg-component-bg rounded-lg border border-panel-border hover:border-accent-color transition-colors cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        id="deploy-pages" 
+                        checked={githubForm.deployPages}
+                        onChange={(e) => setGithubForm(prev => ({...prev, deployPages: e.target.checked}))}
+                        className="rounded border-panel-border bg-component-bg text-accent-color focus:ring-accent-color"
+                        disabled={isCreatingRepo}
+                      />
+                      <div>
+                        <div className="text-sm font-medium text-text-primary">Deploy to Pages</div>
+                        <div className="text-xs text-text-muted">Auto-deploy</div>
+                      </div>
+                    </label>
+                    
+                    <label className="flex items-center gap-3 p-3 bg-component-bg rounded-lg border border-panel-border hover:border-accent-color transition-colors cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        id="is-public" 
+                        checked={githubForm.isPublic}
+                        onChange={(e) => setGithubForm(prev => ({...prev, isPublic: e.target.checked}))}
+                        className="rounded border-panel-border bg-component-bg text-accent-color focus:ring-accent-color"
+                        disabled={isCreatingRepo}
+                      />
+                      <div>
+                        <div className="text-sm font-medium text-text-primary">Public Repo</div>
+                        <div className="text-xs text-text-muted">Visible to everyone</div>
+                      </div>
+                    </label>
+                  </div>
+
+                  {/* Files Preview */}
+                  <div className="bg-component-bg rounded-xl border border-panel-border overflow-hidden">
+                    <div className="p-4 border-b border-panel-border">
+                      <p className="font-semibold text-text-primary flex items-center gap-2">
+                        <FileText size={16} />
+                        Files to be created
+                      </p>
+                    </div>
+                    <div className="p-4">
+                      <ul className="space-y-3">
+                        <li className="flex items-center gap-3 p-2 rounded-lg hover:bg-component-hover transition-colors">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                          <code className="text-sm text-text-primary font-medium">index.html</code>
+                          <span className="text-xs text-text-muted ml-auto">Your website</span>
+                        </li>
+                        <li className="flex items-center gap-3 p-2 rounded-lg hover:bg-component-hover transition-colors">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <code className="text-sm text-text-primary font-medium">README.md</code>
+                          <span className="text-xs text-text-muted ml-auto">Project documentation</span>
+                        </li>
+                        {githubForm.deployPages && (
+                          <li className="flex items-center gap-3 p-2 rounded-lg hover:bg-component-hover transition-colors">
+                            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                            <code className="text-sm text-text-primary font-medium">.github/workflows/deploy.yml</code>
+                            <span className="text-xs text-text-muted ml-auto">Deployment workflow</span>
+                          </li>
+                        )}
+                      </ul>
+                      {githubForm.deployPages && (
+                        <div className="mt-4 p-3 bg-accent-color bg-opacity-5 rounded-lg border border-accent-color border-opacity-20">
+                          <p className="text-sm text-text-primary font-medium mb-1">Your Website will be available at:</p>
+                          <code className="text-xs text-accent-color break-all">
+                            https://{githubUser?.login}.github.io/{githubForm.name}
+                          </code>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Action Buttons */}
+                <div className="flex gap-3 pt-2">
+                  <button 
+                    className="btn btn-outline flex-1"
+                    onClick={() => setShowGithubModal(false)}
+                    disabled={isCreatingRepo}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    className="btn btn-primary flex-1 flex items-center justify-center gap-2"
+                    onClick={handleCreateRepo}
+                    disabled={isCreatingRepo || !githubForm.name.trim()}
+                  >
+                    {isCreatingRepo ? (
+                      <>
+                        <div className="loading-spinner"></div>
+                        Creating...
+                      </>
+                    ) : (
+                      <>
+                        <Github size={16} />
                         Create Repository
                       </>
                     )}
