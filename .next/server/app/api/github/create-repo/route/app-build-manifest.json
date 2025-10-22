@@ -1,0 +1,10 @@
+{
+  "pages": {
+    "/api/github/create-repo/route": [
+      "static/chunks/ead207e1e6c9100b.js",
+      "static/chunks/02eb274a7aec1a51.js",
+      "static/chunks/d9b22626e12b8f0f.js",
+      "static/chunks/turbopack-8ce549a5d547e46a.js"
+    ]
+  }
+}
