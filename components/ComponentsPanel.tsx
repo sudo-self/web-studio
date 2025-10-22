@@ -1064,7 +1064,7 @@ export default function ComponentsPanel({
     <div class="container">
         <h1>${githubForm.name}</h1>
         <p>${githubForm.description}</p>
-        <div class="badge">Made with AI Web Studio</div>
+        <div class="badge">AI Web Studio</div>
         <p>This project was created using <a href="https://studio.jessejesse.com" target="_blank">studio.jessejesse.com</a></p>
     </div>
 </body>
