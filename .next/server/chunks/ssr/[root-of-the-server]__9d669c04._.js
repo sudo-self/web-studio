@@ -714,7 +714,7 @@ ${g}
       justify-content: center;
       min-height: 100vh;
       padding: 3rem 2rem;
-      background: #f8fafc; /* Light gray background */
+      background: #f8fafc;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
@@ -739,7 +739,7 @@ ${g}
     .logo-icon {
       width: 48px;
       height: 48px;
-      background: linear-gradient(135deg, #8b5cf6, #7c3aed); /* Purple gradient */
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
       border-radius: 12px;
       display: flex;
       align-items: center;
@@ -756,10 +756,10 @@ ${g}
     .welcome-title {
       font-size: 3rem;
       font-weight: 800;
-      color: #0f172a; /* Dark text */
+      color: #0f172a;
       margin: 0;
       letter-spacing: -0.025em;
-      background: linear-gradient(135deg, #0f172a, #8b5cf6); /* Dark to purple */
+      background: linear-gradient(135deg, #0f172a, #8b5cf6);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -767,7 +767,7 @@ ${g}
 
     .welcome-subtitle {
       font-size: 1.25rem;
-      color: #64748b; /* Medium gray */
+      color: #64748b;
       line-height: 1.6;
       margin: 0;
       max-width: 500px;
@@ -776,7 +776,7 @@ ${g}
     }
 
     .welcome-btn {
-      background: linear-gradient(135deg, #8b5cf6, #7c3aed); /* Purple gradient */
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
       color: white;
       border: none;
       padding: 1rem 2.5rem;
@@ -827,16 +827,16 @@ ${g}
       padding: 1.5rem;
       border-radius: 12px;
       text-decoration: none;
-      color: #64748b; /* Medium gray */
+      color: #64748b;
       transition: all 0.3s ease;
       border: 1px solid transparent;
       min-width: 120px;
     }
 
     .feature-link:hover {
-      background: #ffffff; /* White background */
-      color: #8b5cf6; /* Purple text */
-      border-color: #8b5cf6; /* Purple border */
+      background: #ffffff;
+      color: #8b5cf6;
+      border-color: #8b5cf6;
       transform: translateY(-2px);
       box-shadow: 0 8px 25px rgba(139, 92, 246, 0.15);
     }
@@ -844,20 +844,20 @@ ${g}
     .feature-icon {
       width: 48px;
       height: 48px;
-      background: #ffffff; /* White background */
+      background: #ffffff;
       border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #8b5cf6; /* Purple icon */
+      color: #8b5cf6;
       transition: all 0.3s ease;
-      border: 1px solid #e2e8f0; /* Light border */
+      border: 1px solid #e2e8f0;
     }
 
     .feature-link:hover .feature-icon {
-      background: #8b5cf6; /* Purple background */
-      color: white; /* White icon */
-      border-color: #8b5cf6; /* Purple border */
+      background: #8b5cf6;
+      color: white;
+      border-color: #8b5cf6;
     }
 
     .feature-icon svg {
@@ -875,7 +875,7 @@ ${g}
       gap: 3rem;
       justify-content: center;
       padding-top: 2rem;
-      border-top: 1px solid #e2e8f0; /* Light border */
+      border-top: 1px solid #e2e8f0;
     }
 
     .stat-item {
@@ -885,13 +885,13 @@ ${g}
     .stat-number {
       font-size: 1.5rem;
       font-weight: 700;
-      color: #8b5cf6; /* Purple */
+      color: #8b5cf6;
       margin-bottom: 0.25rem;
     }
 
     .stat-label {
       font-size: 0.875rem;
-      color: #64748b; /* Medium gray */
+      color: #64748b;
       font-weight: 500;
     }
 
@@ -924,10 +924,6 @@ ${g}
       }
     }
   </style>
-</div>`),[c,l]=(0,f.useState)(!1),[m,n]=(0,f.useState)({components:300,editor:600,preview:400}),[o,p]=(0,f.useState)(null),q=(0,f.useRef)(0),r=(0,f.useRef)(m);(0,f.useEffect)(()=>{console.log("🔍 Home: Code state updated, length:",a.length),console.log("🔍 Home: Last 200 chars:",a.slice(-200))},[a]);let s=(a,b)=>{b.preventDefault(),p(a),q.current=b.clientX,r.current={...m},document.body.style.cursor="col-resize",document.body.style.userSelect="none"};return(0,f.useEffect)(()=>{if(!o)return;let a=a=>{let b=a.clientX-q.current;n(a=>{let c={...a};return"components"===o?c.components=Math.max(240,Math.min(500,r.current.components+b)):"editor"===o&&(c.editor=Math.max(400,Math.min(800,r.current.editor+b))),c})},b=()=>{p(null),document.body.style.cursor="",document.body.style.userSelect=""};return document.addEventListener("mousemove",a),document.addEventListener("mouseup",b),()=>{document.removeEventListener("mousemove",a),document.removeEventListener("mouseup",b)}},[o]),(0,d.jsxs)(d.Fragment,{children:[(0,d.jsxs)("div",{className:"jsx-9e7bc69e2bdbe7f8 app-container",children:[(0,d.jsx)("button",{onClick:()=>{let a=`
-<!-- TEST INSERT -->
-<div style="background: #ff4444; color: white; padding: 20px; margin: 10px; border: 2px solid #cc0000; border-radius: 8px; font-weight: bold;">
-      🎉 TEST COMPONENT INSERTED SUCCESSFULLY! If you see this, insertion works!
-    </div>`;console.log("🧪 Home: Testing insert with:",a),b(b=>b+a)},style:{position:"fixed",top:"10px",right:"10px",zIndex:1e3,background:"#ff4444",color:"white",border:"none",padding:"8px 12px",borderRadius:"4px",fontSize:"12px",cursor:"pointer"},className:"jsx-9e7bc69e2bdbe7f8",children:"Test Insert"}),(0,d.jsxs)("div",{className:"jsx-9e7bc69e2bdbe7f8 main-content",children:[(0,d.jsx)("div",{style:{width:`${m.components}px`,minWidth:"240px",maxWidth:"500px",flex:"0 0 auto"},className:"jsx-9e7bc69e2bdbe7f8 panel components-panel",children:(0,d.jsx)(g.default,{onInsert:a=>{console.log("📥 Home: Inserting component"),console.log("📥 Home: HTML to insert (first 100 chars):",a.substring(0,100)),b(b=>{let c=b+"\n"+a;return console.log("📥 Home: New code length:",c.length),c})},onAiInsert:a=>{console.log("🤖 Home: Inserting AI code"),console.log("🤖 Home: AI HTML to insert (first 100 chars):",a.substring(0,100)),b(b=>{let c=b+"\n"+a;return console.log("🤖 Home: New code length:",c.length),c})},onOpenSettings:()=>l(!0),onResizeStart:a=>s("components",a),currentCode:a})}),(0,d.jsx)("div",{onMouseDown:a=>s("components",a),className:"jsx-9e7bc69e2bdbe7f8 resize-handle"}),(0,d.jsx)("div",{style:{width:`${m.editor}px`,minWidth:"400px",maxWidth:"800px",flex:"0 0 auto"},className:"jsx-9e7bc69e2bdbe7f8 panel editor-panel",children:(0,d.jsx)(h.default,{code:a,setCode:b,runCode:()=>{console.log("🏃 Home: Running code, current length:",a.length),b(a=>a+"")},formatCode:()=>{console.log("📝 Home: Formatting code");let c=a.replace(/(>)(<)/g,"$1\n$2");b(c)},onResizeStart:a=>s("editor",a)})}),(0,d.jsx)("div",{onMouseDown:a=>s("editor",a),className:"jsx-9e7bc69e2bdbe7f8 resize-handle"}),(0,d.jsx)("div",{style:{flex:1,minWidth:"400px"},className:"jsx-9e7bc69e2bdbe7f8 panel preview-panel",children:(0,d.jsx)(i.default,{code:a})})]}),(0,d.jsx)(j.default,{})]}),(0,d.jsx)(k.default,{isOpen:c,onClose:()=>l(!1)}),(0,d.jsx)(e.default,{id:"9e7bc69e2bdbe7f8",children:'.resize-handle{cursor:col-resize;background:var(--border-primary);width:8px;transition:all .2s;position:relative}.resize-handle:hover{background:var(--interactive-accent)}.resize-handle:before{content:"";background:var(--text-tertiary);opacity:.6;border-radius:1px;width:2px;height:20px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}.resize-handle:hover:before{opacity:1;background:#fff}body.resizing{cursor:col-resize!important;user-select:none!important}'})]})}[h]=l.then?(await l)():l,c()}catch(a){c(a)}},!1)];
+</div>`),[c,l]=(0,f.useState)(!1),[m,n]=(0,f.useState)({components:300,editor:600,preview:400}),[o,p]=(0,f.useState)(null),q=(0,f.useRef)(0),r=(0,f.useRef)(m),s=(a,b)=>{b.preventDefault(),p(a),q.current=b.clientX,r.current={...m},document.body.style.cursor="col-resize",document.body.style.userSelect="none"};return(0,f.useEffect)(()=>{if(!o)return;let a=a=>{let b=a.clientX-q.current;n(a=>{let c={...a};return"components"===o?c.components=Math.max(240,Math.min(500,r.current.components+b)):"editor"===o&&(c.editor=Math.max(400,Math.min(800,r.current.editor+b))),c})},b=()=>{p(null),document.body.style.cursor="",document.body.style.userSelect=""};return document.addEventListener("mousemove",a),document.addEventListener("mouseup",b),()=>{document.removeEventListener("mousemove",a),document.removeEventListener("mouseup",b)}},[o]),(0,d.jsxs)(d.Fragment,{children:[(0,d.jsxs)("div",{className:"jsx-f02a346434eb270e app-container",children:[(0,d.jsxs)("div",{className:"jsx-f02a346434eb270e main-content",children:[(0,d.jsx)("div",{style:{width:`${m.components}px`,minWidth:"240px",maxWidth:"500px",flex:"0 0 auto"},className:"jsx-f02a346434eb270e panel components-panel",children:(0,d.jsx)(g.default,{onInsert:a=>{b(b=>b+"\n"+a)},onAiInsert:a=>{b(b=>b+"\n"+a)},onOpenSettings:()=>l(!0),onResizeStart:a=>s("components",a),currentCode:a})}),(0,d.jsx)("div",{onMouseDown:a=>s("components",a),className:"jsx-f02a346434eb270e resize-handle"}),(0,d.jsx)("div",{style:{width:`${m.editor}px`,minWidth:"400px",maxWidth:"800px",flex:"0 0 auto"},className:"jsx-f02a346434eb270e panel editor-panel",children:(0,d.jsx)(h.default,{code:a,setCode:b,runCode:()=>{b(a=>a+"")},formatCode:()=>{let c=a.replace(/(>)(<)/g,"$1\n$2");b(c)},onResizeStart:a=>s("editor",a)})}),(0,d.jsx)("div",{onMouseDown:a=>s("editor",a),className:"jsx-f02a346434eb270e resize-handle"}),(0,d.jsx)("div",{style:{flex:1,minWidth:"400px"},className:"jsx-f02a346434eb270e panel preview-panel",children:(0,d.jsx)(i.default,{code:a})})]}),(0,d.jsx)(j.default,{})]}),(0,d.jsx)(k.default,{isOpen:c,onClose:()=>l(!1)}),(0,d.jsx)(e.default,{id:"f02a346434eb270e",children:'.resize-handle{cursor:col-resize;background:var(--border-primary);width:8px;transition:all .2s;position:relative}.resize-handle:hover{background:var(--interactive-accent)}.resize-handle:before{content:"";background:var(--text-tertiary);opacity:.6;border-radius:1px;width:2px;height:20px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}.resize-handle:hover:before{opacity:1;background:#fff}body.resizing{cursor:col-resize!important;user-select:none!important}'})]})}[h]=l.then?(await l)():l,c()}catch(a){c(a)}},!1)];
 
 //# sourceMappingURL=%5Broot-of-the-server%5D__9d669c04._.js.map

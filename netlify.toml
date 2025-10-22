@@ -15,8 +15,10 @@
   path = ".next/cache"
   max_size = "50mb"
 
-# Explicitly exclude large caches
-[build.caching.exclude]
-  - "node_modules/**/*"
-  - "*.log"
-  - ".git/**/*"
+# Explicitly exclude large caches 
+[build.caching]
+  exclude = [
+    "node_modules/**/*",
+    "*.log",
+    ".git/**/*"
+  ]
