@@ -5,7 +5,7 @@ A modern, open-source web development environment designed to streamline the cre
 ---
 <img width="1512" height="857" alt="Screenshot 2025-10-18 at 15 38 52" src="https://github.com/user-attachments/assets/048ae487-4e0b-437d-8bb1-c064fe99eb7e" />
 
-## 🚀 Features
+## Features
 
 - **Visual CSS Editor**: Design with full control over every CSS property, unit, and breakpoint.
 - **Component-Based Layout**: Drag-and-drop interface for building layouts with reusable components.
@@ -15,7 +15,7 @@ A modern, open-source web development environment designed to streamline the cre
 
 ---
 
-## 🛠️ Installation
+## ️ Installation
 
 ### Prerequisites
 
