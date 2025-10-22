@@ -1521,28 +1521,28 @@ CRITICAL REQUIREMENTS:
         )}
       </div>
 
-{showGithubModal && (
-  <div className="modal-overlay">
-    <div className="modal-content">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-accent-color bg-opacity-10 rounded-lg">
-            <Github size={20} className="text-accent-color" />
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-text-primary">Create a Github Repository</h3>
-            <p className="text-xs text-accent-color text-text-muted mt-1">Deploy your Website with GitHub Pages</p>
-          </div>
-        </div>
-        <button 
-          onClick={() => setShowGithubModal(false)}
-          className="btn btn-primary btn-sm btn-icon hover:bg-component-hover"
-          disabled={isCreatingRepo}
-        >
-          <X size={16} />
-        </button>
-      </div>
+      {showGithubModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-accent-color bg-opacity-10 rounded-lg">
+                  <Github size={20} className="text-accent-color" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-text-primary">Create a Github Repository</h3>
+                  <p className="text-xs text-accent-color text-text-muted mt-1">Deploy your Website with GitHub Pages</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowGithubModal(false)}
+                className="btn btn-primary btn-sm btn-icon hover:bg-component-hover"
+                disabled={isCreatingRepo}
+              >
+                <X size={16} />
+              </button>
+            </div>
 
       {!githubToken ? (
         /* Auth State */
