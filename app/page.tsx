@@ -89,7 +89,7 @@ export default function Home() {
       justify-content: center;
       min-height: 100vh;
       padding: 3rem 2rem;
-      background: #f8fafc; /* Light gray background */
+      background: #f8fafc;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
@@ -114,7 +114,7 @@ export default function Home() {
     .logo-icon {
       width: 48px;
       height: 48px;
-      background: linear-gradient(135deg, #8b5cf6, #7c3aed); /* Purple gradient */
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
       border-radius: 12px;
       display: flex;
       align-items: center;
@@ -131,10 +131,10 @@ export default function Home() {
     .welcome-title {
       font-size: 3rem;
       font-weight: 800;
-      color: #0f172a; /* Dark text */
+      color: #0f172a;
       margin: 0;
       letter-spacing: -0.025em;
-      background: linear-gradient(135deg, #0f172a, #8b5cf6); /* Dark to purple */
+      background: linear-gradient(135deg, #0f172a, #8b5cf6);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -142,7 +142,7 @@ export default function Home() {
 
     .welcome-subtitle {
       font-size: 1.25rem;
-      color: #64748b; /* Medium gray */
+      color: #64748b;
       line-height: 1.6;
       margin: 0;
       max-width: 500px;
@@ -151,7 +151,7 @@ export default function Home() {
     }
 
     .welcome-btn {
-      background: linear-gradient(135deg, #8b5cf6, #7c3aed); /* Purple gradient */
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
       color: white;
       border: none;
       padding: 1rem 2.5rem;
@@ -202,16 +202,16 @@ export default function Home() {
       padding: 1.5rem;
       border-radius: 12px;
       text-decoration: none;
-      color: #64748b; /* Medium gray */
+      color: #64748b;
       transition: all 0.3s ease;
       border: 1px solid transparent;
       min-width: 120px;
     }
 
     .feature-link:hover {
-      background: #ffffff; /* White background */
-      color: #8b5cf6; /* Purple text */
-      border-color: #8b5cf6; /* Purple border */
+      background: #ffffff;
+      color: #8b5cf6;
+      border-color: #8b5cf6;
       transform: translateY(-2px);
       box-shadow: 0 8px 25px rgba(139, 92, 246, 0.15);
     }
@@ -219,20 +219,20 @@ export default function Home() {
     .feature-icon {
       width: 48px;
       height: 48px;
-      background: #ffffff; /* White background */
+      background: #ffffff;
       border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #8b5cf6; /* Purple icon */
+      color: #8b5cf6;
       transition: all 0.3s ease;
-      border: 1px solid #e2e8f0; /* Light border */
+      border: 1px solid #e2e8f0;
     }
 
     .feature-link:hover .feature-icon {
-      background: #8b5cf6; /* Purple background */
-      color: white; /* White icon */
-      border-color: #8b5cf6; /* Purple border */
+      background: #8b5cf6;
+      color: white;
+      border-color: #8b5cf6;
     }
 
     .feature-icon svg {
@@ -250,7 +250,7 @@ export default function Home() {
       gap: 3rem;
       justify-content: center;
       padding-top: 2rem;
-      border-top: 1px solid #e2e8f0; /* Light border */
+      border-top: 1px solid #e2e8f0;
     }
 
     .stat-item {
@@ -260,13 +260,13 @@ export default function Home() {
     .stat-number {
       font-size: 1.5rem;
       font-weight: 700;
-      color: #8b5cf6; /* Purple */
+      color: #8b5cf6;
       margin-bottom: 0.25rem;
     }
 
     .stat-label {
       font-size: 0.875rem;
-      color: #64748b; /* Medium gray */
+      color: #64748b;
       font-weight: 500;
     }
 
@@ -312,44 +312,21 @@ export default function Home() {
   const startXRef = useRef<number>(0);
   const startWidthsRef = useRef(panelWidths);
 
-  // Debug useEffect to monitor code changes
-  useEffect(() => {
-    console.log("🔍 Home: Code state updated, length:", code.length);
-    console.log("🔍 Home: Last 200 chars:", code.slice(-200));
-  }, [code]);
-
   const runCode = () => {
-    console.log("🏃 Home: Running code, current length:", code.length);
-    // Force a state update to trigger preview refresh
     setCode(prev => prev + "");
   };
 
   const formatCode = () => {
-    console.log("📝 Home: Formatting code");
     const formatted = code.replace(/(>)(<)/g, "$1\n$2");
     setCode(formatted);
   };
 
   const insertComponent = (html: string) => {
-    console.log("📥 Home: Inserting component");
-    console.log("📥 Home: HTML to insert (first 100 chars):", html.substring(0, 100));
-    
-    setCode(prev => {
-      const newCode = prev + "\n" + html;
-      console.log("📥 Home: New code length:", newCode.length);
-      return newCode;
-    });
+    setCode(prev => prev + "\n" + html);
   };
 
   const insertAiCode = (html: string) => {
-    console.log("🤖 Home: Inserting AI code");
-    console.log("🤖 Home: AI HTML to insert (first 100 chars):", html.substring(0, 100));
-    
-    setCode(prev => {
-      const newCode = prev + "\n" + html;
-      console.log("🤖 Home: New code length:", newCode.length);
-      return newCode;
-    });
+    setCode(prev => prev + "\n" + html);
   };
 
   const handleResizeStart = (panel: string, e: React.MouseEvent) => {
@@ -404,39 +381,9 @@ export default function Home() {
     };
   }, [resizingPanel]);
 
-  // Test function to verify insertion works
-  const testInsert = () => {
-    const testHTML = `\n<!-- TEST INSERT -->\n<div style="background: #ff4444; color: white; padding: 20px; margin: 10px; border: 2px solid #cc0000; border-radius: 8px; font-weight: bold;">
-      🎉 TEST COMPONENT INSERTED SUCCESSFULLY! If you see this, insertion works!
-    </div>`;
-    
-    console.log("🧪 Home: Testing insert with:", testHTML);
-    setCode(prev => prev + testHTML);
-  };
-
   return (
     <>
       <div className="app-container">
-        {/* Test button - remove this after debugging */}
-        <button
-          onClick={testInsert}
-          style={{
-            position: 'fixed',
-            top: '10px',
-            right: '10px',
-            zIndex: 1000,
-            background: '#ff4444',
-            color: 'white',
-            border: 'none',
-            padding: '8px 12px',
-            borderRadius: '4px',
-            fontSize: '12px',
-            cursor: 'pointer'
-          }}
-        >
-          Test Insert
-        </button>
-      
         <div className="main-content">
           <div
             className="panel components-panel"
@@ -495,7 +442,6 @@ export default function Home() {
         <StatusBar />
       </div>
 
-      {/* Settings Modal */}
       <SettingsPanel
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
@@ -532,7 +478,6 @@ export default function Home() {
           opacity: 1;
         }
 
-        /* Ensure smooth resizing experience */
         body.resizing {
           cursor: col-resize !important;
           user-select: none !important;
