@@ -103,11 +103,11 @@ export default function BuildPrompts({ onPromptSelect }: BuildPromptsProps) {
   };
 
   return (
-    <div className="relative">
+    <div className="relative inline-block">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-1.5 text-sm border rounded-md transition-colors 
-        border-gray-300 bg-white text-gray-800 hover:bg-gray-100 
+        className="flex items-center gap-2 px-3 py-1.5 text-sm border rounded-md transition-colors
+        border-gray-300 bg-white text-gray-800 hover:bg-gray-100
         dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
       >
         <Lightbulb size={14} />
@@ -120,30 +120,30 @@ export default function BuildPrompts({ onPromptSelect }: BuildPromptsProps) {
 
       {isOpen && (
         <div
-          className="absolute top-full left-0 mt-2 w-96 max-h-96 overflow-y-auto rounded-lg shadow-xl z-50 
-          border border-gray-200 bg-white text-gray-800 
-          dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+          className="absolute top-full left-0 mt-2 min-w-[22rem] max-w-[28rem] max-h-96 overflow-y-auto rounded-lg shadow-lg z-50
+          border border-gray-200 bg-white/95 backdrop-blur-sm text-gray-800
+          dark:border-gray-700 dark:bg-gray-900/95 dark:text-gray-100
+          scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700"
         >
-          <div className="p-4">
-            <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+          <div className="p-3">
+            <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
               <Lightbulb size={16} />
               AI Builder Prompts
             </h4>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               {Object.entries(promptCategories).map(([category, prompts]) => (
                 <div key={category}>
-                  <h5 className="text-xs font-medium uppercase tracking-wide mb-2 text-gray-500 dark:text-gray-400">
+                  <h5 className="text-xs font-medium uppercase tracking-wide mb-1 text-gray-500 dark:text-gray-400">
                     {category}
                   </h5>
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
                     {prompts.map((prompt, index) => (
                       <button
                         key={index}
                         onClick={() => handlePromptClick(prompt)}
                         className="w-full text-left p-2 text-sm rounded transition-colors
-                        hover:bg-gray-100 
-                        dark:hover:bg-gray-800"
+                        hover:bg-gray-100 dark:hover:bg-gray-800"
                       >
                         {prompt}
                       </button>
@@ -158,4 +158,5 @@ export default function BuildPrompts({ onPromptSelect }: BuildPromptsProps) {
     </div>
   );
 }
+
 
