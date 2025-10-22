@@ -905,7 +905,7 @@ const createProjectFiles = (projectData: any, deployPages: boolean) => {
     ``,
     `## About`,
     ``,
-    `This project was created with [studio.jessejesse.com](https://studio.jessejesse.com) - an AI-powered web development studio.`,
+    `This project was created with [studio.jessejesse.com](https://studio.jessejesse.com) - an AI-powered development studio.`,
     ``,
     `## Getting Started`,
     ``,
@@ -1168,12 +1168,8 @@ CRITICAL REQUIREMENTS:
   <div className="!p-2 border-b border-panel-border">
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <img 
-          src="./icon-512.png" 
-          alt="Studio Logo" 
-          className="w-10 h-10 rounded-full"
-        />
-        <h2 className="m-0 text-lg font-semibold">STUDIO</h2>
+        
+        <h3 className="m-0 text-xs font-semibold">studio.JesseJesse.com</h3>
       </div>
       <div className="flex items-center gap-1">
         <button
