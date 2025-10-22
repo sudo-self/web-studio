@@ -3,7 +3,7 @@
 export default function StatusBar() {
   return (
     <div className="status-bar">
-      {/* Left Section - AI Web Studio */}
+      {/* Left Section - Web Studio */}
       <a
         href="https://studio.jessejesse.com"
         target="_blank"
@@ -12,8 +12,12 @@ export default function StatusBar() {
       >
         <div className="relative">
           <div className="w-2 h-2 bg-interactive-accent rounded-full animate-ping absolute -top-0.5 -right-0.5" />
-          <div className="w-8 h-8 bg-gradient-to-br from-interactive-accent to-interactive-accent-hover rounded-lg flex items-center justify-center text-white text-lg font-bold shadow-lg">
-            AI
+          <div className="w-10 h-10 rounded-full overflow-hidden shadow-lg border-2 border-white">
+            <img 
+              src="./icon-512.png" 
+              alt="Studio Logo" 
+              className="w-full h-full object-cover"
+            />
           </div>
         </div>
         <div className="flex flex-col">
@@ -27,18 +31,21 @@ export default function StatusBar() {
       </a>
 
       {/* Center Section - Colorado Flag */}
-      <div className="group flex items-center gap-3 px-6 py-2 rounded-lg transition-all duration-300 hover:bg-surface-tertiary border border-transparent hover:border-interactive-accent/30 cursor-default">
+      <a
+        href="https://jessejesse.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group flex items-center gap-3 px-6 py-2 rounded-lg transition-all duration-300 hover:bg-surface-tertiary border border-transparent hover:border-orange-400/30 cursor-pointer"
+      >
         <img 
           src="./colorado.svg" 
           alt="Colorado" 
           className="w-10 h-10 transition-all duration-300 group-hover:scale-110 group-hover:brightness-110"
         />
-        <div className="flex flex-col">
-          <span className="text-xs text-text-tertiary group-hover:text-text-orange-400 transition-colors">
-            JesseJesse.com
-          </span>
-        </div>
-      </div>
+        <span className="text-text-tertiary group-hover:text-orange-400 transition-colors font-medium">
+          JesseJesse.com
+        </span>
+      </a>
 
       {/* Right Section - GitHub */}
       <a
