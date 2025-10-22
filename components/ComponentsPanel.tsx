@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import BuildPrompts from "./BuildPrompts";
 import { ReactElement } from "react";
 import {
   FileText,
@@ -1413,22 +1414,22 @@ CRITICAL REQUIREMENTS:
         </div>
       </div>
 
-      <div className="ai-section">
-        <div className="panel-header">
-          <div className="flex items-center justify-between w-full">
-            <div className="flex items-center gap-2">
-              <Bot size={18} style={{ color: "var(--accent-color)" }} />
-              <h3>AI Builder</h3>
-            </div>
-            <button 
-              className="btn btn-outline btn-sm flex items-center gap-2"
-              onClick={() => setShowGithubModal(true)}
-            >
-              <Github size={14} />
-             Create Repo
-            </button>
-          </div>
-        </div>
+     <div className="flex items-center justify-between w-full">
+  <div className="flex items-center gap-2">
+    <Bot size={18} style={{ color: "var(--accent-color)" }} />
+    <h3>AI Builder</h3>
+  </div>
+  <div className="flex items-center gap-2">
+    <BuildPrompts onPromptSelect={setPrompt} />
+    <button 
+      className="btn btn-outline btn-sm flex items-center gap-2"
+      onClick={() => setShowGithubModal(true)}
+    >
+      <Github size={14} />
+      Create Repo
+    </button>
+  </div>
+</div>
 
         <div className="mode-toggle">
           <label className="mode-option">
