@@ -21,7 +21,7 @@ export default function Home() {
         </div>
         <h1 class="welcome-title">Your Awesome Website</h1>
       </div>
-      <p class="welcome-subtitle">Start from ready-made components, shape your vision with the lightning-fast AI builder, style everything right in the editor, spin up a repo and publish your website in seconds.</p>
+      <p class="welcome-subtitle">Ready-made components, lightning-fast AI builder, direct code editor, and instant GitHub publishing.</p>
     </header>
 
     <!-- Get Started Button -->
