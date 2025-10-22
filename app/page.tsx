@@ -89,8 +89,8 @@ export default function Home() {
       justify-content: center;
       min-height: 100vh;
       padding: 3rem 2rem;
-      background: var(--surface-secondary);
-      font-family: var(--font-sans);
+      background: #f8fafc; /* Light gray background */
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
     .welcome-content {
@@ -114,7 +114,7 @@ export default function Home() {
     .logo-icon {
       width: 48px;
       height: 48px;
-      background: linear-gradient(135deg, var(--interactive-accent), var(--interactive-accent-hover));
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed); /* Purple gradient */
       border-radius: 12px;
       display: flex;
       align-items: center;
@@ -131,10 +131,10 @@ export default function Home() {
     .welcome-title {
       font-size: 3rem;
       font-weight: 800;
-      color: var(--text-primary);
+      color: #0f172a; /* Dark text */
       margin: 0;
       letter-spacing: -0.025em;
-      background: linear-gradient(135deg, var(--text-primary), var(--interactive-accent));
+      background: linear-gradient(135deg, #0f172a, #8b5cf6); /* Dark to purple */
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -142,7 +142,7 @@ export default function Home() {
 
     .welcome-subtitle {
       font-size: 1.25rem;
-      color: var(--text-secondary);
+      color: #64748b; /* Medium gray */
       line-height: 1.6;
       margin: 0;
       max-width: 500px;
@@ -151,7 +151,7 @@ export default function Home() {
     }
 
     .welcome-btn {
-      background: linear-gradient(135deg, var(--interactive-accent), var(--interactive-accent-hover));
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed); /* Purple gradient */
       color: white;
       border: none;
       padding: 1rem 2.5rem;
@@ -202,16 +202,16 @@ export default function Home() {
       padding: 1.5rem;
       border-radius: 12px;
       text-decoration: none;
-      color: var(--text-secondary);
+      color: #64748b; /* Medium gray */
       transition: all 0.3s ease;
       border: 1px solid transparent;
       min-width: 120px;
     }
 
     .feature-link:hover {
-      background: var(--surface-primary);
-      color: var(--interactive-accent);
-      border-color: var(--interactive-accent);
+      background: #ffffff; /* White background */
+      color: #8b5cf6; /* Purple text */
+      border-color: #8b5cf6; /* Purple border */
       transform: translateY(-2px);
       box-shadow: 0 8px 25px rgba(139, 92, 246, 0.15);
     }
@@ -219,18 +219,20 @@ export default function Home() {
     .feature-icon {
       width: 48px;
       height: 48px;
-      background: var(--surface-primary);
+      background: #ffffff; /* White background */
       border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--interactive-accent);
+      color: #8b5cf6; /* Purple icon */
       transition: all 0.3s ease;
+      border: 1px solid #e2e8f0; /* Light border */
     }
 
     .feature-link:hover .feature-icon {
-      background: var(--interactive-accent);
-      color: white;
+      background: #8b5cf6; /* Purple background */
+      color: white; /* White icon */
+      border-color: #8b5cf6; /* Purple border */
     }
 
     .feature-icon svg {
@@ -248,7 +250,7 @@ export default function Home() {
       gap: 3rem;
       justify-content: center;
       padding-top: 2rem;
-      border-top: 1px solid var(--border-primary);
+      border-top: 1px solid #e2e8f0; /* Light border */
     }
 
     .stat-item {
@@ -258,13 +260,13 @@ export default function Home() {
     .stat-number {
       font-size: 1.5rem;
       font-weight: 700;
-      color: var(--interactive-accent);
+      color: #8b5cf6; /* Purple */
       margin-bottom: 0.25rem;
     }
 
     .stat-label {
       font-size: 0.875rem;
-      color: var(--text-tertiary);
+      color: #64748b; /* Medium gray */
       font-weight: 500;
     }
 
