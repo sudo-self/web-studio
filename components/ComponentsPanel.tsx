@@ -1077,87 +1077,95 @@ export default function ComponentsPanel({
     };
   };
   
-const createProjectFiles = (projectData: any, deployPages: boolean) => {
-  const badge = '<img src="https://img.shields.io/badge/made%20with-studio.jessejesse.com-blue?style=flat" alt="made with studio.jessejesse.com" />';
-  
-  const pagesSection = deployPages ? 
-    `## GitHub Pages Deployment\n\nYour site will be automatically deployed to GitHub Pages at:\n\nhttps://${githubUser?.login}.github.io/${githubForm.name}\n\nThe deployment will start automatically when you push to the main branch.` :
-    `## Deployment\n\nTo deploy this site to GitHub Pages:\n1. Go to Settings → Pages\n2. Select "Deploy from a branch"\n3. Choose "main" branch and "/" root folder\n4. Click Save`;
-  
-  const readmeContent = [
-    `# ${githubForm.name}`,
-    ``,
-    `${githubForm.description}`,
-    ``,
-    `${badge}`,
-    ``,
-    `## About`,
-    ``,
-    `This project was created with [studio.jessejesse.com](https://studio.jessejesse.com) - an AI-powered development studio.`,
-    ``,
-    `## Getting Started`,
-    ``,
-    `Open index.html in your browser to view the project.`,
-    ``,
-    pagesSection,
-    ``,
-    `---`,
-    `*Created with AI Web Studio*`
-  ].join('\n');
+    const createProjectFiles = (projectData: any, deployPages: boolean, githubUser: any, githubForm: any) => {
+      const badge = '<img src="https://img.shields.io/badge/made%20with-studio.jessejesse.com-blue?style=flat" alt="made with studio.jessejesse.com" />';
 
-  const files = [
-    {
-      path: 'index.html',
-      content: projectData.html
-    },
-    {
-      path: 'README.md',
-      content: readmeContent
-    }
-  ];
+      const pagesSection = deployPages
+        ? `## GitHub Pages Deployment\n\nYour site will be automatically deployed to GitHub Pages at:\n\nhttps://${githubUser?.login}.github.io/${githubForm.name}\n\nThe deployment will start automatically when you push to the main branch.`
+        : `## Deployment\n\nTo deploy this site to GitHub Pages:\n1. Go to Settings → Pages\n2. Select "Deploy from a branch"\n3. Choose "main" branch and "/" root folder\n4. Click Save`;
 
-  if (deployPages) {
-    files.push({
-      path: '.github/workflows/deploy.yml',
-      content: `# Deploy to GitHub Pages
-name: Deploy to GitHub Pages
+      const readmeContent = [
+        `# ${githubForm.name}`,
+        ``,
+        `${githubForm.description}`,
+        ``,
+        `${badge}`,
+        ``,
+        `## About`,
+        ``,
+        `This project was created with [studio.jessejesse.com](https://studio.jessejesse.com) - an AI-powered development studio.`,
+        ``,
+        `## Getting Started`,
+        ``,
+        `Open index.html in your browser to view the project.`,
+        ``,
+        pagesSection,
+        ``,
+        `---`,
+        `*Created with AI Web Studio*`
+      ].join('\n');
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+      const files = [
+        {
+          path: 'index.html',
+          content: projectData.html
+        },
+        {
+          path: 'README.md',
+          content: readmeContent
+        }
+      ];
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+      if (deployPages) {
+        files.push({
+          path: '.github/workflows/deploy.yml',
+          content: `# Deploy to GitHub Pages
+    name: Deploy to GitHub Pages
+
+    on:
+      push:
+        branches: [ main ]
+      pull_request:
+        branches: [ main ]
+
     permissions:
       contents: read
       pages: write
       id-token: write
-    environment:
-      name: github-pages
-      url: \${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-        
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: '.'
-          
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4`
-    });
-  }
 
-  return files;
-};
+    concurrency:
+      group: "pages"
+      cancel-in-progress: true
+
+    jobs:
+      build:
+        runs-on: ubuntu-latest
+        environment:
+          name: github-pages
+          url: \${{ steps.deployment.outputs.page_url }}
+        steps:
+          - name: Checkout
+            uses: actions/checkout@v4
+
+          - name: Setup Pages
+            uses: actions/configure-pages@v4
+
+          - name: Upload artifact
+            uses: actions/upload-pages-artifact@v3
+            with:
+              path: '.'
+
+          - name: Deploy to GitHub Pages
+            id: deployment
+            uses: actions/deploy-pages@v4
+            with:
+              enablement: true`
+        });
+      }
+
+      return files;
+    };
+
 
   const handleCreateRepo = async () => {
     if (!githubToken) {
