@@ -7,6 +7,7 @@ import { Smartphone, Tablet, Monitor } from "lucide-react";
 interface PreviewPanelProps {
   code: string;
   onResizeStart?: (e: React.MouseEvent) => void;
+  framework: string;
 }
 
 interface Toast {
@@ -15,7 +16,7 @@ interface Toast {
   type: "success" | "error";
 }
 
-export default function PreviewPanel({ code, onResizeStart }: PreviewPanelProps) {
+export default function PreviewPanel({ code, onResizeStart, framework }: PreviewPanelProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const [showEmbed, setShowEmbed] = useState(false);
@@ -25,21 +26,146 @@ export default function PreviewPanel({ code, onResizeStart }: PreviewPanelProps)
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const generateHtml = (bodyContent: string) => `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <base href="${window.location.origin}/" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin:0; padding:0; min-height:100vh; background:#fff; line-height:1.6; }
-          * { box-sizing: border-box; }
-          img { max-width:100%; height:auto; display:block; }
-        </style>
-      </head>
-      <body>${bodyContent}</body>
-    </html>
-  `;
+  const generateHtml = (content: string, currentFramework: string) => {
+    if (currentFramework === "react") {
+      // For React, check if the code is already a complete React component
+      const reactCode = content.trim();
+      
+      // Check what kind of React code we have
+      const hasFunctionComponent = reactCode.includes('function') || reactCode.includes('const') || reactCode.includes('=>');
+      const hasClassComponent = reactCode.includes('class') && reactCode.includes('extends');
+      const hasJSX = reactCode.includes('<') && reactCode.includes('>');
+      const hasReactDOMRender = reactCode.includes('ReactDOM.render');
+      
+      let finalReactCode = reactCode;
+      
+      if (!hasReactDOMRender) {
+        if ((hasFunctionComponent || hasClassComponent) && hasJSX) {
+          // It's a component but missing render - extract component name and render it
+          let componentName = 'App';
+          
+          // Try to extract component name from function declaration
+          const functionMatch = reactCode.match(/function\s+(\w+)/);
+          if (functionMatch) {
+            componentName = functionMatch[1];
+          } else {
+            // Try to extract from const/let declaration
+            const constMatch = reactCode.match(/(?:const|let|var)\s+(\w+)\s*=/);
+            if (constMatch) {
+              componentName = constMatch[1];
+            }
+          }
+          
+          finalReactCode = `${reactCode}\nReactDOM.render(<${componentName} />, document.getElementById('root'));`;
+        } else if (hasJSX && !hasFunctionComponent && !hasClassComponent) {
+          // It's just JSX - wrap it in a component
+          finalReactCode = `
+            function App() {
+              return (
+                ${reactCode}
+              );
+            }
+            ReactDOM.render(<App />, document.getElementById('root'));
+          `;
+        } else {
+          // It's incomplete or malformed React code
+          finalReactCode = `
+            function App() {
+              return (
+                <div style={{ padding: '20px', fontFamily: 'system-ui', color: '#333', background: '#f5f5f5', borderRadius: '8px' }}>
+                  <h2>React Preview</h2>
+                  <p>Your React code needs to be a complete component with JSX.</p>
+                  <div style={{ background: '#fff', padding: '15px', borderRadius: '5px', marginTop: '10px', border: '1px solid #ddd' }}>
+                    <strong>Your code:</strong>
+                    <pre style={{ whiteSpace: 'pre-wrap', fontSize: '12px', margin: '10px 0 0 0' }}>${reactCode}</pre>
+                  </div>
+                  <p style={{ marginTop: '15px', fontSize: '14px', color: '#666' }}>
+                    <strong>Tip:</strong> Make sure your code includes a function component and returns JSX.
+                  </p>
+                </div>
+              );
+            }
+            ReactDOM.render(<App />, document.getElementById('root'));
+          `;
+        }
+      }
+
+      return `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <base href="${window.location.origin}/" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+            <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+            <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+            <style>
+              body { 
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+                margin: 0; 
+                padding: 20px; 
+                min-height: 100vh; 
+                background: #fff; 
+                line-height: 1.6; 
+              }
+              * { box-sizing: border-box; }
+              img { max-width: 100%; height: auto; display: block; }
+              #root { width: 100%; height: 100%; }
+            </style>
+          </head>
+          <body>
+            <div id="root">
+              <div style="padding: 20px; text-align: center; color: #666;">
+                Loading React preview...
+              </div>
+            </div>
+            <script type="text/babel">
+              try {
+                ${finalReactCode}
+              } catch (error) {
+                console.error('React error:', error);
+                document.getElementById('root').innerHTML = 
+                  '<div style="color: #d32f2f; padding: 20px; border: 1px solid #f44336; border-radius: 8px; margin: 20px; background: #ffebee; font-family: system-ui;">' +
+                  '<h3 style="margin: 0 0 10px 0;">React Error:</h3>' +
+                  '<pre style="white-space: pre-wrap; background: #fff; padding: 10px; border-radius: 4px; border: 1px solid #ffcdd2; margin: 10px 0; font-size: 12px;">' + error.toString() + '</pre>' +
+                  '<p style="margin: 10px 0 0 0; font-size: 14px;"><strong>Debug Tips:</strong></p>' +
+                  '<ul style="margin: 5px 0; padding-left: 20px; font-size: 13px;">' +
+                  '<li>Make sure your component returns valid JSX</li>' +
+                  '<li>Check for missing parentheses or brackets</li>' +
+                  '<li>Ensure all tags are properly closed</li>' +
+                  '<li>Verify component names match</li>' +
+                  '</ul></div>';
+              }
+            </script>
+          </body>
+        </html>
+      `;
+    } else {
+      // For HTML, use the original approach
+      return `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <base href="${window.location.origin}/" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+              body { 
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+                margin: 0; 
+                padding: 0; 
+                min-height: 100vh; 
+                background: #fff; 
+                line-height: 1.6; 
+              }
+              * { box-sizing: border-box; }
+              img { max-width: 100%; height: auto; display: block; }
+            </style>
+          </head>
+          <body>${content}</body>
+        </html>
+      `;
+    }
+  };
 
   const addToast = (message: string, type: "success" | "error" = "success") => {
     const id = Math.random().toString(36).substr(2, 9);
@@ -48,14 +174,18 @@ export default function PreviewPanel({ code, onResizeStart }: PreviewPanelProps)
   };
 
   const updateIframe = (html: string) => {
-    if (iframeRef.current) iframeRef.current.srcdoc = html;
+    if (iframeRef.current) {
+      iframeRef.current.srcdoc = html;
+    }
   };
 
-  useEffect(() => updateIframe(generateHtml(code)), [code]);
+  useEffect(() => {
+    updateIframe(generateHtml(code, framework));
+  }, [code, framework]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
-    updateIframe(generateHtml(code));
+    updateIframe(generateHtml(code, framework));
     setTimeout(() => {
       setIsRefreshing(false);
       addToast("Preview refreshed");
@@ -104,10 +234,15 @@ export default function PreviewPanel({ code, onResizeStart }: PreviewPanelProps)
 
       {/* Header */}
       <div className="panel-header flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold tracking-tight">Preview</h2>
+        <div className="flex items-center gap-3">
+          <h2 className="text-lg font-semibold tracking-tight">Preview</h2>
+          <span className="text-sm text-text-tertiary bg-surface-tertiary px-2 py-1 rounded border border-border-primary">
+            {framework === "react" ? "React" : "HTML"}
+          </span>
+        </div>
         <div className="flex gap-2">
           <button className="btn btn-outline btn-sm" onClick={handleRefresh} disabled={isRefreshing}>
-            Refresh
+            {isRefreshing ? "Refreshing..." : "Refresh"}
           </button>
           <button className={`btn ${showEmbed ? "btn-accent" : "btn-outline"} btn-sm`} onClick={() => setShowEmbed(!showEmbed)}>
             {showEmbed ? "Hide Code" : "Show Code"}
@@ -151,7 +286,12 @@ export default function PreviewPanel({ code, onResizeStart }: PreviewPanelProps)
           {deviceView !== "desktop" && (
             <div className="absolute inset-0 pointer-events-none border-8 border-gray-800 rounded-xl z-20" />
           )}
-          <iframe ref={iframeRef} className="w-full h-full border-none bg-white relative z-0" title="Live Preview" sandbox="allow-same-origin allow-scripts" />
+          <iframe
+            ref={iframeRef}
+            className="w-full h-full border-none bg-white relative z-0"
+            title="Live Preview"
+            sandbox="allow-same-origin allow-scripts"
+          />
         </div>
       </div>
 

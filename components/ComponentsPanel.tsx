@@ -58,6 +58,7 @@ interface ComponentsPanelProps {
   onOpenSettings: () => void;
   onResizeStart?: (e: React.MouseEvent) => void;
   currentCode?: string;
+  framework: string; // Add framework prop
 }
 
 interface ChatMessage {
@@ -873,7 +874,9 @@ export default function ComponentsPanel({
   onAiInsert,
   onOpenSettings,
   onResizeStart,
-  currentCode = ""
+  currentCode = "",
+  framework
+    
 }: ComponentsPanelProps) {
   const { settings } = useSettings();
   const [prompt, setPrompt] = useState("");
@@ -1239,145 +1242,163 @@ export default function ComponentsPanel({
 
 
 
-  const askAi = async () => {
-    if (!prompt.trim()) {
-      setResponse("Please enter a prompt");
-      return;
-    }
-    if (isRequesting || loading) {
-      console.log("Request already in progress, ignoring...");
-      return;
-    }
-    setIsRequesting(true);
-    setLoading(true);
-    setResponse("");
-    try {
-      console.log("Sending AI request:", { 
-        prompt: prompt.substring(0, 100), 
-        mode, 
-        timestamp: new Date().toISOString()
-      });
-      
-      const messages = [
-        {
-          role: "user" as const,
-          content: `You are an expert web developer. Create responsive HTML with inline CSS for: "${prompt}"
-
-CRITICAL REQUIREMENTS:
-- Return ONLY the HTML code with inline styles
-- No explanations, no markdown formatting, no backticks
-- Make it modern, responsive, and production-ready
-- Use semantic HTML where possible
-- Include proper hover/focus states
-- Ensure good color contrast
-- Make it work on all screen sizes`
-        }
-      ];
-
-      const response = await fetch('https://llm.jessejesse.workers.dev/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ messages }),
-      });
-
-      console.log("Worker response status:", response.status);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Worker API error: ${response.status} - ${errorText}`);
+    const askAi = async () => {
+      if (!prompt.trim()) {
+        setResponse("Please enter a prompt");
+        return;
       }
-
-      const reader = response.body?.getReader();
-      if (!reader) {
-        throw new Error("No response body received");
+      if (isRequesting || loading) {
+        console.log("Request already in progress, ignoring...");
+        return;
       }
-
-      let fullContent = '';
-      const decoder = new TextDecoder();
-
+      setIsRequesting(true);
+      setLoading(true);
+      setResponse("");
       try {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
+        console.log("Sending AI request:", {
+          prompt: prompt.substring(0, 100),
+          mode,
+          framework,
+          timestamp: new Date().toISOString()
+        });
+        
+        const frameworkInstructions = framework === "react"
+          ? `You are an expert React developer. Create a React component with JSX and inline styles for: "${prompt}"
 
-          const chunk = decoder.decode(value);
-          const lines = chunk.split('\n');
+    CRITICAL REQUIREMENTS FOR REACT:
+    - Return ONLY the React JSX code with inline styles (style={{}})
+    - No explanations, no markdown formatting, no backticks
+    - Make it a functional component
+    - Use modern React patterns
+    - Include proper event handlers if needed
+    - Make it responsive and production-ready
+    - Ensure good color contrast
+    - Make it work on all screen sizes
+    - Use camelCase for style properties
+    - Include proper JSX syntax`
+          : `You are an expert web developer. Create responsive HTML with inline CSS for: "${prompt}"
 
-          for (const line of lines) {
-            if (line.startsWith('data: ') && line !== 'data: [DONE]') {
-              try {
-                const data = JSON.parse(line.slice(6));
-                if (data.response) {
-                  fullContent += data.response;
-                  setResponse(fullContent);
+    CRITICAL REQUIREMENTS FOR HTML:
+    - Return ONLY the HTML code with inline styles
+    - No explanations, no markdown formatting, no backticks
+    - Make it modern, responsive, and production-ready
+    - Use semantic HTML where possible
+    - Include proper hover/focus states
+    - Ensure good color contrast
+    - Make it work on all screen sizes`;
+
+        const messages = [
+          {
+            role: "user" as const,
+            content: frameworkInstructions
+          }
+        ];
+
+        const response = await fetch('https://llm.jessejesse.workers.dev/api/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ messages }),
+        });
+
+        console.log("Worker response status:", response.status);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Worker API error: ${response.status} - ${errorText}`);
+        }
+
+        const reader = response.body?.getReader();
+        if (!reader) {
+          throw new Error("No response body received");
+        }
+
+        let fullContent = '';
+        const decoder = new TextDecoder();
+
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value);
+            const lines = chunk.split('\n');
+
+            for (const line of lines) {
+              if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+                try {
+                  const data = JSON.parse(line.slice(6));
+                  if (data.response) {
+                    fullContent += data.response;
+                    setResponse(fullContent);
+                  }
+                } catch (e) {
+                  // Ignore JSON parse errors for non-data lines
                 }
-              } catch (e) {
-                // Ignore JSON parse errors for non-data lines
               }
             }
           }
+        } finally {
+          reader.releaseLock();
         }
+
+        console.log("Raw worker response:", fullContent);
+
+        if (!fullContent.trim()) {
+          throw new Error("Worker returned empty response");
+        }
+
+        const cleaned = fullContent
+          .replace(/```(html|css|js|jsx)?/gi, '')
+          .replace(/```/g, '')
+          .replace(/^`|`$/g, '')
+          .trim();
+
+        setResponse(cleaned);
+
+        const timestamp = new Date().toLocaleTimeString();
+        const frameworkLabel = framework === "react" ? "React" : "HTML";
+        onAiInsert(`\n<!-- AI Generated ${frameworkLabel} (${timestamp}): ${prompt.substring(0, 50)}... -->\n${cleaned}\n`);
+
+        if (mode === "chat") {
+          setChatHistory(prev => [
+            ...prev,
+            { role: "user", content: prompt },
+            { role: "assistant", content: cleaned }
+          ]);
+        }
+        
+        setPrompt("");
+
+      } catch (err) {
+        console.error("AI request failed:", err);
+        let userMessage = "An error occurred";
+        
+        if (err instanceof Error) {
+          if (err.message.includes('Failed to fetch')) {
+            userMessage = "Network error. Check your connection and API endpoint.";
+          } else if (err.message.includes('403')) {
+            userMessage = "Access denied. Check your worker configuration.";
+          } else if (err.message.includes('429')) {
+            userMessage = "Rate limit exceeded. Wait a moment before trying again.";
+          } else if (err.message.includes('404')) {
+            userMessage = "API endpoint not found. Check your worker URL.";
+          } else {
+            userMessage = err.message;
+          }
+        }
+        
+        setResponse(`Error: ${userMessage}`);
+        
       } finally {
-        reader.releaseLock();
+        setLoading(false);
+        setTimeout(() => {
+          setIsRequesting(false);
+        }, 1000);
       }
-
-      console.log("Raw worker response:", fullContent);
-
-      if (!fullContent.trim()) {
-        throw new Error("Worker returned empty response");
-      }
-
-      const cleaned = fullContent
-        .replace(/```(html|css|js)?/gi, '')
-        .replace(/```/g, '')
-        .replace(/^`|`$/g, '')
-        .trim();
-
-      setResponse(cleaned);
-
-      const timestamp = new Date().toLocaleTimeString();
-      onAiInsert(`\n<!-- AI Generated (${timestamp}): ${prompt.substring(0, 50)}... -->\n${cleaned}\n`);
-
-      if (mode === "chat") {
-        setChatHistory(prev => [
-          ...prev,
-          { role: "user", content: prompt },
-          { role: "assistant", content: cleaned }
-        ]);
-      }
-      
-      setPrompt("");
-
-    } catch (err) {
-      console.error("AI request failed:", err);
-      let userMessage = "An error occurred";
-      
-      if (err instanceof Error) {
-        if (err.message.includes('Failed to fetch')) {
-          userMessage = "Network error. Check your connection and API endpoint.";
-        } else if (err.message.includes('403')) {
-          userMessage = "Access denied. Check your worker configuration.";
-        } else if (err.message.includes('429')) {
-          userMessage = "Rate limit exceeded. Wait a moment before trying again.";
-        } else if (err.message.includes('404')) {
-          userMessage = "API endpoint not found. Check your worker URL.";
-        } else {
-          userMessage = err.message;
-        }
-      }
-      
-      setResponse(`Error: ${userMessage}`);
-      
-    } finally {
-      setLoading(false);
-      setTimeout(() => {
-        setIsRequesting(false);
-      }, 1000);
-    }
-  };
-
+    };
+    
     return (
       <div className="flex flex-col h-full overflow-hidden relative">
         {onResizeStart && (

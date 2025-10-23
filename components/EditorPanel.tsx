@@ -1,5 +1,3 @@
-// /components/EditorPanel.tsx
-
 "use client";
 
 import { useState, useMemo } from "react";
@@ -10,6 +8,7 @@ import Prism from "prismjs";
 import "prismjs/components/prism-markup";
 import "prismjs/components/prism-css";
 import "prismjs/components/prism-javascript";
+import "prismjs/components/prism-jsx";
 
 interface EditorPanelProps {
   code: string;
@@ -17,6 +16,8 @@ interface EditorPanelProps {
   runCode: () => void;
   formatCode: () => void;
   onResizeStart?: (e: React.MouseEvent) => void;
+  framework: string;
+  setFramework: (framework: string) => void;
 }
 
 interface Toast {
@@ -25,11 +26,44 @@ interface Toast {
   type: "success" | "error" | "warning";
 }
 
-const highlightCode = (code: string) => {
+const highlightCode = (code: string, framework: string) => {
   try {
-    return Prism.highlight(String(code || ""), Prism.languages.html, "html");
+    if (framework === "react") {
+      return Prism.highlight(String(code || ""), Prism.languages.jsx, "jsx");
+    } else {
+      return Prism.highlight(String(code || ""), Prism.languages.html, "html");
+    }
   } catch {
     return String(code || "");
+  }
+};
+
+// Simple formatting function for React/JSX since Prettier standalone has issues
+const formatReactCode = (code: string): string => {
+  try {
+    // Basic JSX formatting - add proper indentation
+    let formatted = code
+      // Add newlines between JSX elements
+      .replace(/(>)(<)(\w)/g, '$1\n$2$3')
+      .replace(/(>)(<)(\/)/g, '$1\n$2$3')
+      // Indent lines properly
+      .split('\n')
+      .map(line => {
+        // Simple indentation logic
+        if (line.includes('</') && !line.includes('/>')) {
+          return line;
+        }
+        if (line.trim().startsWith('<') && !line.trim().startsWith('</') && !line.includes('/>')) {
+          return '  ' + line;
+        }
+        return line;
+      })
+      .join('\n');
+    
+    return formatted;
+  } catch (err) {
+    console.error('React formatting error:', err);
+    return code;
   }
 };
 
@@ -39,9 +73,15 @@ export default function EditorPanel({
   runCode,
   formatCode,
   onResizeStart,
+  framework,
+  setFramework,
 }: EditorPanelProps) {
   const [formatting, setFormatting] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
+
+  const toggleFramework = () => {
+    setFramework(framework === "html" ? "react" : "html");
+  };
 
   const addToast = (message: string, type: "success" | "error" | "warning" = "success") => {
     const id = Math.random().toString(36).substr(2, 9);
@@ -59,15 +99,27 @@ export default function EditorPanel({
   const handleFormatCode = async () => {
     try {
       setFormatting(true);
-      const formatted = await prettier.format(String(code || ""), {
-        parser: "html",
-        plugins: [parserHtml],
-      });
+      let formatted;
+      
+      if (framework === "react") {
+        // Use our custom React formatter since Prettier standalone has issues
+        formatted = formatReactCode(String(code || ""));
+      } else {
+        // For HTML, use Prettier which works fine
+        formatted = await prettier.format(String(code || ""), {
+          parser: "html",
+          plugins: [parserHtml],
+          printWidth: 80,
+          tabWidth: 2,
+          useTabs: false,
+        });
+      }
+      
       setCode(formatted);
       addToast("Code formatted successfully");
     } catch (err) {
       console.error("Formatting failed:", err);
-      addToast("Formatting failed. Check your HTML syntax.", "error");
+      addToast("Formatting failed. Check your syntax.", "error");
     } finally {
       setFormatting(false);
     }
@@ -82,11 +134,12 @@ export default function EditorPanel({
 
   const handleExportCode = () => {
     try {
-      const blob = new Blob([String(code || "")], { type: "text/html" });
+      const fileExtension = framework === "react" ? "jsx" : "html";
+      const blob = new Blob([String(code || "")], { type: framework === "react" ? "text/jsx" : "text/html" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "component.html";
+      a.download = `component.${fileExtension}`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -128,10 +181,48 @@ export default function EditorPanel({
       {/* Header */}
       <div className="panel-header">
         <div className="flex items-center gap-3">
-                    <svg className="w-8 h-8 text-interactive-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-          </svg>
-          <h2 className="text-lg font-semibold tracking-tight">CODE</h2>
+          {/* Header Icon */}
+          {framework === "react" ? (
+            <img src="./react.svg" className="w-8 h-8" alt="React" />
+          ) : (
+            <img src="./html5.svg" className="w-8 h-8" alt="HTML5" />
+          )}
+          
+          {/* Framework Toggle Switch */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={toggleFramework}
+              className="relative w-16 h-8 rounded-full p-1 transition-colors duration-200 border-2 border-border-primary focus:outline-none focus:ring-2 focus:ring-interactive-accent focus:ring-opacity-50"
+              style={{
+                backgroundColor: framework === "html" ? "var(--surface-secondary)" : "var(--surface-secondary)"
+              }}
+            >
+              {/* Toggle Knob */}
+              <div
+                className="absolute top-1 w-6 h-6 bg-white rounded-full shadow-md transition-all duration-200 flex items-center justify-center"
+                style={{
+                  left: framework === "html" ? "4px" : "36px"
+                }}
+              >
+                {/* SVG Icons in toggle knob */}
+                {framework === "html" ? (
+                  <img src="./html5.svg" className="w-3 h-3" alt="HTML5" />
+                ) : (
+                  <img src="./react.svg" className="w-3 h-3" alt="React" />
+                )}
+              </div>
+            </button>
+
+            {/* Framework Labels */}
+            <div className="flex flex-col items-start">
+              <span className="text-lg font-semibold tracking-tight">
+                {framework === "react" ? "React" : "HTML"}
+              </span>
+              <span className="text-xs text-text-tertiary">
+                {framework === "react" ? "JSX" : "HTML5"}
+              </span>
+            </div>
+          </div>
         </div>
         
         <div className="flex gap-2">
@@ -181,7 +272,6 @@ export default function EditorPanel({
         </div>
       </div>
 
-
       <div className="flex flex-1 overflow-auto bg-surface-primary rounded-lg border border-border-primary">
       
         <div className="bg-surface-secondary text-text-tertiary text-right pr-4 pl-3 py-4 select-none border-r border-border-primary font-mono text-sm">
@@ -201,7 +291,7 @@ export default function EditorPanel({
           <Editor
             value={String(code || "")}
             onValueChange={(val) => setCode(String(val))}
-            highlight={highlightCode}
+            highlight={(code) => highlightCode(code, framework)}
             padding={16}
             style={{
               fontFamily: '"Fira Code", "JetBrains Mono", "Cascadia Code", monospace',
@@ -238,7 +328,7 @@ export default function EditorPanel({
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>
-          <span>HTML</span>
+          <span>{framework === "react" ? "JSX" : "HTML"}</span>
         </div>
       </div>
 
@@ -359,7 +449,7 @@ export default function EditorPanel({
           }
         }
 
-        /* Prism tokens - Left unchanged as requested */
+        /* Prism tokens for both HTML and JSX */
         .token.comment { color: #6a737d; }
         .token.punctuation { color: var(--text-primary); }
         .token.tag { color: #e06c75; }
@@ -369,6 +459,10 @@ export default function EditorPanel({
         .token.function { color: #6f42c1; }
         .token.selector { color: #32a852; }
         .token.property { color: #22863a; }
+        .token.string { color: #032f62; }
+        .token.operator { color: #d73a49; }
+        .token.number { color: #005cc5; }
+        .token.boolean { color: #d73a49; }
       `}</style>
     </div>
   );

@@ -1,10 +1,10 @@
 {
   "pages": {
     "/api/github/auth/initiate/route": [
-      "static/chunks/7e31f1fab9736e2e.js",
-      "static/chunks/82008b013028914e.js",
-      "static/chunks/43120537f66a53cf.js",
-      "static/chunks/turbopack-5ff496d5e9974988.js"
+      "static/chunks/45cb71aa155ea546.js",
+      "static/chunks/46a0841712a2d2e2.js",
+      "static/chunks/ea366ea69739b70b.js",
+      "static/chunks/turbopack-94f92f81f0a8bc22.js"
     ]
   }
 }
