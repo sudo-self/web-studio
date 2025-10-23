@@ -639,7 +639,7 @@ ${g}
         <!DOCTYPE html>
         <html>
           <head>
-            <base href="${window.location.origin}/" />
+            <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <style>
               body { 
@@ -650,88 +650,154 @@ ${g}
                 background: #fff; 
                 line-height: 1.6; 
               }
-              * { box-sizing: border-box; }
-              img { max-width: 100%; height: auto; display: block; }
+              * { 
+                box-sizing: border-box; 
+              }
+              img { 
+                max-width: 100%; 
+                height: auto; 
+                display: block; 
+              }
+              a {
+                color: #1976d2;
+                text-decoration: none;
+              }
+              a:hover {
+                text-decoration: underline;
+              }
             </style>
           </head>
           <body>${a}</body>
         </html>
-      `;{let b=a.trim(),c=b.includes("function")||b.includes("const")||b.includes("=>"),d=b.includes("class")&&b.includes("extends"),e=b.includes("<")&&b.includes(">"),f=b.includes("ReactDOM.render"),g=b;if(!f)if((c||d)&&e){let a="App",c=b.match(/function\s+(\w+)/);if(c)a=c[1];else{let c=b.match(/(?:const|let|var)\s+(\w+)\s*=/);c&&(a=c[1])}g=`${b}
-ReactDOM.render(<${a} />, document.getElementById('root'));`}else g=!e||c||d?`
+      `;{let b=a.trim(),c=b.includes("function")||b.includes("const")||b.includes("=>"),d=b.includes("class")&&b.includes("extends"),e=b.includes("<")&&b.includes(">"),f=b.includes("ReactDOM.render")||b.includes("root.render"),g=b;if(!f)if((c||d)&&e){let a="App",c=b.match(/function\s+(\w+)/);if(c)a=c[1];else{let c=b.match(/(?:const|let|var)\s+(\w+)\s*=/);c&&(a=c[1])}g=`
+            ${b}
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(<${a} />);
+          `}else g=!e||c||d?`
             function App() {
               return (
-                <div style={{ padding: '20px', fontFamily: 'system-ui', color: '#333', background: '#f5f5f5', borderRadius: '8px' }}>
-                  <h2>React Preview</h2>
-                  <p>Your React code needs to be a complete component with JSX.</p>
-                  <div style={{ background: '#fff', padding: '15px', borderRadius: '5px', marginTop: '10px', border: '1px solid #ddd' }}>
-                    <strong>Your code:</strong>
-                    <pre style={{ whiteSpace: 'pre-wrap', fontSize: '12px', margin: '10px 0 0 0' }}>${b}</pre>
-                  </div>
-                  <p style={{ marginTop: '15px', fontSize: '14px', color: '#666' }}>
-                    <strong>Tip:</strong> Make sure your code includes a function component and returns JSX.
+                <div style={{ 
+                  padding: '20px', 
+                  fontFamily: 'system-ui', 
+                  color: '#333', 
+                  background: '#f5f5f5', 
+                  borderRadius: '8px',
+                  maxWidth: '600px',
+                  margin: '0 auto'
+                }}>
+                  <h2 style={{ margin: '0 0 16px 0', color: '#1976d2' }}>React Preview</h2>
+                  <p style={{ margin: '0 0 16px 0', lineHeight: '1.5' }}>
+                    Your React code is being processed. Make sure it includes a function component that returns JSX.
                   </p>
+                  <div style={{ 
+                    background: '#fff', 
+                    padding: '15px', 
+                    borderRadius: '5px', 
+                    marginTop: '10px', 
+                    border: '1px solid #ddd',
+                    fontSize: '12px',
+                    overflow: 'auto'
+                  }}>
+                    <strong>Code preview:</strong>
+                    <pre style={{ 
+                      whiteSpace: 'pre-wrap', 
+                      margin: '10px 0 0 0',
+                      fontFamily: 'monospace',
+                      background: '#f8f8f8',
+                      padding: '10px',
+                      borderRadius: '4px'
+                    }}>${b.substring(0,500)}${b.length>500?"...":""}</pre>
+                  </div>
                 </div>
               );
             }
-            ReactDOM.render(<App />, document.getElementById('root'));
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(<App />);
           `:`
             function App() {
               return (
                 ${b}
               );
             }
-            ReactDOM.render(<App />, document.getElementById('root'));
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(<App />);
           `;return`
         <!DOCTYPE html>
-        <html>
-          <head>
-            <base href="${window.location.origin}/" />
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
-            <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
-            <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-            <style>
-              body { 
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-                margin: 0; 
-                padding: 20px; 
-                min-height: 100vh; 
-                background: #fff; 
-                line-height: 1.6; 
-              }
-              * { box-sizing: border-box; }
-              img { max-width: 100%; height: auto; display: block; }
-              #root { width: 100%; height: 100%; }
-            </style>
-          </head>
-          <body>
-            <div id="root">
-              <div style="padding: 20px; text-align: center; color: #666;">
-                Loading React preview...
-              </div>
-            </div>
-            <script type="text/babel">
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+          <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+          <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+          <style>
+            * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+            }
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+              line-height: 1.6;
+              color: #333;
+              background-color: #fff;
+            }
+            #root {
+              width: 100%;
+              min-height: 100vh;
+            }
+            .loading {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              min-height: 200px;
+              color: #666;
+              font-size: 16px;
+            }
+            .error {
+              color: #d32f2f;
+              padding: 20px;
+              border: 1px solid #f44336;
+              border-radius: 8px;
+              background: #ffebee;
+              margin: 20px;
+            }
+            .error pre {
+              white-space: pre-wrap;
+              margin-top: 10px;
+              font-size: 12px;
+              background: rgba(0,0,0,0.05);
+              padding: 10px;
+              border-radius: 4px;
+            }
+          </style>
+        </head>
+        <body>
+          <div id="root">
+            <div class="loading">Loading React preview...</div>
+          </div>
+
+          <script type="text/babel">
+            (function() {
               try {
                 ${g}
               } catch (error) {
-                console.error('React error:', error);
-                document.getElementById('root').innerHTML = 
-                  '<div style="color: #d32f2f; padding: 20px; border: 1px solid #f44336; border-radius: 8px; margin: 20px; background: #ffebee; font-family: system-ui;">' +
-                  '<h3 style="margin: 0 0 10px 0;">React Error:</h3>' +
-                  '<pre style="white-space: pre-wrap; background: #fff; padding: 10px; border-radius: 4px; border: 1px solid #ffcdd2; margin: 10px 0; font-size: 12px;">' + error.toString() + '</pre>' +
-                  '<p style="margin: 10px 0 0 0; font-size: 14px;"><strong>Debug Tips:</strong></p>' +
-                  '<ul style="margin: 5px 0; padding-left: 20px; font-size: 13px;">' +
-                  '<li>Make sure your component returns valid JSX</li>' +
-                  '<li>Check for missing parentheses or brackets</li>' +
-                  '<li>Ensure all tags are properly closed</li>' +
-                  '<li>Verify component names match</li>' +
-                  '</ul></div>';
+                console.error('React Error:', error);
+                const rootElement = document.getElementById('root');
+                if (rootElement) {
+                  rootElement.innerHTML = 
+                    '<div class="error">' +
+                    '<h3>React Error:</h3>' +
+                    '<p>' + error.message + '</p>' +
+                    '<pre>' + error.stack + '</pre>' +
+                    '</div>';
+                }
               }
-            </script>
-          </body>
+            })();
+          </script>
+        </body>
         </html>
-      `}},y=(a,b="success")=>{let c=Math.random().toString(36).substr(2,9);w(d=>[...d,{id:c,message:a,type:b}]),setTimeout(()=>w(a=>a.filter(a=>a.id!==c)),3e3)},z=a=>{j.current&&(j.current.srcdoc=a)};(0,c.useEffect)(()=>{z(x(a,i))},[a,i]);let A=async()=>{try{await navigator.clipboard.writeText(a),y("Code copied to clipboard!")}catch{y("Failed to copy code","error")}};(0,c.useEffect)(()=>{let a=()=>q(!!document.fullscreenElement);return document.addEventListener("fullscreenchange",a),()=>document.removeEventListener("fullscreenchange",a)},[]);let B={mobile:f,tablet:g,desktop:h};return(0,b.jsxs)("div",{ref:k,className:"panel preview-panel relative",children:[e&&(0,b.jsx)("div",{className:"absolute -left-2 top-0 bottom-0 w-4 cursor-col-resize z-20 hover:bg-interactive-accent/20 transition-colors duration-200 rounded",onMouseDown:e}),(0,b.jsxs)("div",{className:"panel-header flex justify-between items-center mb-4",children:[(0,b.jsxs)("div",{className:"flex items-center gap-3",children:[(0,b.jsx)("h2",{className:"text-lg font-semibold tracking-tight",children:"Preview"}),(0,b.jsx)("span",{className:"text-sm text-text-tertiary bg-surface-tertiary px-2 py-1 rounded border border-border-primary",children:"react"===i?"React":"HTML"})]}),(0,b.jsxs)("div",{className:"flex gap-2",children:[(0,b.jsx)("button",{className:"btn btn-outline btn-sm",onClick:()=>{u(!0),z(x(a,i)),setTimeout(()=>{u(!1),y("Preview refreshed")},600)},disabled:t,children:t?"Refreshing...":"Refresh"}),(0,b.jsx)("button",{className:`btn ${l?"btn-accent":"btn-outline"} btn-sm`,onClick:()=>m(!l),children:l?"Hide Code":"Show Code"}),(0,b.jsx)("button",{className:`btn ${p?"btn-warning":"btn-outline"} btn-sm`,onClick:()=>{k.current&&(!p&&k.current.requestFullscreen?k.current.requestFullscreen():document.exitFullscreen&&document.exitFullscreen())},children:p?"Exit Full":"Fullscreen"}),(0,b.jsx)("button",{className:`btn ${n?"btn-accent":"btn-outline"} btn-sm`,onClick:()=>o(a=>!a),children:n?"Hide Grid":"Show Grid"})]})]}),l&&(0,b.jsxs)("div",{className:"bg-surface-primary border border-border-primary rounded-lg mb-4 overflow-hidden transition-all duration-300",children:[(0,b.jsxs)("div",{className:"flex justify-between items-center p-4 border-b border-border-primary bg-surface-secondary",children:[(0,b.jsx)("span",{className:"font-semibold text-sm text-text-primary",children:"Component Code"}),(0,b.jsx)("button",{className:"btn btn-success btn-sm",onClick:A,children:"Copy"})]}),(0,b.jsx)("div",{className:"p-4 max-h-48 overflow-auto bg-surface-tertiary",children:(0,b.jsx)("pre",{className:"m-0 text-sm font-mono text-text-primary whitespace-pre-wrap leading-6",children:(0,b.jsx)("code",{children:a})})})]}),(0,b.jsx)("div",{className:"flex-1 relative min-h-0 flex justify-center items-start p-6 overflow-auto bg-surface-secondary rounded-lg",children:(0,b.jsxs)("div",{className:"shadow-xl transition-all duration-500 ease-out bg-white rounded-xl overflow-hidden border border-border-primary relative",style:{width:"mobile"===r?"375px":"tablet"===r?"768px":"100%",height:"mobile"===r?"667px":"tablet"===r?"1024px":"100%",maxHeight:"100%",transform:"desktop"===r?"none":"scale(0.9)",transformOrigin:"top center"},children:[n&&(0,b.jsx)(d,{width:40,height:40,stroke:"rgba(0,0,0,0.05)",className:"absolute inset-0 z-10"}),"desktop"!==r&&(0,b.jsx)("div",{className:"absolute inset-0 pointer-events-none border-8 border-gray-800 rounded-xl z-20"}),(0,b.jsx)("iframe",{ref:j,className:"w-full h-full border-none bg-white relative z-0",title:"Live Preview",sandbox:"allow-same-origin allow-scripts"})]})}),(0,b.jsx)("div",{className:"flex justify-center items-center gap-2 p-2 border-t border-border-primary bg-surface-secondary rounded-b-lg mt-2",children:["mobile","tablet","desktop"].map(a=>{let c=r===a,d=B[a];return(0,b.jsxs)("button",{onClick:()=>s(a),className:`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200
-                ${c?"bg-interactive-accent text-white":"bg-surface-primary text-text-primary"}`,children:[(0,b.jsx)(d,{className:"w-5 h-5"}),(0,b.jsx)("span",{className:"capitalize",children:a})]},a)})}),(0,b.jsx)("div",{className:"fixed top-4 right-4 z-50 space-y-2",children:v.map(a=>(0,b.jsxs)("div",{className:`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border ${"success"===a.type?"bg-interactive-success/10 border-interactive-success/20 text-interactive-success":"bg-interactive-danger/10 border-interactive-danger/20 text-interactive-danger"}`,children:[(0,b.jsx)("div",{className:`w-2 h-2 rounded-full ${"success"===a.type?"bg-interactive-success":"bg-interactive-danger"}`}),(0,b.jsx)("span",{className:"text-sm font-medium",children:a.message}),(0,b.jsx)("button",{onClick:()=>w(b=>b.filter(b=>b.id!==a.id)),className:"text-current hover:opacity-70 transition-opacity",children:(0,b.jsx)("svg",{className:"w-4 h-4",fill:"none",stroke:"currentColor",viewBox:"0 0 24 24",children:(0,b.jsx)("path",{strokeLinecap:"round",strokeLinejoin:"round",strokeWidth:2,d:"M6 18L18 6M6 6l12 12"})})})]},a.id))})]})}},94668,a=>{"use strict";a.s(["default",()=>d]);var b=a.i(413),c=a.i(56583);function d(){return(0,b.jsxs)("div",{className:"jsx-1161229dee982e84 status-bar",children:[(0,b.jsxs)("a",{href:"https://studio.jessejesse.com",target:"_blank",rel:"noopener noreferrer",className:"jsx-1161229dee982e84 group flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-300 hover:bg-surface-tertiary border border-transparent hover:border-interactive-accent/30",children:[(0,b.jsxs)("div",{className:"jsx-1161229dee982e84 relative",children:[(0,b.jsx)("div",{className:"jsx-1161229dee982e84 w-2 h-2 bg-interactive-accent rounded-full animate-ping absolute -top-0.5 -right-0.5"}),(0,b.jsx)("div",{className:"jsx-1161229dee982e84 w-10 h-10 rounded-full overflow-hidden shadow-lg border-2 border-white",children:(0,b.jsx)("img",{src:"./icon-512.png",alt:"Studio Logo",className:"jsx-1161229dee982e84 w-full h-full object-cover"})})]}),(0,b.jsxs)("div",{className:"jsx-1161229dee982e84 flex flex-col",children:[(0,b.jsx)("span",{className:"jsx-1161229dee982e84 font-semibold text-text-primary group-hover:text-interactive-accent transition-colors",children:"Web Studio"}),(0,b.jsx)("span",{className:"jsx-1161229dee982e84 text-xs text-text-tertiary group-hover:text-text-secondary transition-colors",children:"studio.JesseJesse.com"})]})]}),(0,b.jsxs)("a",{href:"https://github.com/sudo-self/web-studio",target:"_blank",rel:"noopener noreferrer",className:"jsx-1161229dee982e84 group flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-300 hover:bg-surface-tertiary border border-transparent hover:border-interactive-accent/30",children:[(0,b.jsxs)("div",{className:"jsx-1161229dee982e84 flex flex-col items-end",children:[(0,b.jsx)("span",{className:"jsx-1161229dee982e84 font-semibold text-text-primary group-hover:text-interactive-accent transition-colors",children:"GitHub"}),(0,b.jsxs)("span",{className:"jsx-1161229dee982e84 text-xs text-text-tertiary group-hover:text-text-secondary transition-colors flex items-center gap-1",children:[(0,b.jsx)("svg",{fill:"currentColor",viewBox:"0 0 24 24",className:"jsx-1161229dee982e84 w-3 h-3",children:(0,b.jsx)("path",{d:"M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z",className:"jsx-1161229dee982e84"})}),"@sudo-self"]})]}),(0,b.jsx)("div",{className:"jsx-1161229dee982e84 w-8 h-8 bg-surface-primary rounded-lg flex items-center justify-center border border-border-primary group-hover:border-interactive-accent/50 transition-colors",children:(0,b.jsx)("svg",{fill:"currentColor",viewBox:"0 0 24 24",className:"jsx-1161229dee982e84 w-5 h-5 text-text-tertiary group-hover:text-interactive-accent transition-colors",children:(0,b.jsx)("path",{d:"M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z",className:"jsx-1161229dee982e84"})})})]}),(0,b.jsx)(c.default,{id:"1161229dee982e84",children:'.status-bar.jsx-1161229dee982e84{background:var(--surface-primary);border-top:1px solid var(--border-primary);z-index:10;justify-content:space-between;align-items:center;height:64px;padding:0 24px;display:flex;position:relative}.status-bar.jsx-1161229dee982e84:before{content:"";background:linear-gradient(90deg,transparent,var(--interactive-accent),transparent);opacity:.6;height:1px;position:absolute;top:0;left:0;right:0}@media (width<=768px){.status-bar.jsx-1161229dee982e84{height:56px;padding:0 16px}.status-bar.jsx-1161229dee982e84>.jsx-1161229dee982e84{padding:8px 12px}.status-bar.jsx-1161229dee982e84 span.jsx-1161229dee982e84{font-size:12px}}'})]})}},71413,a=>{"use strict";a.s(["default",()=>j],71413);var b=a.i(413),c=a.i(83572),d=a.i(87464),e=a.i(47118);let f=(0,e.default)("cloud",[["path",{d:"M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z",key:"p7xjir"}]]),g=(0,e.default)("wifi",[["path",{d:"M12 20h.01",key:"zekei9"}],["path",{d:"M2 8.82a15 15 0 0 1 20 0",key:"dnpr2z"}],["path",{d:"M5 12.859a10 10 0 0 1 14 0",key:"1x1e6c"}],["path",{d:"M8.5 16.429a5 5 0 0 1 7 0",key:"1bycff"}]]),h=(0,e.default)("wifi-off",[["path",{d:"M12 20h.01",key:"zekei9"}],["path",{d:"M8.5 16.429a5 5 0 0 1 7 0",key:"1bycff"}],["path",{d:"M5 12.859a10 10 0 0 1 5.17-2.69",key:"1dl1wf"}],["path",{d:"M19 12.859a10 10 0 0 0-2.007-1.523",key:"4k23kn"}],["path",{d:"M2 8.82a15 15 0 0 1 4.177-2.643",key:"1grhjp"}],["path",{d:"M22 8.82a15 15 0 0 0-11.288-3.764",key:"z3jwby"}],["path",{d:"m2 2 20 20",key:"1ooewy"}]]);var i=a.i(19403);function j({isOpen:a,onClose:e}){let{settings:j,askAI:k}=(0,i.useSettings)(),[l,m]=(0,c.useState)(!1),[n,o]=(0,c.useState)("unknown"),p=async()=>{m(!0),o("unknown");try{let a=await k("Test connection");a&&"Error contacting AI"!==a?o("connected"):o("disconnected")}catch{o("disconnected")}finally{m(!1)}};return a?(0,b.jsx)("div",{className:"fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4",children:(0,b.jsxs)("div",{className:"bg-panel-bg rounded-lg p-6 w-96 max-w-full border border-panel-border",children:[(0,b.jsxs)("div",{className:"flex justify-between items-center mb-4",children:[(0,b.jsxs)("h2",{className:"text-lg font-semibold flex items-center gap-2 text-foreground",children:[(0,b.jsx)(f,{size:20}),"AI Settings"]}),(0,b.jsx)("button",{onClick:e,className:"text-text-muted hover:text-foreground transition-colors",children:(0,b.jsx)(d.X,{size:20})})]}),(0,b.jsxs)("div",{className:"space-y-4",children:[(0,b.jsxs)("div",{className:`flex items-center gap-2 text-sm ${"connected"===n?"text-green-700":"disconnected"===n?"text-red-700":"text-yellow-700"}`,children:["connected"===n?(0,b.jsx)(g,{size:16}):"disconnected"===n?(0,b.jsx)(h,{size:16}):(0,b.jsx)(g,{size:16}),(0,b.jsx)("span",{children:"connected"===n?"Connected to AI":"disconnected"===n?"Connection Failed":"Unknown"})]}),(0,b.jsx)("div",{className:"flex gap-2",children:(0,b.jsx)("button",{onClick:p,disabled:l,className:"flex-1 bg-button-secondary text-white py-2 px-4 rounded text-sm font-medium disabled:opacity-50",children:l?"Testing...":"Test Connection"})}),(0,b.jsxs)("div",{className:"text-xs text-text-muted bg-component-bg px-2 py-1 rounded",children:["Endpoint: ",j.aiEndpoint.replace("http://","")]}),(0,b.jsx)("div",{className:"flex gap-2 pt-4 border-t border-panel-border",children:(0,b.jsx)("button",{onClick:e,className:"flex-1 bg-button-secondary text-white py-2 px-4 rounded text-sm font-medium",children:"Close"})})]})]})}):null}},23323,a=>a.a(async(b,c)=>{try{a.s(["default",()=>m]);var d=a.i(413),e=a.i(56583),f=a.i(83572),g=a.i(68299),h=a.i(50335),i=a.i(27185),j=a.i(94668),k=a.i(71413),l=b([h]);function m(){let[a,b]=(0,f.useState)("html"),c=`<!-- Welcome to studio.jessejesse.com -->
+      `}},y=(a,b="success")=>{let c=Math.random().toString(36).substr(2,9);w(d=>[...d,{id:c,message:a,type:b}]),setTimeout(()=>w(a=>a.filter(a=>a.id!==c)),3e3)},z=a=>{j.current&&j.current.contentWindow&&(j.current.srcdoc=a)};(0,c.useEffect)(()=>{z(x(a,i))},[a,i]);let A=async()=>{try{await navigator.clipboard.writeText(a),y("Code copied to clipboard!")}catch{y("Failed to copy code","error")}};(0,c.useEffect)(()=>{let a=()=>{q(!!document.fullscreenElement)};return document.addEventListener("fullscreenchange",a),()=>document.removeEventListener("fullscreenchange",a)},[]);let B={mobile:f,tablet:g,desktop:h};return(0,b.jsxs)("div",{ref:k,className:"panel preview-panel relative flex flex-col h-full bg-surface-primary",children:[e&&(0,b.jsx)("div",{className:"absolute -left-2 top-0 bottom-0 w-4 cursor-col-resize z-20 hover:bg-interactive-accent/20 transition-colors duration-200 rounded",onMouseDown:e}),(0,b.jsxs)("div",{className:"panel-header flex justify-between items-center p-4 border-b border-border-primary bg-surface-secondary",children:[(0,b.jsxs)("div",{className:"flex items-center gap-3",children:[(0,b.jsx)("h2",{className:"text-lg font-semibold tracking-tight text-text-primary",children:"Preview"}),(0,b.jsx)("span",{className:"text-sm text-text-tertiary bg-surface-tertiary px-2 py-1 rounded border border-border-primary",children:"react"===i?"React":"HTML"})]}),(0,b.jsxs)("div",{className:"flex gap-2",children:[(0,b.jsx)("button",{className:"btn btn-outline btn-sm flex items-center gap-2",onClick:()=>{u(!0),z(x(a,i)),setTimeout(()=>{u(!1),y("Preview refreshed")},600)},disabled:t,children:t?"Refreshing...":"Refresh"}),(0,b.jsx)("button",{className:`btn ${l?"btn-accent":"btn-outline"} btn-sm`,onClick:()=>m(!l),children:l?"Hide Code":"Show Code"}),(0,b.jsx)("button",{className:`btn ${p?"btn-warning":"btn-outline"} btn-sm`,onClick:()=>{k.current&&(p?document.exitFullscreen&&document.exitFullscreen():k.current.requestFullscreen&&k.current.requestFullscreen())},children:p?"Exit Full":"Fullscreen"}),(0,b.jsx)("button",{className:`btn ${n?"btn-accent":"btn-outline"} btn-sm`,onClick:()=>o(a=>!a),children:n?"Hide Grid":"Show Grid"})]})]}),l&&(0,b.jsxs)("div",{className:"bg-surface-primary border border-border-primary rounded-lg m-4 overflow-hidden transition-all duration-300",children:[(0,b.jsxs)("div",{className:"flex justify-between items-center p-3 border-b border-border-primary bg-surface-secondary",children:[(0,b.jsx)("span",{className:"font-semibold text-sm text-text-primary",children:"Component Code"}),(0,b.jsx)("button",{className:"btn btn-success btn-sm",onClick:A,children:"Copy Code"})]}),(0,b.jsx)("div",{className:"p-4 max-h-48 overflow-auto bg-surface-tertiary",children:(0,b.jsx)("pre",{className:"m-0 text-sm font-mono text-text-primary whitespace-pre-wrap leading-6",children:(0,b.jsx)("code",{children:a})})})]}),(0,b.jsx)("div",{className:"flex-1 relative min-h-0 flex justify-center items-start p-4 overflow-auto bg-surface-secondary",children:(0,b.jsxs)("div",{className:"shadow-xl transition-all duration-500 ease-out bg-white rounded-xl overflow-hidden border border-border-primary relative",style:{width:(()=>{switch(r){case"mobile":return"375px";case"tablet":return"768px";default:return"100%"}})(),height:(()=>{switch(r){case"mobile":return"667px";case"tablet":return"1024px";default:return"100%"}})(),maxHeight:"100%",transform:"desktop"===r?"none":"scale(0.9)",transformOrigin:"top center"},children:[n&&(0,b.jsx)(d,{width:40,height:40,stroke:"rgba(0,0,0,0.05)",className:"absolute inset-0 z-10 pointer-events-none"}),"desktop"!==r&&(0,b.jsx)("div",{className:"absolute inset-0 pointer-events-none border-8 border-gray-800 rounded-xl z-20"}),(0,b.jsx)("iframe",{ref:j,className:"w-full h-full border-none bg-white relative z-0",title:"Live Preview",sandbox:"allow-same-origin allow-scripts",onLoad:()=>{setTimeout(()=>{j.current&&(j.current.style.visibility="visible")},100)},style:{visibility:"hidden"}})]})}),(0,b.jsx)("div",{className:"flex justify-center items-center gap-2 p-3 border-t border-border-primary bg-surface-secondary",children:["mobile","tablet","desktop"].map(a=>{let c=r===a,d=B[a];return(0,b.jsxs)("button",{onClick:()=>s(a),className:`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${c?"bg-interactive-accent text-white shadow-sm":"bg-surface-primary text-text-primary hover:bg-surface-tertiary"}`,children:[(0,b.jsx)(d,{className:"w-4 h-4"}),(0,b.jsx)("span",{className:"capitalize",children:a})]},a)})}),(0,b.jsx)("div",{className:"fixed top-4 right-4 z-50 space-y-2",children:v.map(a=>(0,b.jsxs)("div",{className:`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border ${"success"===a.type?"bg-interactive-success/10 border-interactive-success/20 text-interactive-success":"bg-interactive-danger/10 border-interactive-danger/20 text-interactive-danger"}`,children:[(0,b.jsx)("div",{className:`w-2 h-2 rounded-full ${"success"===a.type?"bg-interactive-success":"bg-interactive-danger"}`}),(0,b.jsx)("span",{className:"text-sm font-medium",children:a.message}),(0,b.jsx)("button",{onClick:()=>w(b=>b.filter(b=>b.id!==a.id)),className:"text-current hover:opacity-70 transition-opacity",children:(0,b.jsx)("svg",{className:"w-4 h-4",fill:"none",stroke:"currentColor",viewBox:"0 0 24 24",children:(0,b.jsx)("path",{strokeLinecap:"round",strokeLinejoin:"round",strokeWidth:2,d:"M6 18L18 6M6 6l12 12"})})})]},a.id))})]})}},94668,a=>{"use strict";a.s(["default",()=>d]);var b=a.i(413),c=a.i(56583);function d(){return(0,b.jsxs)("div",{className:"jsx-1161229dee982e84 status-bar",children:[(0,b.jsxs)("a",{href:"https://studio.jessejesse.com",target:"_blank",rel:"noopener noreferrer",className:"jsx-1161229dee982e84 group flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-300 hover:bg-surface-tertiary border border-transparent hover:border-interactive-accent/30",children:[(0,b.jsxs)("div",{className:"jsx-1161229dee982e84 relative",children:[(0,b.jsx)("div",{className:"jsx-1161229dee982e84 w-2 h-2 bg-interactive-accent rounded-full animate-ping absolute -top-0.5 -right-0.5"}),(0,b.jsx)("div",{className:"jsx-1161229dee982e84 w-10 h-10 rounded-full overflow-hidden shadow-lg border-2 border-white",children:(0,b.jsx)("img",{src:"./icon-512.png",alt:"Studio Logo",className:"jsx-1161229dee982e84 w-full h-full object-cover"})})]}),(0,b.jsxs)("div",{className:"jsx-1161229dee982e84 flex flex-col",children:[(0,b.jsx)("span",{className:"jsx-1161229dee982e84 font-semibold text-text-primary group-hover:text-interactive-accent transition-colors",children:"Web Studio"}),(0,b.jsx)("span",{className:"jsx-1161229dee982e84 text-xs text-text-tertiary group-hover:text-text-secondary transition-colors",children:"studio.JesseJesse.com"})]})]}),(0,b.jsxs)("a",{href:"https://github.com/sudo-self/web-studio",target:"_blank",rel:"noopener noreferrer",className:"jsx-1161229dee982e84 group flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-300 hover:bg-surface-tertiary border border-transparent hover:border-interactive-accent/30",children:[(0,b.jsxs)("div",{className:"jsx-1161229dee982e84 flex flex-col items-end",children:[(0,b.jsx)("span",{className:"jsx-1161229dee982e84 font-semibold text-text-primary group-hover:text-interactive-accent transition-colors",children:"GitHub"}),(0,b.jsxs)("span",{className:"jsx-1161229dee982e84 text-xs text-text-tertiary group-hover:text-text-secondary transition-colors flex items-center gap-1",children:[(0,b.jsx)("svg",{fill:"currentColor",viewBox:"0 0 24 24",className:"jsx-1161229dee982e84 w-3 h-3",children:(0,b.jsx)("path",{d:"M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z",className:"jsx-1161229dee982e84"})}),"@sudo-self"]})]}),(0,b.jsx)("div",{className:"jsx-1161229dee982e84 w-8 h-8 bg-surface-primary rounded-lg flex items-center justify-center border border-border-primary group-hover:border-interactive-accent/50 transition-colors",children:(0,b.jsx)("svg",{fill:"currentColor",viewBox:"0 0 24 24",className:"jsx-1161229dee982e84 w-5 h-5 text-text-tertiary group-hover:text-interactive-accent transition-colors",children:(0,b.jsx)("path",{d:"M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z",className:"jsx-1161229dee982e84"})})})]}),(0,b.jsx)(c.default,{id:"1161229dee982e84",children:'.status-bar.jsx-1161229dee982e84{background:var(--surface-primary);border-top:1px solid var(--border-primary);z-index:10;justify-content:space-between;align-items:center;height:64px;padding:0 24px;display:flex;position:relative}.status-bar.jsx-1161229dee982e84:before{content:"";background:linear-gradient(90deg,transparent,var(--interactive-accent),transparent);opacity:.6;height:1px;position:absolute;top:0;left:0;right:0}@media (width<=768px){.status-bar.jsx-1161229dee982e84{height:56px;padding:0 16px}.status-bar.jsx-1161229dee982e84>.jsx-1161229dee982e84{padding:8px 12px}.status-bar.jsx-1161229dee982e84 span.jsx-1161229dee982e84{font-size:12px}}'})]})}},71413,a=>{"use strict";a.s(["default",()=>j],71413);var b=a.i(413),c=a.i(83572),d=a.i(87464),e=a.i(47118);let f=(0,e.default)("cloud",[["path",{d:"M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z",key:"p7xjir"}]]),g=(0,e.default)("wifi",[["path",{d:"M12 20h.01",key:"zekei9"}],["path",{d:"M2 8.82a15 15 0 0 1 20 0",key:"dnpr2z"}],["path",{d:"M5 12.859a10 10 0 0 1 14 0",key:"1x1e6c"}],["path",{d:"M8.5 16.429a5 5 0 0 1 7 0",key:"1bycff"}]]),h=(0,e.default)("wifi-off",[["path",{d:"M12 20h.01",key:"zekei9"}],["path",{d:"M8.5 16.429a5 5 0 0 1 7 0",key:"1bycff"}],["path",{d:"M5 12.859a10 10 0 0 1 5.17-2.69",key:"1dl1wf"}],["path",{d:"M19 12.859a10 10 0 0 0-2.007-1.523",key:"4k23kn"}],["path",{d:"M2 8.82a15 15 0 0 1 4.177-2.643",key:"1grhjp"}],["path",{d:"M22 8.82a15 15 0 0 0-11.288-3.764",key:"z3jwby"}],["path",{d:"m2 2 20 20",key:"1ooewy"}]]);var i=a.i(19403);function j({isOpen:a,onClose:e}){let{settings:j,askAI:k}=(0,i.useSettings)(),[l,m]=(0,c.useState)(!1),[n,o]=(0,c.useState)("unknown"),p=async()=>{m(!0),o("unknown");try{let a=await k("Test connection");a&&"Error contacting AI"!==a?o("connected"):o("disconnected")}catch{o("disconnected")}finally{m(!1)}};return a?(0,b.jsx)("div",{className:"fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4",children:(0,b.jsxs)("div",{className:"bg-panel-bg rounded-lg p-6 w-96 max-w-full border border-panel-border",children:[(0,b.jsxs)("div",{className:"flex justify-between items-center mb-4",children:[(0,b.jsxs)("h2",{className:"text-lg font-semibold flex items-center gap-2 text-foreground",children:[(0,b.jsx)(f,{size:20}),"AI Settings"]}),(0,b.jsx)("button",{onClick:e,className:"text-text-muted hover:text-foreground transition-colors",children:(0,b.jsx)(d.X,{size:20})})]}),(0,b.jsxs)("div",{className:"space-y-4",children:[(0,b.jsxs)("div",{className:`flex items-center gap-2 text-sm ${"connected"===n?"text-green-700":"disconnected"===n?"text-red-700":"text-yellow-700"}`,children:["connected"===n?(0,b.jsx)(g,{size:16}):"disconnected"===n?(0,b.jsx)(h,{size:16}):(0,b.jsx)(g,{size:16}),(0,b.jsx)("span",{children:"connected"===n?"Connected to AI":"disconnected"===n?"Connection Failed":"Unknown"})]}),(0,b.jsx)("div",{className:"flex gap-2",children:(0,b.jsx)("button",{onClick:p,disabled:l,className:"flex-1 bg-button-secondary text-white py-2 px-4 rounded text-sm font-medium disabled:opacity-50",children:l?"Testing...":"Test Connection"})}),(0,b.jsxs)("div",{className:"text-xs text-text-muted bg-component-bg px-2 py-1 rounded",children:["Endpoint: ",j.aiEndpoint.replace("http://","")]}),(0,b.jsx)("div",{className:"flex gap-2 pt-4 border-t border-panel-border",children:(0,b.jsx)("button",{onClick:e,className:"flex-1 bg-button-secondary text-white py-2 px-4 rounded text-sm font-medium",children:"Close"})})]})]})}):null}},23323,a=>a.a(async(b,c)=>{try{a.s(["default",()=>m]);var d=a.i(413),e=a.i(56583),f=a.i(83572),g=a.i(68299),h=a.i(50335),i=a.i(27185),j=a.i(94668),k=a.i(71413),l=b([h]);function m(){let[a,b]=(0,f.useState)("html"),c=`<!-- Welcome to studio.jessejesse.com -->
 <div class="welcome-container">
   <div class="welcome-content">
     <!-- Main Header -->
