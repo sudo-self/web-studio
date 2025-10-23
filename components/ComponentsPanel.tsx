@@ -1169,67 +1169,73 @@ export default function ComponentsPanel({
     };
 
 
-const handleCreateRepo = async () => {
-  if (!githubToken) {
-    alert('Please connect to GitHub first');
-    return;
-  }
+    const handleCreateRepo = async () => {
+      if (!githubToken) {
+        alert('Please connect to GitHub first');
+        return;
+      }
 
-  setIsCreatingRepo(true);
-  try {
-    const projectData = getCurrentProjectData();
+      setIsCreatingRepo(true);
 
-   
-    const files = createProjectFiles(
-      projectData,
-      githubForm.deployPages,
-      githubUser,
-      githubForm
-    );
-
-    const response = await fetch('/api/github/create-repo', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        name: githubForm.name,
-        description: githubForm.description,
-        isPublic: githubForm.isPublic,
-        deployPages: githubForm.deployPages,
-        files: files,
-        accessToken: githubToken
-      }),
-    });
-
-    const result = await response.json();
-
-    if (result.success) {
- 
-      const html = `
-        <div style="font-family:sans-serif">
-          <p>Repository created successfully!</p>
-          <p>URL: <a href="${result.html_url}" target="_blank" style="color:blue">${result.html_url}</a></p>
-          ${result.pages_url ? `<p>Pages: <a href="${result.pages_url}" target="_blank" style="color:blue">${result.pages_url}</a></p>` : ''}
-        </div>
-      `;
+     
       const newWindow = window.open('', '_blank', 'width=400,height=200');
       if (newWindow) {
-        newWindow.document.write(html);
+        newWindow.document.write('<p style="font-family:sans-serif; padding: 20px;">Creating repository…</p>');
         newWindow.document.close();
       }
 
-      setShowGithubModal(false);
-    } else {
-      throw new Error(result.error || 'Failed to create repository');
-    }
-  } catch (error: any) {
-    console.error('GitHub repo creation failed:', error);
-    alert(`Failed to create repository: ${error.message}`);
-  } finally {
-    setIsCreatingRepo(false);
-  }
-};
+      try {
+        const projectData = getCurrentProjectData();
+
+        const files = createProjectFiles(
+          projectData,
+          githubForm.deployPages,
+          githubUser,
+          githubForm
+        );
+
+        const response = await fetch('/api/github/create-repo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: githubForm.name,
+            description: githubForm.description,
+            isPublic: githubForm.isPublic,
+            deployPages: githubForm.deployPages,
+            files: files,
+            accessToken: githubToken
+          }),
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          const html = `
+            <div style="font-family:sans-serif; padding: 20px;">
+              <p>Repository created successfully!</p>
+              <p>URL: <a href="${result.html_url}" target="_blank" style="color:blue">${result.html_url}</a></p>
+              ${result.pages_url ? `<p>Pages: <a href="${result.pages_url}" target="_blank" style="color:blue">${result.pages_url}</a></p>` : ''}
+            </div>
+          `;
+          if (newWindow) {
+            newWindow.document.open();
+            newWindow.document.write(html);
+            newWindow.document.close();
+          }
+
+          setShowGithubModal(false);
+        } else {
+          throw new Error(result.error || 'Failed to create repository');
+        }
+      } catch (error: any) {
+        console.error('GitHub repo creation failed:', error);
+        if (newWindow) newWindow.close();
+        alert(`Failed to create repository: ${error.message}`);
+      } finally {
+        setIsCreatingRepo(false);
+      }
+    };
+
 
 
 
