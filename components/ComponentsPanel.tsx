@@ -1177,12 +1177,12 @@ const handleCreateRepo = async () => {
   try {
     const projectData = getCurrentProjectData();
 
-    // ✅ Pass all 4 required arguments
+   
     const files = createProjectFiles(
       projectData,
       githubForm.deployPages,
-      githubUser,   // your GitHub user object
-      githubForm    // your form with name and description
+      githubUser,
+      githubForm
     );
 
     const response = await fetch('/api/github/create-repo', {
@@ -1203,12 +1203,21 @@ const handleCreateRepo = async () => {
     const result = await response.json();
 
     if (result.success) {
-      alert(`Repository created successfully!\n\nURL: ${result.html_url}\n${result.pages_url ? `Pages: ${result.pages_url}` : ''}`);
-      setShowGithubModal(false);
-
-      if (result.html_url) {
-        window.open(result.html_url, '_blank');
+ 
+      const html = `
+        <div style="font-family:sans-serif">
+          <p>Repository created successfully!</p>
+          <p>URL: <a href="${result.html_url}" target="_blank" style="color:blue">${result.html_url}</a></p>
+          ${result.pages_url ? `<p>Pages: <a href="${result.pages_url}" target="_blank" style="color:blue">${result.pages_url}</a></p>` : ''}
+        </div>
+      `;
+      const newWindow = window.open('', '_blank', 'width=400,height=200');
+      if (newWindow) {
+        newWindow.document.write(html);
+        newWindow.document.close();
       }
+
+      setShowGithubModal(false);
     } else {
       throw new Error(result.error || 'Failed to create repository');
     }
@@ -1219,6 +1228,7 @@ const handleCreateRepo = async () => {
     setIsCreatingRepo(false);
   }
 };
+
 
 
   const askAi = async () => {
