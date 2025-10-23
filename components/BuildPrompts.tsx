@@ -116,37 +116,38 @@ export default function BuildPrompts({ onPromptSelect }: BuildPromptsProps) {
         />
       </button>
 
-      {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-96 max-h-96 overflow-y-auto bg-surface-primary border border-border-primary rounded-lg shadow-lg z-50">
-          <div className="p-4">
-            <h4 className="text-sm font-semibold text-text-primary mb-3 flex items-center gap-2">
-              <Lightbulb size={16} />
-              AI Builder Prompts
-            </h4>
-            
-            <div className="space-y-4">
-              {Object.entries(promptCategories).map(([category, prompts]) => (
-                <div key={category}>
-                  <h5 className="text-xs font-medium text-text-secondary uppercase tracking-wide mb-2">
-                    {category}
-                  </h5>
-                  <div className="space-y-1">
-                    {prompts.map((prompt, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handlePromptClick(prompt)}
-                        className="w-full text-left p-2 text-sm text-text-primary hover:bg-surface-secondary rounded transition-colors"
-                      >
-                        {prompt}
-                      </button>
-                    ))}
-                  </div>
+          {isOpen && (
+            <div className="absolute top-full left-0 mt-2 w-96 max-h-96 overflow-y-auto bg-black border border-border-primary rounded-lg shadow-lg z-50">
+              <div className="p-4">
+                <h4 className="text-sm font-semibold text-text-primary mb-3 flex items-center gap-2">
+                  <Lightbulb size={16} />
+                  AI Builder Prompts
+                </h4>
+                
+                <div className="space-y-4">
+                  {Object.entries(promptCategories).map(([category, prompts]) => (
+                    <div key={category}>
+                      <h5 className="text-xs font-medium text-text-secondary uppercase tracking-wide mb-2">
+                        {category}
+                      </h5>
+                      <div className="space-y-1">
+                        {prompts.map((prompt, index) => (
+                          <button
+                            key={index}
+                            onClick={() => handlePromptClick(prompt)}
+                            className="w-full text-left p-2 text-sm text-text-primary hover:bg-surface-secondary rounded transition-colors"
+                          >
+                            {prompt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          )}
+
     </div>
   );
 }
