@@ -1,0 +1,24 @@
+{
+  "pages": {
+    "/page": [
+      "static/chunks/a1901_next_dist_ac8b9d7d._.js",
+      "static/chunks/Desktop_untitled folder 5_web-studio_app_favicon_ico_mjs_903e7982._.js",
+      "static/chunks/[root-of-the-server]__465176be._.css",
+      "static/chunks/Desktop_untitled folder 5_web-studio_0f3b3b4c._.js",
+      "static/chunks/Desktop_untitled folder 5_web-studio_app_layout_tsx_6f527cdd._.js",
+      "static/chunks/a1901_next_dist_client_components_builtin_global-error_3ff5a0c1.js",
+      "static/chunks/Desktop_untitled folder 5_web-studio_b9894e98._.js",
+      "static/chunks/a1901_4438df18._.js",
+      "static/chunks/Desktop_untitled folder 5_web-studio_app_page_tsx_3ff5a0c1._.js",
+      "static/chunks/[turbopack]_browser_dev_hmr-client_hmr-client_ts_195e569f._.js",
+      "static/chunks/a1901_next_dist_compiled_react-dom_69679a9f._.js",
+      "static/chunks/a1901_next_dist_compiled_next-devtools_index_a793b66d.js",
+      "static/chunks/a1901_next_dist_compiled_8e164006._.js",
+      "static/chunks/a1901_next_dist_client_06aa54c9._.js",
+      "static/chunks/a1901_next_dist_851d9040._.js",
+      "static/chunks/a1901_@swc_helpers_cjs_62c8c928._.js",
+      "static/chunks/Desktop_untitled folder 5_web-studio_a0ff3932._.js",
+      "static/chunks/turbopack-Desktop_untitled folder 5_web-studio_ebfde04f._.js"
+    ]
+  }
+}
