@@ -1,13 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { Github, X, FileText } from 'lucide-react';
 import { GithubAuth } from './GithubAuth';
-
 
 interface GithubUser {
   login: string;
   avatar_url: string;
-  // Add other properties you use from GitHub API
 }
 
 interface GithubForm {
@@ -27,15 +26,12 @@ interface GitHubModalProps {
   githubForm: GithubForm;
   setGithubForm: (form: GithubForm | ((prev: GithubForm) => GithubForm)) => void;
   isCreatingRepo: boolean;
-  handleCreateRepo: () => void;
+  handleCreateRepo: () => Promise<void>;
   fetchUserInfo: (token: string) => void;
 }
 
-
-interface GitHubAuthSectionProps {
-  onAuthSuccess: (token: string) => void;
-}
-
+// Supporting component types
+interface GitHubAuthSectionProps { onAuthSuccess: (token: string) => void; }
 interface GitHubConnectedSectionProps {
   githubUser: GithubUser | null;
   githubForm: GithubForm;
@@ -45,42 +41,11 @@ interface GitHubConnectedSectionProps {
   onCreateRepo: () => void;
   onCancel: () => void;
 }
-
-interface UserInfoCardProps {
-  githubUser: GithubUser | null;
-  onDisconnect: () => void;
-  isCreatingRepo: boolean;
-}
-
-interface FormFieldProps {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  placeholder: string;
-  disabled: boolean;
-  required?: boolean;
-}
-
-interface CheckboxOptionProps {
-  id: string;
-  label: string;
-  description: string;
-  checked: boolean;
-  onChange: (checked: boolean) => void;
-  disabled: boolean;
-}
-
-interface FilesPreviewProps {
-  githubForm: GithubForm;
-  githubUser: GithubUser | null;
-}
-
-interface ActionButtonsProps {
-  isCreatingRepo: boolean;
-  isValid: boolean;
-  onCreateRepo: () => void;
-  onCancel: () => void;
-}
+interface UserInfoCardProps { githubUser: GithubUser | null; onDisconnect: () => void; isCreatingRepo: boolean; }
+interface FormFieldProps { label: string; value: string; onChange: (value: string) => void; placeholder: string; disabled: boolean; required?: boolean; }
+interface CheckboxOptionProps { id: string; label: string; description: string; checked: boolean; onChange: (checked: boolean) => void; disabled: boolean; }
+interface FilesPreviewProps { githubForm: GithubForm; githubUser: GithubUser | null; }
+interface ActionButtonsProps { isCreatingRepo: boolean; isValid: boolean; onCreateRepo: () => void; onCancel: () => void; }
 
 export const GitHubModal = ({
   showGithubModal,
@@ -95,18 +60,26 @@ export const GitHubModal = ({
   handleCreateRepo,
   fetchUserInfo
 }: GitHubModalProps) => {
-  // ... rest of your component remains the same
-  
+  const [successData, setSuccessData] = useState<{ html_url: string; pages_url?: string } | null>(null);
+
+  const handleCreateRepoWithSuccess = async () => {
+    if (!githubToken) return;
+    try {
+      await handleCreateRepo(); // your existing creation logic
+      setSuccessData({
+        html_url: `https://github.com/${githubUser?.login}/${githubForm.name}`,
+        pages_url: githubForm.deployPages ? `https://${githubUser?.login}.github.io/${githubForm.name}/` : undefined
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     showGithubModal && (
       <div className="modal-overlay" onClick={() => !isCreatingRepo && setShowGithubModal(false)}>
-        <div
-          className="modal-content"
-          onClick={(e) => e.stopPropagation()}
-          role="dialog"
-          aria-labelledby="github-modal-title"
-          aria-modal="true"
-        >
+        <div className="modal-content" onClick={(e) => e.stopPropagation()} role="dialog" aria-labelledby="github-modal-title" aria-modal="true">
+
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
@@ -114,12 +87,8 @@ export const GitHubModal = ({
                 <Github size={20} className="text-accent-color" />
               </div>
               <div>
-                <h3 id="github-modal-title" className="text-lg font-semibold text-text-primary">
-                  Create a GitHub Repository
-                </h3>
-                <p className="text-xs text-text-muted mt-1">
-                  Deploy your Website with GitHub Pages
-                </p>
+                <h3 id="github-modal-title" className="text-lg font-semibold text-text-primary">Create a GitHub Repository</h3>
+                <p className="text-xs text-text-muted mt-1">Deploy your Website with GitHub Pages</p>
               </div>
             </div>
             <button
@@ -134,26 +103,35 @@ export const GitHubModal = ({
 
           {!githubToken ? (
             <GitHubAuthSection
-              onAuthSuccess={(token) => {
-                setGithubToken(token);
-                localStorage.setItem('github_access_token', token);
-                fetchUserInfo(token);
-              }}
+              onAuthSuccess={(token) => { setGithubToken(token); localStorage.setItem('github_access_token', token); fetchUserInfo(token); }}
             />
           ) : (
-            <GitHubConnectedSection
-              githubUser={githubUser}
-              githubForm={githubForm}
-              setGithubForm={setGithubForm}
-              isCreatingRepo={isCreatingRepo}
-              onDisconnect={() => {
-                localStorage.removeItem('github_access_token');
-                setGithubToken(null);
-                setGithubUser(null);
-              }}
-              onCreateRepo={handleCreateRepo}
-              onCancel={() => setShowGithubModal(false)}
-            />
+            <>
+              <GitHubConnectedSection
+                githubUser={githubUser}
+                githubForm={githubForm}
+                setGithubForm={setGithubForm}
+                isCreatingRepo={isCreatingRepo}
+                onDisconnect={() => { localStorage.removeItem('github_access_token'); setGithubToken(null); setGithubUser(null); }}
+                onCreateRepo={handleCreateRepoWithSuccess}
+                onCancel={() => setShowGithubModal(false)}
+              />
+
+              {/* Success Message */}
+              {successData && (
+                <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg text-sm space-y-1">
+                  <p>
+                    Repository created successfully! <br />
+                    URL: <a href={successData.html_url} target="_blank" className="text-blue-600 underline">{successData.html_url}</a>
+                  </p>
+                  {successData.pages_url && (
+                    <p>
+                      Pages: <a href={successData.pages_url} target="_blank" className="text-blue-600 underline">{successData.pages_url}</a>
+                    </p>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -161,7 +139,7 @@ export const GitHubModal = ({
   );
 };
 
-// GitHub Auth Section Component
+// GitHub Auth Section
 const GitHubAuthSection = ({ onAuthSuccess }: GitHubAuthSectionProps) => (
   <div className="text-center py-6">
     <div className="p-4 bg-component-bg rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
@@ -169,15 +147,13 @@ const GitHubAuthSection = ({ onAuthSuccess }: GitHubAuthSectionProps) => (
     </div>
     <div className="mb-4">
       <h4 className="text-text-primary font-medium mb-2">Connect to GitHub</h4>
-      <p className="text-sm text-text-muted">
-        Connect your GitHub account to create repositories and deploy with GitHub Pages
-      </p>
+      <p className="text-sm text-text-muted">Connect your GitHub account to create repositories and deploy with GitHub Pages</p>
     </div>
     <GithubAuth onAuthSuccess={onAuthSuccess} />
   </div>
 );
 
-// GitHub Connected Section Component
+// GitHub Connected Section
 const GitHubConnectedSection = ({
   githubUser,
   githubForm,
@@ -188,75 +164,30 @@ const GitHubConnectedSection = ({
   onCancel
 }: GitHubConnectedSectionProps) => (
   <div className="space-y-6">
-    <UserInfoCard
-      githubUser={githubUser}
-      onDisconnect={onDisconnect}
-      isCreatingRepo={isCreatingRepo}
-    />
-    
+    <UserInfoCard githubUser={githubUser} onDisconnect={onDisconnect} isCreatingRepo={isCreatingRepo} />
+
     <div className="space-y-4">
-      <FormField
-        label="Repo Name"
-        value={githubForm.name}
-        onChange={(value) => setGithubForm(prev => ({...prev, name: value}))}
-        placeholder="my-awesome-project"
-        disabled={isCreatingRepo}
-        required
-      />
-      
-      <FormField
-        label="Description"
-        value={githubForm.description}
-        onChange={(value) => setGithubForm(prev => ({...prev, description: value}))}
-        placeholder="Project created with AI Web Studio"
-        disabled={isCreatingRepo}
-      />
+      <FormField label="Repo Name" value={githubForm.name} onChange={(v) => setGithubForm(prev => ({ ...prev, name: v }))} placeholder="my-awesome-project" disabled={isCreatingRepo} required />
+      <FormField label="Description" value={githubForm.description} onChange={(v) => setGithubForm(prev => ({ ...prev, description: v }))} placeholder="Project created with AI Web Studio" disabled={isCreatingRepo} />
       
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <CheckboxOption
-          id="deploy-pages"
-          label="Deploy to Pages"
-          description="Auto-deploy with GitHub Pages"
-          checked={githubForm.deployPages}
-          onChange={(checked) => setGithubForm(prev => ({...prev, deployPages: checked}))}
-          disabled={isCreatingRepo}
-        />
-        
-        <CheckboxOption
-          id="is-public"
-          label="Public Repo"
-          description="Visible to everyone"
-          checked={githubForm.isPublic}
-          onChange={(checked) => setGithubForm(prev => ({...prev, isPublic: checked}))}
-          disabled={isCreatingRepo}
-        />
+        <CheckboxOption id="deploy-pages" label="Deploy to Pages" description="Auto-deploy with GitHub Pages" checked={githubForm.deployPages} onChange={(c) => setGithubForm(prev => ({ ...prev, deployPages: c }))} disabled={isCreatingRepo} />
+        <CheckboxOption id="is-public" label="Public Repo" description="Visible to everyone" checked={githubForm.isPublic} onChange={(c) => setGithubForm(prev => ({ ...prev, isPublic: c }))} disabled={isCreatingRepo} />
       </div>
 
-      <FilesPreview
-        githubForm={githubForm}
-        githubUser={githubUser}
-      />
+      <FilesPreview githubForm={githubForm} githubUser={githubUser} />
     </div>
-    
-    <ActionButtons
-      isCreatingRepo={isCreatingRepo}
-      isValid={githubForm.name.trim().length > 0}
-      onCreateRepo={onCreateRepo}
-      onCancel={onCancel}
-    />
+
+    <ActionButtons isCreatingRepo={isCreatingRepo} isValid={githubForm.name.trim().length > 0} onCreateRepo={onCreateRepo} onCancel={onCancel} />
   </div>
 );
 
-// Supporting Components with types
+// Supporting Components
 const UserInfoCard = ({ githubUser, onDisconnect, isCreatingRepo }: UserInfoCardProps) => (
   <div className="bg-component-bg rounded-xl border border-panel-border p-4">
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <img
-          src={githubUser?.avatar_url}
-          alt={`${githubUser?.login}'s GitHub avatar`}
-          className="w-10 h-10 rounded-full border-2 border-panel-border"
-        />
+        <img src={githubUser?.avatar_url} alt={`${githubUser?.login}'s GitHub avatar`} className="w-10 h-10 rounded-full border-2 border-panel-border" />
         <div>
           <div className="text-sm font-semibold text-text-primary">{githubUser?.login}</div>
           <div className="text-xs text-text-muted flex items-center gap-1">
@@ -265,13 +196,7 @@ const UserInfoCard = ({ githubUser, onDisconnect, isCreatingRepo }: UserInfoCard
           </div>
         </div>
       </div>
-      <button
-        onClick={onDisconnect}
-        className="text-xs text-text-muted hover:text-accent-color transition-colors px-3 py-1 rounded-lg hover:bg-component-hover disabled:opacity-50"
-        disabled={isCreatingRepo}
-      >
-        Disconnect
-      </button>
+      <button onClick={onDisconnect} className="text-xs text-text-muted hover:text-accent-color transition-colors px-3 py-1 rounded-lg hover:bg-component-hover disabled:opacity-50" disabled={isCreatingRepo}>Disconnect</button>
     </div>
   </div>
 );
@@ -279,31 +204,17 @@ const UserInfoCard = ({ githubUser, onDisconnect, isCreatingRepo }: UserInfoCard
 const FormField = ({ label, value, onChange, placeholder, disabled, required }: FormFieldProps) => (
   <div>
     <label className="block text-sm font-medium text-text-primary mb-2">
-      {label}
-      {required && <span className="text-red-400 ml-1">*</span>}
+      {label}{required && <span className="text-red-400 ml-1">*</span>}
     </label>
-    <input
-      type="text"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="w-full p-3 border border-panel-border rounded-lg bg-component-bg text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent-color focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-      placeholder={placeholder}
-      disabled={disabled}
-      required={required}
-    />
+    <input type="text" value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} disabled={disabled} required={required}
+      className="w-full p-3 border border-panel-border rounded-lg bg-component-bg text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent-color focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed" />
   </div>
 );
 
 const CheckboxOption = ({ id, label, description, checked, onChange, disabled }: CheckboxOptionProps) => (
   <label className="flex items-center gap-3 p-3 bg-component-bg rounded-lg border border-panel-border hover:border-accent-color transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50">
-    <input
-      type="checkbox"
-      id={id}
-      checked={checked}
-      onChange={(e) => onChange(e.target.checked)}
-      className="rounded border-panel-border bg-component-bg text-accent-color focus:ring-accent-color focus:ring-2 focus:ring-offset-2 focus:ring-offset-component-bg"
-      disabled={disabled}
-    />
+    <input type="checkbox" id={id} checked={checked} onChange={(e) => onChange(e.target.checked)} disabled={disabled}
+      className="rounded border-panel-border bg-component-bg text-accent-color focus:ring-accent-color focus:ring-2 focus:ring-offset-2 focus:ring-offset-component-bg" />
     <div className="flex-1">
       <div className="text-sm font-medium text-text-primary">{label}</div>
       <div className="text-xs text-text-muted">{description}</div>
@@ -341,9 +252,7 @@ const FilesPreview = ({ githubForm, githubUser }: FilesPreviewProps) => (
       </ul>
       {githubForm.deployPages && githubForm.name && (
         <div className="mt-4 p-3 bg-accent-color bg-opacity-5 rounded-lg border border-accent-color border-opacity-20">
-          <p className="text-sm text-text-primary font-medium mb-1">
-            Your website will be available at:
-          </p>
+          <p className="text-sm text-text-primary font-medium mb-1">Your website will be available at:</p>
           <code className="text-xs text-accent-color break-all bg-black bg-opacity-20 px-2 py-1 rounded">
             https://{githubUser?.login}.github.io/{githubForm.name}/
           </code>
@@ -355,18 +264,8 @@ const FilesPreview = ({ githubForm, githubUser }: FilesPreviewProps) => (
 
 const ActionButtons = ({ isCreatingRepo, isValid, onCreateRepo, onCancel }: ActionButtonsProps) => (
   <div className="flex gap-3 pt-2">
-    <button
-      className="btn btn-outline flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
-      onClick={onCancel}
-      disabled={isCreatingRepo}
-    >
-      Cancel
-    </button>
-    <button
-      className="btn btn-primary flex-1 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-      onClick={onCreateRepo}
-      disabled={isCreatingRepo || !isValid}
-    >
+    <button className="btn btn-outline flex-1 disabled:opacity-50 disabled:cursor-not-allowed" onClick={onCancel} disabled={isCreatingRepo}>Cancel</button>
+    <button className="btn btn-primary flex-1 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" onClick={onCreateRepo} disabled={isCreatingRepo || !isValid}>
       {isCreatingRepo ? (
         <>
           <div className="loading-spinner w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
