@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { ChevronDown, Lightbulb } from "lucide-react";
 
 interface BuildPromptsProps {
@@ -96,28 +96,59 @@ const promptCategories = {
 
 export default function BuildPrompts({ onPromptSelect }: BuildPromptsProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [dropdownDirection, setDropdownDirection] = useState<'down' | 'up'>('down');
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const handlePromptClick = (prompt: string) => {
     onPromptSelect(prompt);
     setIsOpen(false);
   };
 
+  useEffect(() => {
+    const calculateDropdownDirection = () => {
+      if (buttonRef.current && dropdownRef.current) {
+        const buttonRect = buttonRef.current.getBoundingClientRect();
+        const spaceBelow = window.innerHeight - buttonRect.bottom;
+        const dropdownHeight = 400; // Approximate height of the dropdown
+        
+        if (spaceBelow < dropdownHeight && buttonRect.top > dropdownHeight) {
+          setDropdownDirection('up');
+        } else {
+          setDropdownDirection('down');
+        }
+      }
+    };
+
+    if (isOpen) {
+      calculateDropdownDirection();
+    }
+  }, [isOpen]);
+
   return (
     <div className="relative">
       <button
+        ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
         className="btn btn-outline btn-sm flex items-center gap-2"
       >
         <Lightbulb size={14} />
         Prompts
-        <ChevronDown 
-          size={14} 
+        <ChevronDown
+          size={14}
           className={`transition-transform ${isOpen ? 'rotate-180' : ''}`}
         />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-96 bg-black border border-border-primary rounded-lg shadow-lg z-50 flex flex-col max-h-[80vh]">
+        <div
+          ref={dropdownRef}
+          className={`absolute left-0 w-96 bg-black border border-border-primary rounded-lg shadow-lg z-50 flex flex-col max-h-[80vh] ${
+            dropdownDirection === 'down' 
+              ? 'top-full mt-2' 
+              : 'bottom-full mb-2'
+          }`}
+        >
           <div className="p-4 flex-shrink-0 border-b border-border-primary">
             <h4 className="text-sm font-semibold text-text-primary mb-3 flex items-center gap-2">
               <Lightbulb size={16} />
