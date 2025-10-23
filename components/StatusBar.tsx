@@ -13,9 +13,9 @@ export default function StatusBar() {
         <div className="relative">
           <div className="w-2 h-2 bg-interactive-accent rounded-full animate-ping absolute -top-0.5 -right-0.5" />
           <div className="w-10 h-10 rounded-full overflow-hidden shadow-lg border-2 border-white">
-            <img 
-              src="./icon-512.png" 
-              alt="Studio Logo" 
+            <img
+              src="./icon-512.png"
+              alt="Studio Logo"
               className="w-full h-full object-cover"
             />
           </div>
@@ -28,23 +28,6 @@ export default function StatusBar() {
             studio.JesseJesse.com
           </span>
         </div>
-      </a>
-
-      {/* Center Section - Colorado Flag */}
-      <a
-        href="https://jessejesse.com"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="group flex items-center gap-3 px-6 py-2 rounded-lg transition-all duration-300 hover:bg-surface-tertiary border border-transparent hover:border-orange-400/30 cursor-pointer"
-      >
-        <img 
-          src="./colorado.svg" 
-          alt="Colorado" 
-          className="w-10 h-10 transition-all duration-300 group-hover:scale-110 group-hover:brightness-110"
-        />
-        <span className="text-text-tertiary group-hover:text-orange-400 transition-colors font-medium">
-          JesseJesse.com
-        </span>
       </a>
 
       {/* Right Section - GitHub */}
