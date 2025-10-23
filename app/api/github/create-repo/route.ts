@@ -1,4 +1,5 @@
 // --- app/api/github/create-repo/route.ts ---
+
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -12,9 +13,28 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // --- STEP 0: Get the current user's GitHub username ---
+    const userRes = await fetch("https://api.github.com/user", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/vnd.github.v3+json",
+      },
+    });
+
+    if (!userRes.ok) {
+      return NextResponse.json(
+        { success: false, error: "Failed to fetch GitHub user info" },
+        { status: userRes.status }
+      );
+    }
+
+    const userData = await userRes.json();
+    const username = userData.login;
+    const repoFullName = `${username}/${name}`;
+
     // --- STEP 1: check if repo already exists ---
     const existingRepoRes = await fetch(
-      `https://api.github.com/repos/${name.includes("/") ? name : `YOUR_GITHUB_USERNAME/${name}`}`,
+      `https://api.github.com/repos/${repoFullName}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -25,9 +45,9 @@ export async function POST(req: NextRequest) {
 
     let repoData;
     if (existingRepoRes.status === 200) {
-      // ✅ Repo exists — reuse it
+      //  Repo exists — reuse it
       repoData = await existingRepoRes.json();
-      console.log(`Repo '${name}' already exists, reusing it.`);
+      console.log(`Repo '${repoFullName}' already exists, reusing it.`);
     } else {
       // --- STEP 2: create repository if not found ---
       const repoRes = await fetch("https://api.github.com/user/repos", {
@@ -52,15 +72,14 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(
           {
             success: false,
-            error:
-              repoData.message || "Failed to create repository",
+            error: repoData.message || "Failed to create repository",
           },
           { status: repoRes.status }
         );
       }
 
       // short wait for repo propagation
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     }
 
     // --- STEP 3: create/update files in the repo ---
@@ -97,7 +116,7 @@ export async function POST(req: NextRequest) {
               Accept: "application/vnd.github.v3+json",
             },
             body: JSON.stringify({
-              message: `Add or update ${file.path}`,
+              message: `Add ${file.path} via AI Web Studio`,
               content: Buffer.from(file.content).toString("base64"),
               ...(sha && { sha }),
             }),
@@ -120,23 +139,62 @@ export async function POST(req: NextRequest) {
         fileCreationResults.push({
           file: file.path,
           success: false,
-          error:
-            fileError instanceof Error
-              ? fileError.message
-              : "Unknown error",
+          error: fileError instanceof Error ? fileError.message : "Unknown error",
         });
       }
     }
 
-    // --- STEP 4: respond ---
+    // --- STEP 4: Enable GitHub Pages (if deploying) ---
+    let pagesEnabled = false;
+    const hasPagesWorkflow = files.some(f => f.path === '.github/workflows/deploy.yml');
+    
+    if (hasPagesWorkflow && !repoData.private) {
+      try {
+        // Enable GitHub Pages
+        const pagesRes = await fetch(
+          `https://api.github.com/repos/${repoData.full_name}/pages`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+              Accept: "application/vnd.github.v3+json",
+            },
+            body: JSON.stringify({
+              source: {
+                branch: "main",
+                path: "/"
+              }
+            }),
+          }
+        );
+
+        if (pagesRes.ok) {
+          pagesEnabled = true;
+          console.log("GitHub Pages enabled successfully");
+        } else if (pagesRes.status === 409) {
+          // Pages might already be enabled
+          pagesEnabled = true;
+          console.log("GitHub Pages already enabled");
+        } else {
+          const pagesError = await pagesRes.json();
+          console.warn("Failed to enable GitHub Pages via API:", pagesError);
+        }
+      } catch (pagesError) {
+        console.warn("Error enabling GitHub Pages:", pagesError);
+      }
+    }
+
+    // --- STEP 5: respond ---
     const failedFiles = fileCreationResults.filter((r) => !r.success);
-    const pagesUrl = `https://${repoData.owner.login}.github.io/${repoData.name}`;
+    const pagesUrl = `https://${username}.github.io/${name}`;
 
     return NextResponse.json({
       success: true,
       html_url: repoData.html_url,
       pages_url: repoData.private ? null : pagesUrl,
       full_name: repoData.full_name,
+      pages_enabled: pagesEnabled,
       file_results: fileCreationResults,
       warnings:
         failedFiles.length > 0

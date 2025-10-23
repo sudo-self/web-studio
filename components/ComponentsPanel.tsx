@@ -1081,7 +1081,7 @@ export default function ComponentsPanel({
       const badge = '<img src="https://img.shields.io/badge/made%20with-studio.jessejesse.com-blue?style=flat" alt="made with studio.jessejesse.com" />';
 
       const pagesSection = deployPages
-        ? `## GitHub Pages Deployment\n\nYour site will be automatically deployed to GitHub Pages at:\n\nhttps://${githubUser?.login}.github.io/${githubForm.name}\n\nThe deployment will start automatically when you push to the main branch.`
+        ? `## GitHub Pages Deployment\n\nYour site will be automatically deployed to GitHub Pages at:\n\nhttps://${githubUser?.login}.github.io/${githubForm.name}/\n\nThe deployment will start automatically when you push to the main branch.`
         : `## Deployment\n\nTo deploy this site to GitHub Pages:\n1. Go to Settings → Pages\n2. Select "Deploy from a branch"\n3. Choose "main" branch and "/" root folder\n4. Click Save`;
 
       const readmeContent = [
@@ -1119,47 +1119,49 @@ export default function ComponentsPanel({
       if (deployPages) {
         files.push({
           path: '.github/workflows/deploy.yml',
-          content: `# Deploy to GitHub Pages
-    name: Deploy to GitHub Pages
+          content: `# Simple workflow for deploying static content to GitHub Pages
+    name: Deploy static content to Pages
 
     on:
+      # Runs on pushes targeting the default branch
       push:
-        branches: [ main ]
-      pull_request:
-        branches: [ main ]
+        branches: ["main"]
 
+      # Allows you to run this workflow manually from the Actions tab
+      workflow_dispatch:
+
+    # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
     permissions:
       contents: read
       pages: write
       id-token: write
 
+    # Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+    # However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
     concurrency:
       group: "pages"
-      cancel-in-progress: true
+      cancel-in-progress: false
 
     jobs:
-      build:
-        runs-on: ubuntu-latest
+      # Single deploy job since we're just deploying
+      deploy:
         environment:
           name: github-pages
           url: \${{ steps.deployment.outputs.page_url }}
+        runs-on: ubuntu-latest
         steps:
           - name: Checkout
             uses: actions/checkout@v4
-
           - name: Setup Pages
-            uses: actions/configure-pages@v4
-
+            uses: actions/configure-pages@v5
           - name: Upload artifact
             uses: actions/upload-pages-artifact@v3
             with:
+              # Upload entire repository
               path: '.'
-
           - name: Deploy to GitHub Pages
             id: deployment
-            uses: actions/deploy-pages@v4
-            with:
-              enablement: true`
+            uses: actions/deploy-pages@v4`
         });
       }
 
