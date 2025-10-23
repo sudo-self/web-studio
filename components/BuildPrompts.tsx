@@ -105,25 +105,28 @@ export default function BuildPrompts({ onPromptSelect }: BuildPromptsProps) {
     setIsOpen(false);
   };
 
-  useEffect(() => {
-    const calculateDropdownDirection = () => {
-      if (buttonRef.current && dropdownRef.current) {
-        const buttonRect = buttonRef.current.getBoundingClientRect();
-        const spaceBelow = window.innerHeight - buttonRect.bottom;
-        const dropdownHeight = 400; // Approximate height of the dropdown
+  
+    useEffect(() => {
+      const calculateDropdownDirection = () => {
+        if (buttonRef.current) {
+          const buttonRect = buttonRef.current.getBoundingClientRect();
+          const spaceBelow = window.innerHeight - buttonRect.bottom;
+          
         
-        if (spaceBelow < dropdownHeight && buttonRect.top > dropdownHeight) {
-          setDropdownDirection('up');
-        } else {
-          setDropdownDirection('down');
+          if (buttonRect.top > window.innerHeight / 2) {
+            setDropdownDirection('up');
+          } else {
+            setDropdownDirection('down');
+          }
         }
-      }
-    };
+      };
 
-    if (isOpen) {
-      calculateDropdownDirection();
-    }
-  }, [isOpen]);
+      if (isOpen) {
+        calculateDropdownDirection();
+        window.addEventListener('resize', calculateDropdownDirection);
+        return () => window.removeEventListener('resize', calculateDropdownDirection);
+      }
+    }, [isOpen]);
 
   return (
     <div className="relative">
