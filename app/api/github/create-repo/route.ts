@@ -1,10 +1,22 @@
 // --- app/api/github/create-repo/route.ts ---
-
 import { NextRequest, NextResponse } from "next/server";
+
+interface GitHubFile {
+  path: string;
+  content: string;
+}
+
+interface CreateRepoRequest {
+  name: string;
+  description: string;
+  isPublic: boolean;
+  files: GitHubFile[];
+  accessToken: string;
+}
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, description, isPublic, files, accessToken } = await req.json();
+    const { name, description, isPublic, files, accessToken }: CreateRepoRequest = await req.json();
 
     if (!accessToken) {
       return NextResponse.json(
@@ -45,7 +57,7 @@ export async function POST(req: NextRequest) {
 
     let repoData;
     if (existingRepoRes.status === 200) {
-      //  Repo exists — reuse it
+      // ✅ Repo exists — reuse it
       repoData = await existingRepoRes.json();
       console.log(`Repo '${repoFullName}' already exists, reusing it.`);
     } else {
@@ -146,7 +158,7 @@ export async function POST(req: NextRequest) {
 
     // --- STEP 4: Enable GitHub Pages (if deploying) ---
     let pagesEnabled = false;
-    const hasPagesWorkflow = files.some(f => f.path === '.github/workflows/deploy.yml');
+    const hasPagesWorkflow = files.some((f: GitHubFile) => f.path === '.github/workflows/deploy.yml');
     
     if (hasPagesWorkflow && !repoData.private) {
       try {
