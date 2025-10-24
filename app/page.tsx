@@ -302,7 +302,7 @@ export default function Home() {
   </style>
 </div>`;
 
-  const reactCode = `// Welcome to studio.jessejesse.com
+  const reactCode = `// React Mode
 function WelcomeApp() {
   return (
     <div style={{ 
@@ -365,7 +365,7 @@ function WelcomeApp() {
             marginLeft: 'auto',
             marginRight: 'auto'
           }}>
-            Build with React components in real-time
+            Build with React in real-time
           </p>
         </header>
 
