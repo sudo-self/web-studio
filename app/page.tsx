@@ -410,7 +410,7 @@ root.render(React.createElement(WelcomeApp));`;
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [panelWidths, setPanelWidths] = useState({
     components: 300,
-    editor: 610,
+    editor: 550,
     preview: 400,
   });
   const [resizingPanel, setResizingPanel] = useState<string | null>(null);
