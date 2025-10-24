@@ -16,7 +16,7 @@ interface Toast {
   type: "success" | "error";
 }
 
-export default function EditorPanel({ code, onResizeStart, framework }: PreviewPanelProps) {
+export default function PreviewPanel({ code, onResizeStart, framework }: PreviewPanelProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const [showEmbed, setShowEmbed] = useState(false);
@@ -25,8 +25,7 @@ export default function EditorPanel({ code, onResizeStart, framework }: PreviewP
   const [deviceView, setDeviceView] = useState<"mobile" | "tablet" | "desktop">("desktop");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
-  const [iframeVisible, setIframeVisible] = useState(false);
-
+  const [iframeKey, setIframeKey] = useState(0);
 
   const generateHtml = (content: string, currentFramework: string) => {
     if (currentFramework === "react") {
@@ -95,7 +94,6 @@ export default function EditorPanel({ code, onResizeStart, framework }: PreviewP
       `;
     }
 
-
     return `
       <!DOCTYPE html>
       <html>
@@ -118,37 +116,31 @@ export default function EditorPanel({ code, onResizeStart, framework }: PreviewP
     `;
   };
 
-
   const addToast = (message: string, type: "success" | "error" = "success") => {
     const id = Math.random().toString(36).substring(2);
     setToasts(prev => [...prev, { id, message, type }]);
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3000);
   };
 
-
-  const updateIframe = (html: string) => {
+  const updateIframe = () => {
     if (iframeRef.current) {
-      setIframeVisible(false);
+      const html = generateHtml(code, framework);
       iframeRef.current.srcdoc = html;
     }
   };
 
   useEffect(() => {
-    const html = generateHtml(code, framework);
-    updateIframe(html);
+    updateIframe();
   }, [code, framework]);
-
 
   const handleRefresh = () => {
     setIsRefreshing(true);
-    const html = generateHtml(code, framework);
-    updateIframe(html);
+    setIframeKey(prev => prev + 1); 
     setTimeout(() => {
       setIsRefreshing(false);
       addToast("Preview refreshed");
     }, 600);
   };
-
 
   const handleCopy = async () => {
     try {
@@ -159,11 +151,13 @@ export default function EditorPanel({ code, onResizeStart, framework }: PreviewP
     }
   };
 
-
   const handleFullscreen = () => {
     if (!panelRef.current) return;
-    if (!isFullscreen) panelRef.current.requestFullscreen?.();
-    else document.exitFullscreen?.();
+    if (!isFullscreen) {
+      panelRef.current.requestFullscreen?.();
+    } else {
+      document.exitFullscreen?.();
+    }
   };
 
   useEffect(() => {
@@ -171,7 +165,6 @@ export default function EditorPanel({ code, onResizeStart, framework }: PreviewP
     document.addEventListener("fullscreenchange", handleFSChange);
     return () => document.removeEventListener("fullscreenchange", handleFSChange);
   }, []);
-
 
   const deviceSizes = {
     mobile: { width: "375px", height: "667px" },
@@ -182,7 +175,7 @@ export default function EditorPanel({ code, onResizeStart, framework }: PreviewP
 
   return (
     <div ref={panelRef} className="panel preview-panel relative flex flex-col h-full bg-surface-primary">
-      {/* Resize handle */}
+    
       {onResizeStart && (
         <div
           className="absolute -left-2 top-0 bottom-0 w-4 cursor-col-resize z-20 hover:bg-interactive-accent/20 rounded"
@@ -190,7 +183,7 @@ export default function EditorPanel({ code, onResizeStart, framework }: PreviewP
         />
       )}
 
-      {/* Header */}
+    
       <div className="panel-header flex justify-between items-center p-4 border-b border-border-primary bg-surface-secondary">
         <div className="flex items-center gap-3">
           <h2 className="text-lg font-semibold text-text-primary">Preview</h2>
@@ -199,22 +192,35 @@ export default function EditorPanel({ code, onResizeStart, framework }: PreviewP
           </span>
         </div>
         <div className="flex gap-2">
-          <button className="btn btn-outline btn-sm" onClick={handleRefresh} disabled={isRefreshing}>
+          <button 
+            className="btn btn-outline btn-sm" 
+            onClick={handleRefresh} 
+            disabled={isRefreshing}
+          >
             {isRefreshing ? "Refreshing..." : "Refresh"}
           </button>
-          <button className={`btn btn-sm ${showEmbed ? "btn-accent" : "btn-outline"}`} onClick={() => setShowEmbed(!showEmbed)}>
+          <button 
+            className={`btn btn-sm ${showEmbed ? "btn-accent" : "btn-outline"}`} 
+            onClick={() => setShowEmbed(!showEmbed)}
+          >
             {showEmbed ? "Hide Code" : "Show Code"}
           </button>
-          <button className={`btn btn-sm ${isFullscreen ? "btn-warning" : "btn-outline"}`} onClick={handleFullscreen}>
+          <button 
+            className={`btn btn-sm ${isFullscreen ? "btn-warning" : "btn-outline"}`} 
+            onClick={handleFullscreen}
+          >
             {isFullscreen ? "Exit Full" : "Fullscreen"}
           </button>
-          <button className={`btn btn-sm ${showGrid ? "btn-accent" : "btn-outline"}`} onClick={() => setShowGrid(!showGrid)}>
+          <button 
+            className={`btn btn-sm ${showGrid ? "btn-accent" : "btn-outline"}`} 
+            onClick={() => setShowGrid(!showGrid)}
+          >
             {showGrid ? "Hide Grid" : "Show Grid"}
           </button>
         </div>
       </div>
 
-      {/* Optional Code View */}
+ 
       {showEmbed && (
         <div className="bg-surface-primary border border-border-primary rounded-lg m-4 overflow-hidden">
           <div className="flex justify-between items-center p-3 border-b border-border-primary bg-surface-secondary">
@@ -229,7 +235,7 @@ export default function EditorPanel({ code, onResizeStart, framework }: PreviewP
         </div>
       )}
 
-      {/* Live Preview */}
+   
       <div className="flex-1 relative flex justify-center items-start p-4 bg-surface-secondary overflow-auto">
         <div
           className="shadow-xl transition-all duration-500 bg-white rounded-xl overflow-hidden border border-border-primary relative"
@@ -238,20 +244,33 @@ export default function EditorPanel({ code, onResizeStart, framework }: PreviewP
             height: deviceSizes[deviceView].height,
           }}
         >
-          {showGrid && <GridPattern width={40} height={40} stroke="rgba(0,0,0,0.05)" className="absolute inset-0 z-10 pointer-events-none" />}
-          {deviceView !== "desktop" && <div className="absolute inset-0 pointer-events-none border-8 border-gray-800 rounded-xl z-20" />}
+     
+          {showGrid && (
+            <div className="absolute inset-0 z-10 pointer-events-none">
+              <GridPattern 
+                width={40} 
+                height={40} 
+                className="opacity-30"
+                stroke="rgba(0,0,0,0.1)"
+              />
+            </div>
+          )}
+          
+          {deviceView !== "desktop" && (
+            <div className="absolute inset-0 pointer-events-none border-8 border-gray-800 rounded-xl z-20" />
+          )}
+          
           <iframe
+            key={iframeKey}
             ref={iframeRef}
             className="w-full h-full border-none bg-white relative z-0"
             title="Live Preview"
             sandbox="allow-same-origin allow-scripts"
-            style={{ visibility: iframeVisible ? "visible" : "hidden" }}
-            onLoad={() => setTimeout(() => setIframeVisible(true), 100)}
           />
         </div>
       </div>
 
-      {/* Device Switcher */}
+    
       <div className="flex justify-center items-center gap-2 p-3 border-t border-border-primary bg-surface-secondary">
         {(["mobile", "tablet", "desktop"] as const).map(device => {
           const Icon = deviceIcons[device];
@@ -273,7 +292,7 @@ export default function EditorPanel({ code, onResizeStart, framework }: PreviewP
         })}
       </div>
 
-      {/* Toasts */}
+   
       <div className="fixed top-4 right-4 z-50 space-y-2">
         {toasts.map(toast => (
           <div
