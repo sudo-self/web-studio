@@ -69,22 +69,26 @@ export default function PDFGenerator({ currentCode = "" }: PDFGeneratorProps) {
 
   const debouncedUrl = useDebounce(url, 500);
 
-  useEffect(() => {
-    validateUrl(debouncedUrl);
-  }, [debouncedUrl]);
+useEffect(() => {
+  let interval: NodeJS.Timeout | undefined;
 
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isLoading) {
-      interval = setInterval(() => {
-        setProgress(prev => Math.min(prev + 10, 90));
-      }, 500);
-    } else {
-      setProgress(0);
+  if (isLoading) {
+    interval = setInterval(() => {
+      setProgress(prev => Math.min(prev + 10, 90));
+    }, 500);
+  } else {
+    setProgress(0);
+    if (interval) {
       clearInterval(interval);
     }
-    return () => clearInterval(interval);
-  }, [isLoading]);
+  }
+
+  return () => {
+    if (interval) {
+      clearInterval(interval);
+    }
+  };
+}, [isLoading]);
 
   const updateSizeInfo = () => {
     const size = pdfSizesInches[format as keyof typeof pdfSizesInches] || [8.3, 11.7];
