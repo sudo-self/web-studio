@@ -8,7 +8,7 @@ import PDFGenerator from './PDFGenerator';
 import {
   FileText, Sparkles, Info, Wrench, Phone, SquareStack, CreditCard,
   Image, Search, Tag, Users, Stars, Type, Bot, Settings, Navigation,
-  Sidebar, BarChart3, Mail, HelpCircle, TrendingUp, Clock, Github
+  Sidebar, BarChart3, Mail, HelpCircle, TrendingUp, Clock, Github, X
 } from "lucide-react";
 import { useSettings } from "@/contexts/SettingsContext";
 
