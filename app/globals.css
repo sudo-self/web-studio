@@ -1195,6 +1195,7 @@ body {
 
 
 
+/* ===== MODAL SYSTEM ===== */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -1292,7 +1293,7 @@ body {
   transform: rotate(90deg) scale(0.95);
 }
 
-
+/* Modal Body */
 .modal-body {
   padding: 32px;
   background: var(--surface-primary);
@@ -1305,7 +1306,7 @@ body {
   overflow-y: auto;
 }
 
-
+/* Modal Footer */
 .modal-footer {
   display: flex;
   justify-content: flex-end;
@@ -1324,7 +1325,7 @@ body {
   justify-content: space-between;
 }
 
-
+/* Modal Sizes */
 .modal-sm {
   width: 400px;
   max-width: 90vw;
@@ -1385,6 +1386,7 @@ body {
   border-top: 2px solid var(--border-accent);
 }
 
+/* Form Elements in Modals */
 .modal-form {
   display: flex;
   flex-direction: column;
@@ -1422,7 +1424,7 @@ body {
   background: var(--surface-primary);
   color: var(--text-primary);
   font-family: inherit;
-  font-size: 14px;
+  fontSize: 14px;
   transition: all var(--transition-normal);
   resize: vertical;
 }
@@ -1488,7 +1490,7 @@ body {
   cursor: pointer;
 }
 
-
+/* Modal Animations */
 @keyframes modalFadeIn {
   from {
     opacity: 0;
@@ -1526,7 +1528,7 @@ body {
   animation: modalSlideDown 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-
+/* Modal Loading States */
 .modal-loading {
   pointer-events: none;
   position: relative;
@@ -1560,7 +1562,7 @@ body {
   z-index: 11;
 }
 
-
+/* Success/Error States */
 .modal-success .modal-header::after {
   background: var(--interactive-success);
 }
@@ -1573,7 +1575,167 @@ body {
   background: var(--interactive-warning);
 }
 
+/* Utility classes for modal content */
+.modal-section {
+  margin-bottom: 24px;
+}
 
+.modal-section:last-child {
+  margin-bottom: 0;
+}
+
+.modal-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-section-title::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  background: var(--interactive-accent);
+  border-radius: 50%;
+}
+
+.modal-divider {
+  height: 1px;
+  background: var(--border-primary);
+  margin: 24px 0;
+  position: relative;
+}
+
+.modal-divider::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 40px;
+  height: 1px;
+  background: var(--interactive-accent);
+}
+
+.modal-text {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.modal-text-muted {
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ===== SPECIFIC MODAL STYLES ===== */
+
+/* GitHub Modal */
+.github-modal-content {
+  width: 500px;
+  max-width: 90vw;
+}
+
+.github-repo-info {
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.github-repo-info h4 {
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.github-repo-info p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* PDF Modal */
+.pdf-modal-content {
+  width: 900px;
+  max-width: 90vw;
+  max-height: 90vh;
+}
+
+.pdf-modal-body {
+  padding: 0;
+}
+
+.pdf-modal-body .pdf-generator {
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  height: 100%;
+}
+
+/* Badge Builder Modal */
+.badge-modal-content {
+  width: 900px;
+  max-width: 90vw;
+  max-height: 90vh;
+}
+
+.badge-modal-body {
+  padding: 0;
+  background: var(--surface-primary);
+}
+
+.badge-modal-body .badge-builder {
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  height: 100%;
+  min-height: 600px;
+}
+
+/* ===== UTILITY CLASSES ===== */
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-right: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+
+.fade-in {
+  animation: fadeIn var(--transition-normal);
+}
+
+.slide-up {
+  animation: slideUp var(--transition-normal);
+}
+
+.scale-in {
+  animation: scaleIn var(--transition-normal);
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.focus-ring:focus-visible {
+  outline: 2px solid var(--interactive-primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
   .modal-overlay {
     padding: 12px;
@@ -1641,6 +1803,7 @@ body {
   }
 }
 
+/* Dark mode enhancements */
 @media (prefers-color-scheme: dark) {
   .modal-glass {
     background: rgba(10, 10, 10, 0.8);
@@ -1652,90 +1815,37 @@ body {
   }
 }
 
-
-.modal-section {
-  margin-bottom: 24px;
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.modal-section:last-child {
-  margin-bottom: 0;
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
-.modal-section-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
-.modal-section-title::before {
-  content: '';
-  width: 4px;
-  height: 4px;
-  background: var(--interactive-accent);
-  border-radius: 50%;
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
-
-.modal-divider {
-  height: 1px;
-  background: var(--border-primary);
-  margin: 24px 0;
-  position: relative;
-}
-
-.modal-divider::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 40px;
-  height: 1px;
-  background: var(--interactive-accent);
-}
-
-.modal-text {
-  color: var(--text-secondary);
-  line-height: 1.6;
-  font-size: 14px;
-}
-
-.modal-text-muted {
-  color: var(--text-muted);
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-
-.github-modal-content {
-  width: 500px;
-  max-width: 90vw;
-}
-
-.github-repo-info {
-  background: var(--surface-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  padding: 20px;
-  margin-bottom: 20px;
-}
-
-.github-repo-info h4 {
-  color: var(--text-primary);
-  margin-bottom: 12px;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.github-repo-info p {
-  color: var(--text-secondary);
-  font-size: 14px;
-  line-height: 1.5;
-  margin: 0;
-}
-
 
 .pdf-modal-content {
   width: 900px;
