@@ -304,123 +304,132 @@ export default function Home() {
   </style>
 </div>`;
 
-    const reactCode = `// Welcome to studio.jessejesse.com
-    function WelcomeApp() {
-      return (
-        <div style={{ 
-          display: 'flex', 
-          flexDirection: 'column',
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          minHeight: '100vh', 
-          padding: '3rem 2rem',
-          background: '#f8fafc',
-          fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif'
-        }}>
+  const reactCode = `// Welcome to studio.jessejesse.com
+function WelcomeApp() {
+  // Add CSS to head for animations
+  React.useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = \`
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    \`;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
+  return (
+    <div style={{ 
+      display: 'flex', 
+      flexDirection: 'column',
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      minHeight: '100vh', 
+      padding: '3rem 2rem',
+      background: '#f8fafc',
+      fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif'
+    }}>
+      <div style={{ 
+        maxWidth: '600px', 
+        textAlign: 'center',
+        animation: 'fadeInUp 0.8s ease-out'
+      }}>
+        <header style={{ marginBottom: '3rem' }}>
           <div style={{ 
-            maxWidth: '600px', 
-            textAlign: 'center',
-            animation: 'fadeInUp 0.8s ease-out'
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            gap: '1rem', 
+            marginBottom: '1.5rem' 
           }}>
-            <header style={{ marginBottom: '3rem' }}>
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                gap: '1rem', 
-                marginBottom: '1.5rem' 
-              }}>
-                <div style={{
-                  width: '48px',
-                  height: '48px',
-                  background: 'linear-gradient(135deg, #0891b2, #0e7490)',
-                  borderRadius: '12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'white',
-                  boxShadow: '0 8px 20px rgba(8, 145, 178, 0.3)'
-                }}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                  </svg>
-                </div>
-                <h1 style={{
-                  fontSize: '3rem',
-                  fontWeight: '800',
-                  color: '#0f172a',
-                  margin: 0,
-                  letterSpacing: '-0.025em',
-                  background: 'linear-gradient(135deg, #0f172a, #0891b2)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text'
-                }}>
-                  React App
-                </h1>
-              </div>
-              <p style={{
-                fontSize: '1.25rem',
-                color: '#64748b',
-                lineHeight: '1.6',
-                margin: 0,
-                maxWidth: '500px',
-                marginLeft: 'auto',
-                marginRight: 'auto'
-              }}>
-                Build with React components in real-time
-              </p>
-            </header>
-
-            <button 
-              style={{
-                background: 'linear-gradient(135deg, #0891b2, #0e7490)',
-                color: 'white',
-                border: 'none',
-                padding: '1rem 2.5rem',
-                fontSize: '1.125rem',
-                fontWeight: '600',
-                cursor: 'pointer',
-                borderRadius: '12px',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                boxShadow: '0 4px 14px rgba(8, 145, 178, 0.4)',
-                marginBottom: '3rem'
-              }}
-              onClick={() => alert('Hello from React!')}
-            >
-              <span style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-                Click Me!
-              </span>
-            </button>
+            <div style={{
+              width: '48px',
+              height: '48px',
+              background: 'linear-gradient(135deg, #0891b2, #0e7490)',
+              borderRadius: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              boxShadow: '0 8px 20px rgba(8, 145, 178, 0.3)'
+            }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+              </svg>
+            </div>
+            <h1 style={{
+              fontSize: '3rem',
+              fontWeight: '800',
+              color: '#0f172a',
+              margin: 0,
+              letterSpacing: '-0.025em',
+              background: 'linear-gradient(135deg, #0f172a, #0891b2)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
+            }}>
+              React App
+            </h1>
           </div>
-          
-          <style>{\`
-            @keyframes fadeInUp {
-              from {
-                opacity: 0;
-                transform: translateY(30px);
-              }
-              to {
-                opacity: 1;
-                transform: translateY(0);
-              }
-            }
-          \`}</style>
-        </div>
-      );
-    }
+          <p style={{
+            fontSize: '1.25rem',
+            color: '#64748b',
+            lineHeight: '1.6',
+            margin: 0,
+            maxWidth: '500px',
+            marginLeft: 'auto',
+            marginRight: 'auto'
+          }}>
+            Build with React components in real-time
+          </p>
+        </header>
 
-    // APP
-    ReactDOM.render(<WelcomeApp />, document.getElementById('root'));`;
+        <button 
+          style={{
+            background: 'linear-gradient(135deg, #0891b2, #0e7490)',
+            color: 'white',
+            border: 'none',
+            padding: '1rem 2.5rem',
+            fontSize: '1.125rem',
+            fontWeight: '600',
+            cursor: 'pointer',
+            borderRadius: '12px',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            boxShadow: '0 4px 14px rgba(8, 145, 178, 0.4)',
+            marginBottom: '3rem'
+          }}
+          onClick={() => alert('Hello from React!')}
+        >
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            Click Me!
+          </span>
+        </button>
+      </div>
+    </div>
+  );
+}
 
-  const [code, setCode] = useState(htmlCode); // Start with HTML code
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(React.createElement(WelcomeApp));`;
+
+  const [code, setCode] = useState(htmlCode); 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [panelWidths, setPanelWidths] = useState({
     components: 300,
-    editor: 610, // 10px wider
+    editor: 610,
     preview: 400,
   });
   const [resizingPanel, setResizingPanel] = useState<string | null>(null);
@@ -525,7 +534,7 @@ export default function Home() {
               onOpenSettings={() => setIsSettingsOpen(true)}
               onResizeStart={(e) => handleResizeStart("components", e)}
               currentCode={code}
-              framework={framework} // Added framework prop
+              framework={framework}
             />
           </div>
 
