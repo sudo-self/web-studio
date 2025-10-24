@@ -166,16 +166,6 @@ const useGitHubAuth = () => {
   return { githubToken, setGithubToken, githubUser, setGithubUser, fetchUserInfo };
 };
 
-useEffect(() => {
-  if (typeof window === "undefined") return;
-  
-  const params = new URLSearchParams(window.location.search);
-  const token = params.get("github_token");
-  
-  if (token) {
-    setShowGithubModal(true);
-  }
-}, []);
 
 // Utility Functions
 const getComponentIcon = (componentKey: string): ReactElement => {
@@ -307,6 +297,17 @@ export default function ComponentsPanel({
   });
 
   const { githubToken, setGithubToken, githubUser, setGithubUser, fetchUserInfo } = useGitHubAuth();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("github_token");
+    
+    if (token) {
+      setShowGithubModal(true);
+    }
+  }, []);
 
   // Memoized computed values
   const filteredComponents = useMemo(() => {
