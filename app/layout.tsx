@@ -14,18 +14,38 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "studio.JesseJesse.com",
-  description: "Build websites with AI assistance",
-  icons: {
-    icon: "/app/favicon.ico",
-    apple: "/apple-touch-icon.png",
+  metadataBase: new URL("https://studio.jessejesse.com/"),
+  title: {
+    default: "studio.JesseJesse.com",
+    template: "%s | studio.JesseJesse.com",
   },
-  manifest: "/manifest.json",
+  description: "Build websites with AI assistance",
+  keywords: [
+    "website builder",
+    "AI website assistant",
+    "studio.JesseJesse.com",
+    "no-code web builder",
+  ],
+  authors: [{ name: "Jesse Jesse" }],
+  creator: "Jesse Jesse",
+  publisher: "Jesse Jesse",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   openGraph: {
-    title: "studio.JesseJesse.com",
-    description: "Build websites with AI assistance",
+    type: "website",
+    locale: "en_US",
     url: "https://studio.jessejesse.com",
-    siteName: "studio.JesseJesse.com",
+    title: "studio.JesseJesse.com - Build websites with AI",
+    description: "Build websites with AI assistance",
     images: [
       {
         url: "/sog.png",
@@ -34,60 +54,36 @@ export const metadata: Metadata = {
         alt: "studio.JesseJesse.com preview image",
       },
     ],
-    type: "website",
+    siteName: "studio.JesseJesse.com",
   },
   twitter: {
     card: "summary_large_image",
-    title: "studio.JesseJesse.com",
+    title: "studio.JesseJesse.com - Build websites with AI",
     description: "Build websites with AI assistance",
     images: ["/sog.png"],
+  },
+  alternates: {
+    canonical: "https://studio.jessejesse.com",
+  },
+  other: {
+    "theme-color": "#1e40af",
+    "msapplication-TileColor": "#1e40af",
   },
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const og = metadata.openGraph;
-  const tw = metadata.twitter;
-
-  const ogImages = Array.isArray(og?.images)
-    ? og.images.map((img) => img.url)
-    : og?.images
-    ? [og.images.url]
-    : [];
-
-  const twImages = Array.isArray(tw?.images) ? tw.images : tw?.images ? [tw.images] : [];
-
   return (
     <html lang="en">
-      <head>
-        <link rel="icon" href="/app/favicon.ico" sizes="any" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <link rel="manifest" href="/manifest.json" />
-
-        {/* Open Graph */}
-        <meta property="og:title" content={og?.title as string} />
-        <meta property="og:description" content={og?.description as string} />
-        <meta property="og:url" content={og?.url as string} />
-        <meta property="og:site_name" content={og?.siteName as string} />
-        {ogImages.map((url, i) => (
-          <meta key={i} property="og:image" content={url} />
-        ))}
-
-        {/* Twitter */}
-        <meta name="twitter:card" content={tw?.card as string} />
-        <meta name="twitter:title" content={tw?.title as string} />
-        <meta name="twitter:description" content={tw?.description as string} />
-        {twImages.map((url, i) => (
-          <meta key={i} name="twitter:image" content={url} />
-        ))}
-      </head>
+      <head />
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <SettingsProvider>{children}</SettingsProvider>
       </body>
     </html>
   );
 }
+
 
 
 
