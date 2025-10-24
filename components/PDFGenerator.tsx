@@ -46,6 +46,19 @@ interface PDFGeneratorProps {
   currentCode?: string;
 }
 
+interface PDFPayload {
+  waitForTimeout: number;
+  pdfOptions: {
+    format: string;
+    landscape: boolean;
+    printBackground: boolean;
+    displayHeaderFooter: boolean;
+    margin: { top: string; right: string; bottom: string; left: string };
+  };
+  images: string[];
+  url?: string;
+}
+
 export default function PDFGenerator({ currentCode = "" }: PDFGeneratorProps) {
   const [url, setUrl] = useState('https://example.com/');
   const [format, setFormat] = useState('A4');
@@ -192,7 +205,7 @@ export default function PDFGenerator({ currentCode = "" }: PDFGeneratorProps) {
     setProgress(0);
 
     try {
-      const payload = {
+      const payload: PDFPayload = {
         waitForTimeout: parseInt(String(waitTime), 10),
         pdfOptions: {
           format,
