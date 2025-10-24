@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 
-// Hook debounce
+//debounce
 function useDebounce(value: string, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
@@ -67,7 +67,7 @@ export default function PDFGenerator({ currentCode = "" }: PDFGeneratorProps) {
   const [printBackground, setPrintBackground] = useState(true);
   const [displayHeaderFooter, setDisplayHeaderFooter] = useState(false);
   const [status, setStatus] = useState('');
-  const [statusColor, setStatusColor] = useState('gray');
+  const [statusColor, setStatusColor] = useState('var(--text-muted)');
   const [isLoading, setIsLoading] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
@@ -175,21 +175,21 @@ export default function PDFGenerator({ currentCode = "" }: PDFGeneratorProps) {
   const generatePDF = async () => {
     if (url && url !== 'https://example.com/' && !isValidUrl(url)) {
       setStatus('Invalid URL. Please enter a valid one.');
-      setStatusColor('red');
+      setStatusColor('var(--interactive-danger)');
       toast.error('Please enter a valid URL');
       return;
     }
 
     if ((!url || url === 'https://example.com/') && uploadedImages.length === 0) {
       setStatus('Please provide a URL or upload at least one image.');
-      setStatusColor('red');
+      setStatusColor('var(--interactive-danger)');
       toast.error('Please provide a URL or upload images');
       return;
     }
 
     if (urlError) {
       setStatus('Please fix URL errors before generating PDF.');
-      setStatusColor('red');
+      setStatusColor('var(--interactive-danger)');
       return;
     }
 
@@ -247,12 +247,12 @@ export default function PDFGenerator({ currentCode = "" }: PDFGeneratorProps) {
       setPdfBlob(blob);
       setPdfInfo(`${format} | ${orientation} | ${(blob.size / 1024).toFixed(1)} KB | ${new Date().toLocaleDateString()}`);
       setStatus('PDF created successfully!');
-      setStatusColor('green');
+      setStatusColor('var(--interactive-success)');
       toast.success('PDF generated successfully!');
     } catch (err: any) {
       console.error('PDF generation error:', err);
       setStatus(`Error: ${err.message}`);
-      setStatusColor('red');
+      setStatusColor('var(--interactive-danger)');
       toast.error(`Failed to generate PDF: ${err.message}`);
     } finally {
       setIsLoading(false);
@@ -307,7 +307,7 @@ export default function PDFGenerator({ currentCode = "" }: PDFGeneratorProps) {
           files: [file] 
         });
         setStatus('PDF shared successfully!');
-        setStatusColor('green');
+        setStatusColor('var(--interactive-success)');
         toast.success('PDF shared successfully!');
       } else {
         toast.error('Sharing not supported. Please download instead.');
@@ -316,7 +316,7 @@ export default function PDFGenerator({ currentCode = "" }: PDFGeneratorProps) {
       if (err.name !== 'AbortError') {
         console.error('Share error:', err);
         setStatus(`Error sharing: ${err.message}`);
-        setStatusColor('red');
+        setStatusColor('var(--interactive-danger)');
         toast.error('Sharing failed. Please try again.');
       }
     } finally {
@@ -337,8 +337,51 @@ export default function PDFGenerator({ currentCode = "" }: PDFGeneratorProps) {
     toast.success('Form cleared!');
   };
 
+
+  const getInputStyle = () => ({
+    width: '100%',
+    padding: '12px 16px',
+    border: '1.5px solid var(--border-primary)',
+    borderRadius: 'var(--radius-lg)',
+    backgroundColor: 'var(--surface-primary)',
+    color: 'var(--text-primary)',
+    fontFamily: 'var(--font-sans)',
+    fontSize: '14px',
+    transition: 'all var(--transition-normal)',
+    outline: 'none'
+  } as const);
+
+  const getSelectStyle = () => ({
+    width: '100%',
+    padding: '12px 16px',
+    border: '1.5px solid var(--border-primary)',
+    borderRadius: 'var(--radius-lg)',
+    backgroundColor: 'var(--surface-primary)',
+    color: 'var(--text-primary)',
+    fontFamily: 'var(--font-sans)',
+    fontSize: '14px',
+    transition: 'all var(--transition-normal)',
+    cursor: 'pointer',
+    outline: 'none'
+  } as const);
+
+  const getLabelStyle = () => ({
+    display: 'block',
+    marginBottom: '8px',
+    fontWeight: 600,
+    fontSize: '14px',
+    color: 'var(--text-primary)',
+    fontFamily: 'var(--font-sans)'
+  } as const);
+
   return (
-    <div className="pdf-generator bg-component-bg rounded-xl border border-panel-border p-6">
+    <div style={{
+      backgroundColor: 'var(--surface-card)',
+      borderRadius: 'var(--radius-xl)',
+      border: '1px solid var(--border-primary)',
+      padding: '24px',
+      fontFamily: 'var(--font-sans)'
+    }}>
       <Toaster 
         position="top-center" 
         reverseOrder={false}
@@ -348,56 +391,116 @@ export default function PDFGenerator({ currentCode = "" }: PDFGeneratorProps) {
             background: 'var(--surface-primary)',
             color: 'var(--text-primary)',
             border: '1px solid var(--border-primary)',
+            borderRadius: 'var(--radius-lg)',
+            fontSize: '14px',
+            fontFamily: 'var(--font-sans)'
           },
         }}
       />
       
-      <div className="flex items-center gap-3 mb-6">
-        <FilePlus className="w-6 h-6 text-accent-color" />
-        <h2 className="text-xl font-semibold text-text-primary">PDF Generator</h2>
-        <span className="text-xs text-text-muted bg-surface-tertiary px-2 py-1 rounded border border-panel-border">
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+        <FilePlus style={{ width: '24px', height: '24px', color: 'var(--interactive-accent)' }} />
+        <h2 style={{ 
+          fontSize: '20px', 
+          fontWeight: 600, 
+          color: 'var(--text-primary)',
+          margin: 0
+        }}>
+          PDF Generator
+        </h2>
+        <span style={{
+          fontSize: '12px',
+          color: 'var(--text-muted)',
+          backgroundColor: 'var(--surface-tertiary)',
+          padding: '4px 8px',
+          borderRadius: 'var(--radius-md)',
+          border: '1px solid var(--border-primary)'
+        }}>
           pdf.JesseJesse.com
         </span>
       </div>
 
-      <div className="space-y-4">
-        {/* URL Input */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      
         <div>
-          <label className="block text-sm font-medium text-text-primary mb-2">Website URL</label>
+          <label style={getLabelStyle()}>Website URL</label>
           <input
             type="url"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            className={`w-full p-3 rounded-lg bg-component-bg text-text-primary border ${
-              urlError ? 'border-red-500' : 'border-panel-border'
-            } focus:outline-none focus:ring-2 focus:ring-accent-color focus:border-transparent transition-all`}
+            style={{
+              ...getInputStyle(),
+              borderColor: urlError ? 'var(--interactive-danger)' : 'var(--border-primary)'
+            }}
             placeholder="https://example.com"
+            onFocus={(e) => {
+              e.target.style.borderColor = 'var(--interactive-accent)';
+              e.target.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1)';
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = urlError ? 'var(--interactive-danger)' : 'var(--border-primary)';
+              e.target.style.boxShadow = 'none';
+            }}
           />
-          {urlError && <p className="text-red-400 text-xs mt-1">{urlError}</p>}
+          {urlError && (
+            <p style={{ 
+              color: 'var(--interactive-danger)', 
+              fontSize: '12px', 
+              marginTop: '4px' 
+            }}>
+              {urlError}
+            </p>
+          )}
         </div>
 
-        {/* PDF Settings */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+     
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: '1fr 1fr', 
+          gap: '16px' 
+        }}>
           <div>
-            <label className="block text-sm font-medium text-text-primary mb-2">PDF Format</label>
+            <label style={getLabelStyle()}>PDF Format</label>
             <select
               value={format}
               onChange={(e) => setFormat(e.target.value)}
-              className="w-full p-3 rounded-lg bg-component-bg text-text-primary border border-panel-border focus:outline-none focus:ring-2 focus:ring-accent-color focus:border-transparent transition-all"
+              style={getSelectStyle()}
+              onFocus={(e) => {
+                e.target.style.borderColor = 'var(--interactive-accent)';
+                e.target.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = 'var(--border-primary)';
+                e.target.style.boxShadow = 'none';
+              }}
             >
               {Object.keys(pdfSizesInches).map((key) => (
                 <option key={key} value={key}>{key}</option>
               ))}
             </select>
-            <p className="mt-1 text-xs text-text-muted">Size: {sizeInfo}</p>
+            <p style={{ 
+              marginTop: '4px', 
+              fontSize: '12px', 
+              color: 'var(--text-muted)' 
+            }}>
+              Size: {sizeInfo}
+            </p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-text-primary mb-2">Orientation</label>
+            <label style={getLabelStyle()}>Orientation</label>
             <select
               value={orientation}
               onChange={(e) => setOrientation(e.target.value)}
-              className="w-full p-3 rounded-lg bg-component-bg text-text-primary border border-panel-border focus:outline-none focus:ring-2 focus:ring-accent-color focus:border-transparent transition-all"
+              style={getSelectStyle()}
+              onFocus={(e) => {
+                e.target.style.borderColor = 'var(--interactive-accent)';
+                e.target.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = 'var(--border-primary)';
+                e.target.style.boxShadow = 'none';
+              }}
             >
               <option value="portrait">Portrait</option>
               <option value="landscape">Landscape</option>
@@ -405,90 +508,217 @@ export default function PDFGenerator({ currentCode = "" }: PDFGeneratorProps) {
           </div>
         </div>
 
-        {/* Advanced Options */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: '1fr 1fr', 
+          gap: '16px' 
+        }}>
           <div>
-            <label className="block text-sm font-medium text-text-primary mb-2">Wait Time (ms)</label>
+            <label style={getLabelStyle()}>Wait Time (ms)</label>
             <input
               type="number"
               min="0"
               max="10000"
               value={waitTime}
               onChange={(e) => setWaitTime(Number(e.target.value))}
-              className="w-full p-3 rounded-lg bg-component-bg text-text-primary border border-panel-border focus:outline-none focus:ring-2 focus:ring-accent-color focus:border-transparent transition-all"
+              style={getInputStyle()}
+              onFocus={(e) => {
+                e.target.style.borderColor = 'var(--interactive-accent)';
+                e.target.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = 'var(--border-primary)';
+                e.target.style.boxShadow = 'none';
+              }}
             />
-            <p className="mt-1 text-xs text-text-muted">Wait time before creating PDF</p>
+            <p style={{ 
+              marginTop: '4px', 
+              fontSize: '12px', 
+              color: 'var(--text-muted)' 
+            }}>
+              Wait time before creating PDF
+            </p>
           </div>
         </div>
 
-        {/* Checkboxes */}
-        <div className="flex flex-wrap items-center gap-4 p-4 bg-surface-tertiary rounded-lg">
-          <label className="flex items-center space-x-2">
+   
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          gap: '16px',
+          padding: '16px',
+          backgroundColor: 'var(--surface-tertiary)',
+          borderRadius: 'var(--radius-lg)',
+          border: '1px solid var(--border-primary)'
+        }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
             <input
               type="checkbox"
               checked={printBackground}
               onChange={(e) => setPrintBackground(e.target.checked)}
-              className="rounded border-panel-border bg-component-bg text-accent-color focus:ring-accent-color focus:ring-2"
+              style={{
+                width: '16px',
+                height: '16px',
+                borderRadius: 'var(--radius-sm)',
+                border: '1.5px solid var(--border-primary)',
+                backgroundColor: printBackground ? 'var(--interactive-accent)' : 'var(--surface-primary)',
+                cursor: 'pointer',
+                transition: 'all var(--transition-normal)'
+              }}
             />
-            <span className="text-sm text-text-primary">Print Background</span>
+            <span style={{ 
+              fontSize: '14px', 
+              color: 'var(--text-primary)',
+              fontWeight: 500
+            }}>
+              Print Background
+            </span>
           </label>
-          <label className="flex items-center space-x-2">
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
             <input
               type="checkbox"
               checked={displayHeaderFooter}
               onChange={(e) => setDisplayHeaderFooter(e.target.checked)}
-              className="rounded border-panel-border bg-component-bg text-accent-color focus:ring-accent-color focus:ring-2"
+              style={{
+                width: '16px',
+                height: '16px',
+                borderRadius: 'var(--radius-sm)',
+                border: '1.5px solid var(--border-primary)',
+                backgroundColor: displayHeaderFooter ? 'var(--interactive-accent)' : 'var(--surface-primary)',
+                cursor: 'pointer',
+                transition: 'all var(--transition-normal)'
+              }}
             />
-            <span className="text-sm text-text-primary">Include Timestamp</span>
+            <span style={{ 
+              fontSize: '14px', 
+              color: 'var(--text-primary)',
+              fontWeight: 500
+            }}>
+              Include Timestamp
+            </span>
           </label>
         </div>
 
-        {/* Image Upload */}
+    
         <div>
-          <label className="block text-sm font-medium text-text-primary mb-2">
+          <label style={getLabelStyle()}>
             Upload Images {uploadedImages.length > 0 && `(${uploadedImages.length})`}
           </label>
           <div
             onClick={() => imageInputRef.current?.click()}
             onDragOver={onDragOver}
             onDrop={onDrop}
-            className="border-2 border-dashed border-accent-color rounded-lg p-6 text-center cursor-pointer hover:bg-surface-tertiary transition-colors"
+            style={{
+              border: '2px dashed var(--interactive-accent)',
+              borderRadius: 'var(--radius-lg)',
+              padding: '24px',
+              textAlign: 'center',
+              cursor: 'pointer',
+              transition: 'all var(--transition-normal)',
+              backgroundColor: 'var(--surface-primary)'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--surface-tertiary)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--surface-primary)';
+            }}
           >
-            <p className="text-accent-color font-medium">Drop images here or click to upload</p>
-            <p className="text-text-muted text-sm mt-1">Supported formats: JPEG, PNG, WebP (10MB max)</p>
+            <p style={{ 
+              color: 'var(--interactive-accent)', 
+              fontWeight: 600,
+              margin: 0,
+              marginBottom: '4px'
+            }}>
+              Drop images here or click to upload
+            </p>
+            <p style={{ 
+              color: 'var(--text-muted)', 
+              fontSize: '14px',
+              margin: 0
+            }}>
+              Supported formats: JPEG, PNG, WebP (10MB max)
+            </p>
           </div>
           <input
             type="file"
             ref={imageInputRef}
             multiple
             accept="image/*"
-            className="hidden"
+            style={{ display: 'none' }}
             onChange={(e) => e.target.files && handleImageFiles(e.target.files)}
           />
           
           {uploadedImages.length > 0 && (
-            <div className="mt-3">
-              <div className="flex flex-wrap gap-2">
+            <div style={{ marginTop: '12px' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 {uploadedImages.map((img, i) => (
-                  <div key={i} className="relative group">
+                  <div key={i} style={{ position: 'relative' }}>
                     <img 
                       src={img} 
                       alt={`Uploaded ${i + 1}`} 
-                      className="h-20 w-20 object-cover rounded border border-panel-border"
+                      style={{
+                        height: '80px',
+                        width: '80px',
+                        objectFit: 'cover',
+                        borderRadius: 'var(--radius-md)',
+                        border: '1px solid var(--border-primary)'
+                      }}
                     />
                     <button
                       onClick={() => removeImage(i)}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                      style={{
+                        position: 'absolute',
+                        top: '-8px',
+                        right: '-8px',
+                        backgroundColor: 'var(--interactive-danger)',
+                        color: 'var(--text-inverse)',
+                        borderRadius: '50%',
+                        width: '20px',
+                        height: '20px',
+                        fontSize: '10px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all var(--transition-normal)',
+                        opacity: 0
+                      }}
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.opacity = '1';
+                        e.currentTarget.style.transform = 'scale(1.1)';
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.opacity = '0';
+                        e.currentTarget.style.transform = 'scale(1)';
+                      }}
                       aria-label="Remove image"
                     >
-                      <X className="w-3 h-3" />
+                      <X style={{ width: '12px', height: '12px' }} />
                     </button>
                   </div>
                 ))}
               </div>
               <button
                 onClick={() => setUploadedImages([])}
-                className="text-red-400 text-xs mt-2 hover:text-red-300 transition-colors"
+                style={{
+                  color: 'var(--interactive-danger)',
+                  fontSize: '12px',
+                  marginTop: '8px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'color var(--transition-normal)'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.color = 'var(--interactive-danger-hover)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.color = 'var(--interactive-danger)';
+                }}
               >
                 Remove all images
               </button>
@@ -496,30 +726,70 @@ export default function PDFGenerator({ currentCode = "" }: PDFGeneratorProps) {
           )}
         </div>
 
-        {/* Progress Bar */}
+    
         {isLoading && (
-          <div className="w-full bg-surface-tertiary rounded-full h-2">
+          <div style={{
+            width: '100%',
+            backgroundColor: 'var(--surface-tertiary)',
+            borderRadius: '20px',
+            height: '8px',
+            overflow: 'hidden'
+          }}>
             <div 
-              className="bg-accent-color h-2 rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
+              style={{
+                backgroundColor: 'var(--interactive-accent)',
+                height: '100%',
+                borderRadius: '20px',
+                transition: 'width 0.3s ease',
+                width: `${progress}%`
+              }}
             />
           </div>
         )}
 
-        {/* Action Buttons */}
-        <div className="flex gap-3">
+        <div style={{ display: 'flex', gap: '12px' }}>
           <button
             onClick={generatePDF}
             disabled={isLoading}
-            className="btn btn-primary flex-1 flex items-center justify-center gap-2 disabled:opacity-50"
+            style={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              padding: '12px 20px',
+              background: 'linear-gradient(135deg, var(--interactive-primary), var(--interactive-primary-hover))',
+              color: 'var(--text-inverse)',
+              border: 'none',
+              borderRadius: 'var(--radius-lg)',
+              fontWeight: 600,
+              fontSize: '14px',
+              cursor: isLoading ? 'not-allowed' : 'pointer',
+              opacity: isLoading ? 0.7 : 1,
+              transition: 'all var(--transition-normal)',
+              fontFamily: 'inherit'
+            }}
+            onMouseOver={(e) => {
+              if (!isLoading) {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 8px 16px rgba(59, 130, 246, 0.3)';
+              }
+            }}
+            onMouseOut={(e) => {
+              if (!isLoading) {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
+              }
+            }}
           >
             {!isLoading ? (
               <>
-                <FileText className="w-5 h-5" /> Create PDF
+                <FileText style={{ width: '20px', height: '20px' }} /> Create PDF
               </>
             ) : (
               <>
-                <Loader2 className="w-5 h-5 animate-spin" /> Generating... ({progress}%)
+                <Loader2 style={{ width: '20px', height: '20px', animation: 'spin 1s linear infinite' }} /> 
+                Generating... ({progress}%)
               </>
             )}
           </button>
@@ -527,68 +797,204 @@ export default function PDFGenerator({ currentCode = "" }: PDFGeneratorProps) {
           <button
             onClick={clearAll}
             disabled={isLoading}
-            className="btn btn-outline px-4 disabled:opacity-50"
+            style={{
+              padding: '12px 20px',
+              background: 'transparent',
+              color: 'var(--text-primary)',
+              border: '1.5px solid var(--border-primary)',
+              borderRadius: 'var(--radius-lg)',
+              fontWeight: 600,
+              fontSize: '14px',
+              cursor: isLoading ? 'not-allowed' : 'pointer',
+              opacity: isLoading ? 0.5 : 1,
+              transition: 'all var(--transition-normal)',
+              fontFamily: 'inherit'
+            }}
+            onMouseOver={(e) => {
+              if (!isLoading) {
+                e.currentTarget.style.borderColor = 'var(--interactive-accent)';
+                e.currentTarget.style.color = 'var(--interactive-accent)';
+              }
+            }}
+            onMouseOut={(e) => {
+              if (!isLoading) {
+                e.currentTarget.style.borderColor = 'var(--border-primary)';
+                e.currentTarget.style.color = 'var(--text-primary)';
+              }
+            }}
           >
             Clear
           </button>
         </div>
 
-        {/* Status */}
-        <p className={`text-sm text-center ${
-          statusColor === 'green' ? 'text-green-400' :
-          statusColor === 'red' ? 'text-red-400' : 'text-text-muted'
-        }`}>
+   
+        <p style={{
+          fontSize: '14px',
+          textAlign: 'center',
+          margin: 0,
+          color: statusColor
+        }}>
           {status}
         </p>
 
-        {/* PDF Preview */}
+    
         {pdfUrl && (
-          <div className="mt-6">
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="text-lg font-medium text-text-primary">PDF Preview</h3>
-              <span className="text-xs text-text-muted">{pdfInfo}</span>
+          <div style={{ marginTop: '24px' }}>
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center', 
+              marginBottom: '12px' 
+            }}>
+              <h3 style={{ 
+                fontSize: '18px', 
+                fontWeight: 600, 
+                color: 'var(--text-primary)',
+                margin: 0
+              }}>
+                PDF Preview
+              </h3>
+              <span style={{ 
+                fontSize: '12px', 
+                color: 'var(--text-muted)' 
+              }}>
+                {pdfInfo}
+              </span>
             </div>
-            <div className="rounded-lg border border-panel-border overflow-hidden bg-white">
+            <div style={{ 
+              borderRadius: 'var(--radius-lg)', 
+              border: '1px solid var(--border-primary)', 
+              overflow: 'hidden',
+              backgroundColor: 'white'
+            }}>
               <iframe
                 ref={iframeRef}
                 src={pdfUrl}
-                className="w-full h-96"
-                style={{ border: 'none' }}
+                style={{ width: '100%', height: '384px', border: 'none' }}
                 title="PDF Preview"
               />
             </div>
             
-            {/* Action Buttons for PDF */}
-            <div className="flex flex-wrap gap-3 mt-4">
+         
+            <div style={{ 
+              display: 'flex', 
+              flexWrap: 'wrap', 
+              gap: '12px', 
+              marginTop: '16px' 
+            }}>
               <a
                 download="webPDF.pdf"
                 href={pdfUrl}
-                className="btn btn-success flex items-center gap-2"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '10px 16px',
+                  background: 'linear-gradient(135deg, var(--interactive-success), var(--interactive-success-hover))',
+                  color: 'var(--text-inverse)',
+                  border: 'none',
+                  borderRadius: 'var(--radius-lg)',
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  textDecoration: 'none',
+                  transition: 'all var(--transition-normal)',
+                  fontFamily: 'inherit'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 8px 16px rgba(16, 185, 129, 0.3)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
               >
-                <Download className="w-5 h-5" /> Download
+                <Download style={{ width: '18px', height: '18px' }} /> Download
               </a>
               
               <button
                 onClick={printPDF}
                 disabled={isPrinting}
-                className="btn btn-accent flex items-center gap-2 disabled:opacity-50"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '10px 16px',
+                  background: 'linear-gradient(135deg, var(--interactive-accent), var(--interactive-accent-hover))',
+                  color: 'var(--text-inverse)',
+                  border: 'none',
+                  borderRadius: 'var(--radius-lg)',
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  cursor: isPrinting ? 'not-allowed' : 'pointer',
+                  opacity: isPrinting ? 0.7 : 1,
+                  transition: 'all var(--transition-normal)',
+                  fontFamily: 'inherit'
+                }}
+                onMouseOver={(e) => {
+                  if (!isPrinting) {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 8px 16px rgba(139, 92, 246, 0.3)';
+                  }
+                }}
+                onMouseOut={(e) => {
+                  if (!isPrinting) {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }
+                }}
               >
-                <Printer className="w-5 h-5" /> 
+                <Printer style={{ width: '18px', height: '18px' }} /> 
                 {isPrinting ? 'Printing...' : 'Print'}
               </button>
               
               <button
                 onClick={sharePDF}
                 disabled={isSharing}
-                className="btn btn-outline flex items-center gap-2 disabled:opacity-50"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '10px 16px',
+                  background: 'transparent',
+                  color: 'var(--text-primary)',
+                  border: '1.5px solid var(--border-primary)',
+                  borderRadius: 'var(--radius-lg)',
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  cursor: isSharing ? 'not-allowed' : 'pointer',
+                  opacity: isSharing ? 0.5 : 1,
+                  transition: 'all var(--transition-normal)',
+                  fontFamily: 'inherit'
+                }}
+                onMouseOver={(e) => {
+                  if (!isSharing) {
+                    e.currentTarget.style.borderColor = 'var(--interactive-accent)';
+                    e.currentTarget.style.color = 'var(--interactive-accent)';
+                  }
+                }}
+                onMouseOut={(e) => {
+                  if (!isSharing) {
+                    e.currentTarget.style.borderColor = 'var(--border-primary)';
+                    e.currentTarget.style.color = 'var(--text-primary)';
+                  }
+                }}
               >
-                <Share2 className="w-5 h-5" />
+                <Share2 style={{ width: '18px', height: '18px' }} />
                 {isSharing ? 'Sharing...' : 'Share'}
               </button>
             </div>
           </div>
         )}
       </div>
+
+      <style jsx>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }
