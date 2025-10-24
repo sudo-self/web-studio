@@ -453,33 +453,8 @@ const askAi = async () => {
 
   try {
     const frameworkInstructions = framework === "react"
-      ? `Create a React component for: "${prompt}"
-
-IMPORTANT: YOU MUST FOLLOW THESE RULES EXACTLY:
-1. Return ONLY pure React code - no explanations, no markdown, no comments
-2. Use React.useState NOT import statements
-3. Include the rendering code at the end
-4. No text before or after the code
-5. Use inline styles only
-6. Make it a complete, runnable component
-
-CODE FORMAT:
-function ComponentName() {
-  const [state, setState] = React.useState(initialValue);
-  return <div style={{}}>content</div>;
-}
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(React.createElement(ComponentName));`
-      : `Create HTML for: "${prompt}"
-
-IMPORTANT: YOU MUST FOLLOW THESE RULES EXACTLY:
-1. Return ONLY pure HTML with inline styles
-2. No explanations, no markdown, no comments
-3. No text before or after the code
-4. Make it responsive and modern
-
-EXAMPLE:
-<div style="color: red;">Content</div>`;
+      ? `STRICT INSTRUCTIONS: Create React component for "${prompt}". RETURN ONLY CODE. NO EXPLANATIONS. NO MARKDOWN. NO IMPORTS. Use React.useState not imports. Include rendering code.`
+      : `STRICT INSTRUCTIONS: Create HTML for "${prompt}". RETURN ONLY CODE. NO EXPLANATIONS. NO MARKDOWN.`;
 
     const messages = [{ role: "user" as const, content: frameworkInstructions }];
     const response = await fetch('https://llm.jessejesse.workers.dev/api/chat', {
@@ -527,35 +502,96 @@ EXAMPLE:
       throw new Error("Worker returned empty response");
     }
 
-    // More aggressive cleaning
-    const cleaned = fullContent
+    // Extract only the code using multiple strategies
+    let cleaned = fullContent;
+    
+    // Strategy 1: Remove all markdown and explanations
+    cleaned = cleaned
       .replace(/```(html|css|js|jsx|javascript)?/gi, '')
       .replace(/```/g, '')
       .replace(/^`|`$/g, '')
-      .replace(/^###.*$/gm, '') // Remove markdown headers
-      .replace(/^####.*$/gm, '') // Remove markdown headers
-      .replace(/^####.*$/gm, '') // Remove markdown headers
-      .replace(/^Overview.*$/gm, '') // Remove overview sections
-      .replace(/^Explanation.*$/gm, '') // Remove explanation sections
-      .replace(/^Code.*$/gm, '') // Remove code labels
-      .replace(/^As a loyal.*$/gm, '') // Remove footer text
-      .replace(/import React.*?;?\n?/g, '') // Remove import statements
-      .replace(/import.*?from.*?;?\n?/g, '') // Remove any imports
-      .replace(/export default.*?;?\n?/g, '') // Remove exports
-      .replace(/export.*?;?\n?/g, '') // Remove exports
-      .trim();
+      .replace(/#{1,6}\s?.*$/gm, '') // Remove all markdown headers
+      .replace(/^###.*$/gm, '')
+      .replace(/^####.*$/gm, '')
+      .replace(/^Overview.*$/gm, '')
+      .replace(/^Explanation.*$/gm, '')
+      .replace(/^Code.*$/gm, '')
+      .replace(/^Usage.*$/gm, '')
+      .replace(/^This component.*$/gm, '')
+      .replace(/^We define.*$/gm, '')
+      .replace(/^We use.*$/gm, '')
+      .replace(/^We render.*$/gm, '')
+      .replace(/^As a loyal.*$/gm, '')
+      .replace(/^Go Broncos!.*$/gm, '')
+      .replace(/^STRICT INSTRUCTIONS:.*$/gm, '')
+      .replace(/^Finally.*$/gm, '')
+      .replace(/^The component.*$/gm, '')
+      .replace(/^This creates.*$/gm, '')
+      .replace(/^It uses.*$/gm, '')
+      .replace(/^The component is.*$/gm, '')
+      .replace(/^### Explanation[\s\S]*?### Usage/g, '') // Remove explanation sections
+      .replace(/import React.*?;?\n?/g, '')
+      .replace(/import.*?from.*?;?\n?/g, '')
+      .replace(/export default.*?;?\n?/g, '')
+      .replace(/export.*?;?\n?/g, '');
+
+    // Strategy 2: If we still have non-code content, try to extract just the function
+    if (cleaned.includes('function') || cleaned.includes('const') || cleaned.includes('return')) {
+      // Try to find the actual component code
+      const functionMatch = cleaned.match(/(function\s+\w+|const\s+\w+\s*=)/);
+      if (functionMatch) {
+        const startIndex = cleaned.indexOf(functionMatch[0]);
+        // Find the end of the component (last closing brace before rendering)
+        const lastBraceIndex = cleaned.lastIndexOf('}');
+        const renderIndex = cleaned.indexOf('ReactDOM.createRoot');
+        
+        if (startIndex !== -1 && lastBraceIndex !== -1 && renderIndex !== -1) {
+          cleaned = cleaned.substring(startIndex, renderIndex + cleaned.substring(renderIndex).indexOf(');') + 2);
+        }
+      }
+    }
+
+    // Strategy 3: Fix React.useState if needed
+    cleaned = cleaned.replace(/useState\(/g, 'React.useState(');
+    cleaned = cleaned.replace(/useEffect\(/g, 'React.useEffect(');
+
+    // Strategy 4: Remove any remaining non-code lines
+    const lines = cleaned.split('\n').filter(line => {
+      const trimmed = line.trim();
+      return (
+        trimmed.length > 0 &&
+        !trimmed.startsWith('//') &&
+        !trimmed.startsWith('/*') &&
+        !trimmed.startsWith('*') &&
+        !trimmed.endsWith('*/') &&
+        !trimmed.match(/^[#\*\-]/) && // No markdown bullets
+        !trimmed.match(/^[A-Z][a-z]/) && // No sentence starts
+        (trimmed.includes('function') || 
+         trimmed.includes('const') || 
+         trimmed.includes('return') || 
+         trimmed.includes('<') || 
+         trimmed.includes('>') || 
+         trimmed.includes('{') || 
+         trimmed.includes('}') ||
+         trimmed.includes('React.') ||
+         trimmed.includes('style=') ||
+         trimmed.includes('onClick='))
+      );
+    });
+
+    cleaned = lines.join('\n').trim();
+
+    // If we still don't have valid code, create a fallback
+    if (!cleaned || (!cleaned.includes('function') && !cleaned.includes('const') && !cleaned.includes('return'))) {
+      throw new Error("AI returned invalid code format");
+    }
 
     setResponse(cleaned);
 
     const timestamp = new Date().toLocaleTimeString();
     const frameworkLabel = framework === "react" ? "React" : "HTML";
     
-    // Only insert if we have actual code
-    if (cleaned && (cleaned.includes('function') || cleaned.includes('const') || cleaned.includes('<div'))) {
-      onAiInsert(`\n<!-- AI Generated ${frameworkLabel} (${timestamp}): ${prompt.substring(0, 50)}... -->\n${cleaned}\n`);
-    } else {
-      throw new Error("AI returned invalid code format");
-    }
+    onAiInsert(`\n<!-- AI Generated ${frameworkLabel} (${timestamp}): ${prompt.substring(0, 50)}... -->\n${cleaned}\n`);
 
     if (mode === "chat") {
       setChatHistory(prev => [
@@ -580,7 +616,7 @@ EXAMPLE:
       } else if (err.message.includes('404')) {
         userMessage = "API endpoint not found. Check your worker URL.";
       } else if (err.message.includes('invalid code format')) {
-        userMessage = "AI returned invalid code format. Please try again.";
+        userMessage = "AI returned invalid code format. Please try a different prompt.";
       } else {
         userMessage = err.message;
       }
