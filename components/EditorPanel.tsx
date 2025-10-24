@@ -38,18 +38,18 @@ const highlightCode = (code: string, framework: string) => {
   }
 };
 
-// Simple formatting function for React/JSX since Prettier standalone has issues
+
 const formatReactCode = (code: string): string => {
   try {
-    // Basic JSX formatting - add proper indentation
+
     let formatted = code
-      // Add newlines between JSX elements
+  
       .replace(/(>)(<)(\w)/g, '$1\n$2$3')
       .replace(/(>)(<)(\/)/g, '$1\n$2$3')
-      // Indent lines properly
+   
       .split('\n')
       .map(line => {
-        // Simple indentation logic
+     
         if (line.includes('</') && !line.includes('/>')) {
           return line;
         }
@@ -102,10 +102,10 @@ export default function EditorPanel({
       let formatted;
       
       if (framework === "react") {
-        // Use our custom React formatter since Prettier standalone has issues
+   
         formatted = formatReactCode(String(code || ""));
       } else {
-        // For HTML, use Prettier which works fine
+     
         formatted = await prettier.format(String(code || ""), {
           parser: "html",
           plugins: [parserHtml],
@@ -126,7 +126,7 @@ export default function EditorPanel({
   };
 
   const handleClearCode = () => {
-    if (window.confirm("Are you sure you want to clear the editor?")) {
+    if (window.confirm("Are you sure? this will remove all code.")) {
       setCode("");
       addToast("Editor cleared", "warning");
     }
@@ -170,7 +170,7 @@ export default function EditorPanel({
 
   return (
     <div className="panel editor-panel relative">
-      {/* Resize Handle */}
+  
       {onResizeStart && (
         <div
           className="absolute -right-2 top-0 bottom-0 w-4 cursor-col-resize z-20 hover:bg-interactive-accent/20 transition-colors duration-200 rounded"
@@ -178,17 +178,17 @@ export default function EditorPanel({
         />
       )}
 
-      {/* Header */}
+  
       <div className="panel-header">
         <div className="flex items-center gap-3">
-          {/* Header Icon */}
+   
           {framework === "react" ? (
             <img src="./react.svg" className="w-8 h-8" alt="React" />
           ) : (
             <img src="./html5.svg" className="w-8 h-8" alt="HTML5" />
           )}
           
-          {/* Framework Toggle Switch */}
+
           <div className="flex items-center gap-3">
             <button
               onClick={toggleFramework}
@@ -197,14 +197,14 @@ export default function EditorPanel({
                 backgroundColor: framework === "html" ? "var(--surface-secondary)" : "var(--surface-secondary)"
               }}
             >
-              {/* Toggle Knob */}
+            
               <div
                 className="absolute top-1 w-6 h-6 bg-white rounded-full shadow-md transition-all duration-200 flex items-center justify-center"
                 style={{
                   left: framework === "html" ? "4px" : "36px"
                 }}
               >
-                {/* SVG Icons in toggle knob */}
+             
                 {framework === "html" ? (
                   <img src="./html5.svg" className="w-3 h-3" alt="HTML5" />
                 ) : (
@@ -213,7 +213,7 @@ export default function EditorPanel({
               </div>
             </button>
 
-            {/* Framework Labels */}
+       
             <div className="flex flex-col items-start">
               <span className="text-lg font-semibold tracking-tight">
                 {framework === "react" ? "React" : "HTML"}
@@ -274,7 +274,7 @@ export default function EditorPanel({
           ))}
         </div>
 
-        {/* Code Editor */}
+
         <div className="flex-1 relative">
           <Editor
             value={String(code || "")}
@@ -296,7 +296,7 @@ export default function EditorPanel({
         </div>
       </div>
 
-      {/* Footer with stats */}
+     
       <div className="flex justify-between items-center px-4 py-2 text-xs text-text-tertiary border-t border-border-primary bg-surface-secondary rounded-b-lg mt-2">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
@@ -320,7 +320,7 @@ export default function EditorPanel({
         </div>
       </div>
 
-      {/* Toast Notifications */}
+ 
       <div className="fixed top-4 right-4 z-50 space-y-2">
         {toasts.map((toast) => (
           <div
@@ -437,7 +437,7 @@ export default function EditorPanel({
           }
         }
 
-        /* Prism tokens for both HTML and JSX */
+  
         .token.comment { color: #6a737d; }
         .token.punctuation { color: var(--text-primary); }
         .token.tag { color: #e06c75; }
