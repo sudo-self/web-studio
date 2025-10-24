@@ -1,3 +1,5 @@
+//components/GitHubModal.tsx 
+
 "use client";
 
 import { useState } from "react";
@@ -47,116 +49,7 @@ interface CheckboxOptionProps { id: string; label: string; description: string; 
 interface FilesPreviewProps { githubForm: GithubForm; githubUser: GithubUser | null; }
 interface ActionButtonsProps { isCreatingRepo: boolean; isValid: boolean; onCreateRepo: () => void; onCancel: () => void; }
 
-export const GitHubModal = ({
-  showGithubModal,
-  setShowGithubModal,
-  githubToken,
-  setGithubToken,
-  githubUser,
-  setGithubUser,
-  githubForm,
-  setGithubForm,
-  isCreatingRepo,
-  handleCreateRepo,
-  fetchUserInfo
-}: GitHubModalProps) => {
-  const [successData, setSuccessData] = useState<{ html_url: string; pages_url?: string } | null>(null);
-
-  const handleCreateRepoWithSuccess = async () => {
-    if (!githubToken) return;
-    try {
-      await handleCreateRepo(); 
-      setSuccessData({
-        html_url: `https://github.com/${githubUser?.login}/${githubForm.name}`,
-        pages_url: githubForm.deployPages ? `https://${githubUser?.login}.github.io/${githubForm.name}/` : undefined
-      });
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  return (
-  showGithubModal && (
-    <div className="modal-overlay" onClick={() => !isCreatingRepo && setShowGithubModal(false)}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()} role="dialog" aria-labelledby="github-modal-title" aria-modal="true">
-
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-accent-color bg-opacity-10 rounded-xl" aria-hidden="true">
-              <Github size={24} className="text-accent-color" />
-            </div>
-            <div>
-              <h3 id="github-modal-title" className="text-xl font-semibold text-text-primary">Create GitHub Repository</h3>
-              <p className="text-sm text-text-muted mt-2">Deploy your website with GitHub Pages</p>
-            </div>
-          </div>
-          <button
-            onClick={() => setShowGithubModal(false)}
-            className="btn btn-outline btn-sm btn-icon hover:bg-component-hover transition-colors"
-            disabled={isCreatingRepo}
-            aria-label="Close modal"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        {!githubToken ? (
-          <GitHubAuthSection
-            onAuthSuccess={(token) => { setGithubToken(token); localStorage.setItem('github_access_token', token); fetchUserInfo(token); }}
-          />
-        ) : (
-          <>
-            <GitHubConnectedSection
-              githubUser={githubUser}
-              githubForm={githubForm}
-              setGithubForm={setGithubForm}
-              isCreatingRepo={isCreatingRepo}
-              onDisconnect={() => { localStorage.removeItem('github_access_token'); setGithubToken(null); setGithubUser(null); }}
-              onCreateRepo={handleCreateRepoWithSuccess}
-              onCancel={() => setShowGithubModal(false)}
-            />
-
-            {/* Success Message */}
-            {successData && (
-              <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl text-sm space-y-2">
-                <p className="text-green-800 font-medium">
-                  Repository created successfully!
-                </p>
-                <p>
-                  <strong>URL:</strong>{" "}
-                  <a
-                    href={successData.html_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-accent-color underline hover:opacity-80"
-                  >
-                    {successData.html_url}
-                  </a>
-                </p>
-                {successData.pages_url && (
-                  <p>
-                    <strong>Pages:</strong>{" "}
-                    <a
-                      href={successData.pages_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-accent-color underline hover:opacity-80"
-                    >
-                      {successData.pages_url}
-                    </a>
-                  </p>
-                )}
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    </div>
-  )
-);
-
-
+// GitHub Auth Section - MOVED TO TOP
 const GitHubAuthSection = ({ onAuthSuccess }: GitHubAuthSectionProps) => (
   <div className="text-center py-8">
     <div className="p-4 bg-component-bg rounded-2xl w-20 h-20 mx-auto mb-6 flex items-center justify-center border border-panel-border">
@@ -172,7 +65,7 @@ const GitHubAuthSection = ({ onAuthSuccess }: GitHubAuthSectionProps) => (
   </div>
 );
 
-
+// GitHub Connected Section - MOVED TO TOP
 const GitHubConnectedSection = ({
   githubUser,
   githubForm,
@@ -201,7 +94,7 @@ const GitHubConnectedSection = ({
   </div>
 );
 
-// Supporting Components
+// Supporting Components - MOVED TO TOP
 const UserInfoCard = ({ githubUser, onDisconnect, isCreatingRepo }: UserInfoCardProps) => (
   <div className="bg-component-bg rounded-xl border border-panel-border p-5">
     <div className="flex items-center justify-between">
@@ -328,3 +221,118 @@ const ActionButtons = ({ isCreatingRepo, isValid, onCreateRepo, onCancel }: Acti
     </button>
   </div>
 );
+
+// Main Component - NOW AT THE BOTTOM
+export const GitHubModal = ({
+  showGithubModal,
+  setShowGithubModal,
+  githubToken,
+  setGithubToken,
+  githubUser,
+  setGithubUser,
+  githubForm,
+  setGithubForm,
+  isCreatingRepo,
+  handleCreateRepo,
+  fetchUserInfo
+}: GitHubModalProps) => {
+  const [successData, setSuccessData] = useState<{ html_url: string; pages_url?: string } | null>(null);
+
+  const handleCreateRepoWithSuccess = async () => {
+    if (!githubToken) return;
+    try {
+      await handleCreateRepo(); 
+      setSuccessData({
+        html_url: `https://github.com/${githubUser?.login}/${githubForm.name}`,
+        pages_url: githubForm.deployPages ? `https://${githubUser?.login}.github.io/${githubForm.name}/` : undefined
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  return (
+    showGithubModal && (
+      <div className="modal-overlay" onClick={() => !isCreatingRepo && setShowGithubModal(false)}>
+        <div className="modal-content" onClick={(e) => e.stopPropagation()} role="dialog" aria-labelledby="github-modal-title" aria-modal="true">
+
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-accent-color bg-opacity-10 rounded-xl" aria-hidden="true">
+                <Github size={24} className="text-accent-color" />
+              </div>
+              <div>
+                <h3 id="github-modal-title" className="text-xl font-semibold text-text-primary">Create GitHub Repository</h3>
+                <p className="text-sm text-text-muted mt-2">Deploy your website with GitHub Pages</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowGithubModal(false)}
+              className="btn btn-outline btn-sm btn-icon hover:bg-component-hover transition-colors"
+              disabled={isCreatingRepo}
+              aria-label="Close modal"
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          {!githubToken ? (
+            <GitHubAuthSection
+              onAuthSuccess={(token) => { setGithubToken(token); localStorage.setItem('github_access_token', token); fetchUserInfo(token); }}
+            />
+          ) : (
+            <>
+              <GitHubConnectedSection
+                githubUser={githubUser}
+                githubForm={githubForm}
+                setGithubForm={setGithubForm}
+                isCreatingRepo={isCreatingRepo}
+                onDisconnect={() => { localStorage.removeItem('github_access_token'); setGithubToken(null); setGithubUser(null); }}
+                onCreateRepo={handleCreateRepoWithSuccess}
+                onCancel={() => setShowGithubModal(false)}
+              />
+
+              {/* Success Message */}
+              {successData && (
+                <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl text-sm space-y-2">
+                  <p className="text-green-800 font-medium">
+                    Repository created successfully!
+                  </p>
+                  <p>
+                    <strong>URL:</strong>{" "}
+                    <a
+                      href={successData.html_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-accent-color underline hover:opacity-80"
+                    >
+                      {successData.html_url}
+                    </a>
+                  </p>
+                  {successData.pages_url && (
+                    <p>
+                      <strong>Pages:</strong>{" "}
+                      <a
+                        href={successData.pages_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-accent-color underline hover:opacity-80"
+                      >
+                        {successData.pages_url}
+                      </a>
+                    </p>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    )
+  );
+};
+
+
+
+
