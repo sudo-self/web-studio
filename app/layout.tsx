@@ -76,13 +76,32 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <head />
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "@id": "https://studio.jessejesse.com/#website",
+              url: "https://studio.jessejesse.com",
+              name: "studio.JesseJesse.com",
+              description: "Build websites with AI assistance",
+              publisher: {
+                "@id": "https://studio.jessejesse.com/#organization",
+              },
+              inLanguage: "en-US",
+            }),
+          }}
+        />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <SettingsProvider>{children}</SettingsProvider>
       </body>
     </html>
   );
 }
+
 
 
 
