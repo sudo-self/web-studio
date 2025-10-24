@@ -12,6 +12,17 @@ import {
 } from "lucide-react";
 import { useSettings } from "@/contexts/SettingsContext";
 
+const componentCategories: ComponentCategories = {
+  "Layout": ["header", "hero", "about", "services", "contact", "footer", "sidebar"],
+  "Navigation": ["navbar", "breadcrumb", "breadcrumb-advanced", "mega-menu"],
+  "Content": ["card", "gallery", "team", "testimonials", "stats", "timeline", "faq"],
+  "Forms": ["contact", "login-form", "newsletter", "search-bar", "toggle-switch"],
+  "UI Components": ["modal", "progress", "pricing", "primary-button", "secondary-button", "button-group"],
+  "Documentation": ["readme-basic", "readme-advanced"],
+  "SEO": ["seo", "seo-schema"],
+  "Icons": ["social-icons", "feature-icons", "font-icons"]
+};
+
 
 type AiMode = "response" | "chat";
 type ChatRole = "user" | "assistant";
@@ -1534,15 +1545,4 @@ const renderAISection = () => (
         tags: ["navigation", "breadcrumb", "icons"]
       }
     };
-
-const componentCategories: ComponentCategories = {
-  "Layout": ["header", "hero", "about", "services", "contact", "footer", "sidebar"],
-  "Navigation": ["navbar", "breadcrumb", "breadcrumb-advanced", "mega-menu"],
-  "Content": ["card", "gallery", "team", "testimonials", "stats", "timeline", "faq"],
-  "Forms": ["contact", "login-form", "newsletter", "search-bar", "toggle-switch"],
-  "UI Components": ["modal", "progress", "pricing", "primary-button", "secondary-button", "button-group"],
-  "Documentation": ["readme-basic", "readme-advanced"],
-  "SEO": ["seo", "seo-schema"],
-  "Icons": ["social-icons", "feature-icons", "font-icons"]
-};
           }
