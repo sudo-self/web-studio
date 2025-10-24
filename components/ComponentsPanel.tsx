@@ -1545,3 +1545,4 @@ const componentCategories: ComponentCategories = {
   "SEO": ["seo", "seo-schema"],
   "Icons": ["social-icons", "feature-icons", "font-icons"]
 };
+          }
