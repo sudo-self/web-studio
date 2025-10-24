@@ -95,7 +95,7 @@ export default function Home() {
     }
 
     .welcome-content {
-      max-width: 600px;
+      max-width: 580px;
       text-align: center;
       animation: fadeInUp 0.8s ease-out;
     }
@@ -418,7 +418,7 @@ root.render(React.createElement(WelcomeApp));`;
   const startXRef = useRef<number>(0);
   const startWidthsRef = useRef(panelWidths);
 
-  // Update code when framework changes
+
   useEffect(() => {
     if (framework === "react") {
       setCode(reactCode);
@@ -505,7 +505,7 @@ root.render(React.createElement(WelcomeApp));`;
             style={{
               width: `${panelWidths.components}px`,
               minWidth: "240px",
-              maxWidth: "500px",
+              maxWidth: "480px",
               flex: "0 0 auto",
             }}
           >
