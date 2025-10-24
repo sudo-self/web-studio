@@ -184,7 +184,7 @@ const FRAMEWORK_CONFIGS: Record<Framework, FrameworkConfig> = {
       border: none;
       padding: 1rem 2.5rem;
       font-size: 1.125rem;
-      font-weight: 600;
+      fontWeight: 600;
       cursor: pointer;
       border-radius: 12px;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -580,6 +580,16 @@ export default function Home() {
     }
   }, [canRedo, historyIndex, codeHistory]);
 
+  // Framework change handler that accepts string
+  const handleFrameworkChange = useCallback((newFramework: string) => {
+    // Validate that the string is a valid Framework type
+    if (newFramework === "html" || newFramework === "react") {
+      setFramework(newFramework as Framework);
+    } else {
+      console.warn(`Invalid framework: ${newFramework}`);
+    }
+  }, []);
+
   return (
     <>
       <div className="app-container">
@@ -624,7 +634,7 @@ export default function Home() {
               formatCode={formatCode}
               onResizeStart={(e) => handleResizeStart("editor", e)}
               framework={framework}
-              setFramework={setFramework}
+              setFramework={handleFrameworkChange}
               onUndo={handleUndo}
               onRedo={handleRedo}
               canUndo={canUndo}
