@@ -23,6 +23,700 @@ const componentCategories: ComponentCategories = {
   "Icons": ["social-icons", "feature-icons", "font-icons"]
 };
 
+  const components: { [key: string]: ComponentInfo } = {
+      header: {
+        code: `<!-- Header Component -->
+    <header style="background-color: #333; color: white; padding: 1rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto;">
+        <h1 style="margin: 0;">My Website</h1>
+        <nav>
+          <a href="#" style="color: white; margin: 0 10px; text-decoration: none;">Home</a>
+          <a href="#" style="color: white; margin: 0 10px; text-decoration: none;">About</a>
+          <a href="#" style="color: white; margin: 0 10px; text-decoration: none;">Contact</a>
+        </nav>
+      </div>
+    </header>`,
+        description: "Website header with navigation",
+        tags: ["layout", "navigation", "header"]
+      },
+      hero: {
+        code: `<!-- Hero Section -->
+    <section style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 4rem 2rem; text-align: center;">
+      <div style="max-width: 800px; margin: 0 auto;">
+        <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">World Wide Web</h2>
+        <p style="font-size: 1.2rem; margin-bottom: 2rem;">We create amazing digital experiences</p>
+        <button style="background: white; color: #333; border: none; padding: 12px 30px; font-size: 1rem; border-radius: 5px; cursor: pointer;">Get Started</button>
+      </div>
+    </section>`,
+        description: "Hero section with call-to-action",
+        tags: ["layout", "hero", "cta"]
+      },
+      about: {
+        code: `<!-- About Section -->
+    <section style="padding: 4rem 2rem; background-color: #f9f9f9;">
+      <div style="max-width: 800px; margin: 0 auto;">
+        <h2 style="text-align: center; margin-bottom: 2rem; color: #333;">About Us</h2>
+        <p style="line-height: 1.6; margin-bottom: 1rem; color: #666;">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+        <p style="line-height: 1.6; color: #666;">Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.</p>
+      </div>
+    </section>`,
+        description: "About section with company information",
+        tags: ["layout", "content", "about"]
+      },
+      services: {
+        code: `<!-- Services Section -->
+    <section style="padding: 4rem 2rem; background-color: white;">
+      <div style="max-width: 1200px; margin: 0 auto;">
+        <h2 style="text-align: center; margin-bottom: 3rem; color: #333;">Our Services</h2>
+        <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 2rem;">
+          <div style="flex: 1; min-width: 250px; background: #f9f9f9; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h3 style="color: #333;">Web Design</h3>
+            <p style="color: #666;">Beautiful and responsive web designs.</p>
+          </div>
+          <div style="flex: 1; min-width: 250px; background: #f9f9f9; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h3 style="color: #333;">Development</h3>
+            <p style="color: #666;">Custom web applications.</p>
+          </div>
+        </div>
+      </div>
+    </section>`,
+        description: "Services showcase section",
+        tags: ["layout", "content", "services"]
+      },
+      contact: {
+        code: `<!-- Contact Form -->
+    <section style="padding: 4rem 2rem; background-color: #f9f9f9;">
+      <div style="max-width: 600px; margin: 0 auto;">
+        <h2 style="text-align: center; margin-bottom: 2rem; color: #333;">Contact Us</h2>
+        <form style="background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 5px; color: #333;">Name</label>
+            <input type="text" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 5px; color: #333;">Email</label>
+            <input type="email" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+          </div>
+          <button type="submit" style="background: #333; color: white; border: none; padding: 12px 30px; border-radius: 4px; cursor: pointer; width: 100%;">Send Message</button>
+        </form>
+      </div>
+    </section>`,
+        description: "Contact form section",
+        tags: ["forms", "contact"]
+      },
+      footer: {
+        code: `<!-- Footer -->
+    <footer style="background-color: #333; color: white; padding: 2rem; text-align: center;">
+      <div style="max-width: 1200px; margin: 0 auto;">
+        <p>&copy; 2024 My Website. All rights reserved.</p>
+        <div style="margin-top: 1rem;">
+          <a href="#" style="color: white; margin: 0 10px; text-decoration: none;">Privacy Policy</a>
+          <a href="#" style="color: white; margin: 0 10px; text-decoration: none;">Terms of Service</a>
+        </div>
+      </div>
+    </footer>`,
+        description: "Website footer",
+        tags: ["layout", "footer"]
+      },
+      card: {
+        code: `<!-- Card Component -->
+    <div style="background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; max-width: 300px; margin: 0 auto;">
+      <img src="https://studio-website-builder.vercel.app/icon-512.png" alt="Card Image" style="width: 100%; height: auto;">
+      <div style="padding: 1.5rem;">
+        <h3 style="margin-bottom: 0.5rem; color: #333;">Card Title</h3>
+        <p style="color: #666; margin-bottom: 1rem;">This is a sample card with example content.</p>
+        <button style="background: #333; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Learn More</button>
+      </div>
+    </div>`,
+        description: "Card component with image and text",
+        tags: ["ui", "card", "content"]
+      },
+      gallery: {
+        code: `<!-- Image Gallery -->
+    <section style="padding: 2rem; background-color: white;">
+      <div style="max-width: 1200px; margin: 0 auto;">
+        <h2 style="text-align: center; margin-bottom: 2rem; color: #333;">Image Gallery</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+          <img src="https://studio-website-builder.vercel.app/icon-512.png" alt="Gallery Image" style="width: 100%; height: auto; border-radius: 8px;">
+          <img src="https://studio-website-builder.vercel.app/icon-512.png" alt="Gallery Image" style="width: 100%; height: auto; border-radius: 8px;">
+        </div>
+      </div>
+    </section>`,
+        description: "Image gallery grid",
+        tags: ["content", "gallery", "images"]
+      },
+      seo: {
+        code: `<!-- SEO Meta Tags -->
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Your Website Title</title>
+      <meta name="description" content="Your website description for SEO">
+      <meta name="keywords" content="your, keywords, here">
+      <meta name="author" content="Your Name">
+      <meta property="og:title" content="Your Website Title">
+      <meta property="og:description" content="Your website description">
+      <meta property="og:type" content="website">
+      <meta property="og:url" content="https://yourwebsite.com">
+      <meta name="twitter:card" content="summary_large_image">
+      <meta name="twitter:title" content="Your Website Title">
+      <meta name="twitter:description" content="Your website description">
+      <link rel="canonical" href="https://yourwebsite.com">
+    </head>`,
+        description: "SEO meta tags for head section",
+        tags: ["seo", "meta", "head"]
+      },
+      "seo-schema": {
+        code: `<!-- Schema.org Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Your Website Name",
+      "url": "https://yourwebsite.com",
+      "description": "Your website description",
+      "publisher": {
+        "@type": "Organization",
+        "name": "Your Organization"
+      }
+    }
+    </script>`,
+        description: "Schema.org structured data",
+        tags: ["seo", "schema", "structured-data"]
+      },
+      "social-icons": {
+        code: `<!-- Social Media Icons with Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <div style="display: flex; gap: 15px; justify-content: center; padding: 2rem;">
+      <a href="#" style="color: #333; text-decoration: none; font-size: 24px;">
+        <i class="fab fa-facebook"></i>
+      </a>
+      <a href="#" style="color: #333; text-decoration: none; font-size: 24px;">
+        <i class="fab fa-twitter"></i>
+      </a>
+      <a href="#" style="color: #333; text-decoration: none; font-size: 24px;">
+        <i class="fab fa-instagram"></i>
+      </a>
+      <a href="#" style="color: #333; text-decoration: none; font-size: 24px;">
+        <i class="fab fa-linkedin"></i>
+      </a>
+      <a href="#" style="color: #333; text-decoration: none; font-size: 24px;">
+        <i class="fab fa-youtube"></i>
+      </a>
+    </div>`,
+        description: "Social media icons",
+        tags: ["icons", "social", "ui"]
+      },
+      "feature-icons": {
+        code: `<!-- Feature Icons Section -->
+    <section style="padding: 4rem 2rem; background-color: #f8fafc;">
+      <div style="max-width: 1200px; margin: 0 auto;">
+        <h2 style="text-align: center; margin-bottom: 3rem; color: #333;">Our Features</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+          <div style="text-align: center;">
+            <div style="margin-bottom: 1rem; color: #667eea;">
+              <i class="fas fa-bolt" style="font-size: 48px;"></i>
+            </div>
+            <h3 style="color: #333; margin-bottom: 1rem;">Fast Performance</h3>
+            <p style="color: #666;">Lightning fast loading times and smooth interactions.</p>
+          </div>
+          <div style="text-align: center;">
+            <div style="margin-bottom: 1rem; color: #667eea;">
+              <i class="fas fa-shield-alt" style="font-size: 48px;"></i>
+            </div>
+            <h3 style="color: #333; margin-bottom: 1rem;">Secure</h3>
+            <p style="color: #666;">Enterprise-grade security for your peace of mind.</p>
+          </div>
+          <div style="text-align: center;">
+            <div style="margin-bottom: 1rem; color: #667eea;">
+              <i class="fas fa-mobile-alt" style="font-size: 48px;"></i>
+            </div>
+            <h3 style="color: #333; margin-bottom: 1rem;">Responsive</h3>
+            <p style="color: #666;">Looks great on all devices and screen sizes.</p>
+          </div>
+        </div>
+      </div>
+    </section>`,
+        description: "Feature showcase with icons",
+        tags: ["content", "features", "icons"]
+      },
+      "font-icons": {
+        code: `<!-- Font Awesome Icons (CDN) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <div style="display: flex; gap: 20px; justify-content: center; padding: 2rem;">
+      <i class="fas fa-home" style="font-size: 24px; color: #333;"></i>
+      <i class="fas fa-envelope" style="font-size: 24px; color: #333;"></i>
+      <i class="fas fa-phone" style="font-size: 24px; color: #333;"></i>
+      <i class="fas fa-share-alt" style="font-size: 24px; color: #333;"></i>
+    </div>`,
+        description: "Font Awesome icons",
+        tags: ["icons", "ui"]
+      },
+      navbar: {
+        code: `<!-- Modern Navigation Bar -->
+    <nav style="background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 1rem 2rem;">
+      <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+        <div style="font-size: 1.5rem; font-weight: bold; color: #333;">Logo</div>
+        <div style="display: flex; gap: 2rem;">
+          <a href="#" style="text-decoration: none; color: #333; font-weight: 500;">Home</a>
+          <a href="#" style="text-decoration: none; color: #333; font-weight: 500;">About</a>
+          <a href="#" style="text-decoration: none; color: #333; font-weight: 500;">Services</a>
+          <a href="#" style="text-decoration: none; color: #333; font-weight: 500;">Contact</a>
+        </div>
+        <button style="background: #667eea; color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer;">Get Started</button>
+      </div>
+    </nav>`,
+        description: "Modern navigation bar",
+        tags: ["navigation", "header", "ui"]
+      },
+      sidebar: {
+        code: `<!-- Sidebar Navigation -->
+    <div style="display: flex; min-height: 400px;">
+      <aside style="width: 250px; background: #2d3748; color: white; padding: 2rem;">
+        <h3 style="margin-bottom: 2rem;">Menu</h3>
+        <nav style="display: flex; flex-direction: column; gap: 1rem;">
+          <a href="#" style="color: white; text-decoration: none; padding: 0.5rem; border-radius: 4px; background: #4a5568;">Dashboard</a>
+          <a href="#" style="color: white; text-decoration: none; padding: 0.5rem; border-radius: 4px;">Profile</a>
+          <a href="#" style="color: white; text-decoration: none; padding: 0.5rem; border-radius: 4px;">Settings</a>
+          <a href="#" style="color: white; text-decoration: none; padding: 0.5rem; border-radius: 4px;">Messages</a>
+        </nav>
+      </aside>
+      <main style="flex: 1; padding: 2rem; background: #f7fafc;">
+        <h2>Main Content Area</h2>
+        <p>Your content goes here...</p>
+      </main>
+    </div>`,
+        description: "Sidebar navigation layout",
+        tags: ["layout", "navigation", "sidebar"]
+      },
+      pricing: {
+        code: `<!-- Pricing Cards -->
+    <section style="padding: 4rem 2rem; background: #f8fafc;">
+      <div style="max-width: 1200px; margin: 0 auto;">
+        <h2 style="text-align: center; margin-bottom: 3rem; color: #333;">Choose Your Plan</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
+          <div style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center;">
+            <h3 style="color: #333;">Basic</h3>
+            <div style="font-size: 2rem; font-weight: bold; color: #667eea; margin: 1rem 0;">$19<span style="font-size: 1rem; color: #666;">/month</span></div>
+            <ul style="list-style: none; padding: 0; margin: 2rem 0;">
+              <li style="padding: 0.5rem 0;">5 Projects</li>
+              <li style="padding: 0.5rem 0;">10GB Storage</li>
+              <li style="padding: 0.5rem 0;">Basic Support</li>
+            </ul>
+            <button style="background: #667eea; color: white; border: none; padding: 12px 30px; border-radius: 5px; cursor: pointer; width: 100%;">Get Started</button>
+          </div>
+          <div style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 8px 15px rgba(0,0,0,0.1); text-align: center; border: 2px solid #667eea;">
+            <div style="background: #667eea; color: white; padding: 0.5rem; border-radius: 5px; margin: -2rem -2rem 1rem -2rem;">Most Popular</div>
+            <h3 style="color: #333;">Pro</h3>
+            <div style="font-size: 2rem; font-weight: bold; color: #667eea; margin: 1rem 0;">$49<span style="font-size: 1rem; color: #666;">/month</span></div>
+            <ul style="list-style: none; padding: 0; margin: 2rem 0;">
+              <li style="padding: 0.5rem 0;">Unlimited Projects</li>
+              <li style="padding: 0.5rem 0;">50GB Storage</li>
+              <li style="padding: 0.5rem 0;">Priority Support</li>
+            </ul>
+            <button style="background: #667eea; color: white; border: none; padding: 12px 30px; border-radius: 5px; cursor: pointer; width: 100%;">Get Started</button>
+          </div>
+        </div>
+      </div>
+    </section>`,
+        description: "Pricing cards section",
+        tags: ["ui", "pricing", "cards"]
+      },
+      testimonials: {
+        code: `<!-- Testimonials Section -->
+    <section style="padding: 4rem 2rem; background: white;">
+      <div style="max-width: 1200px; margin: 0 auto;">
+        <h2 style="text-align: center; margin-bottom: 3rem; color: #333;">What Our Clients Say</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+          <div style="background: #f8fafc; padding: 2rem; border-radius: 10px; border-left: 4px solid #667eea;">
+            <div style="color: #667eea; font-size: 1.5rem; margin-bottom: 1rem;">"</div>
+            <p style="color: #666; line-height: 1.6; margin-bottom: 1rem;">This service has completely transformed our business. The results were beyond our expectations!</p>
+            <div style="font-weight: bold; color: #333;">- Sarah Johnson</div>
+            <div style="color: #666; font-size: 0.9rem;">CEO, Tech Solutions</div>
+          </div>
+          <div style="background: #f8fafc; padding: 2rem; border-radius: 10px; border-left: 4px solid #667eea;">
+            <div style="color: #667eea; font-size: 1.5rem; margin-bottom: 1rem;">"</div>
+            <p style="color: #666; line-height: 1.6; margin-bottom: 1rem;">Outstanding quality and professional service. Highly recommended for any business.</p>
+            <div style="font-weight: bold; color: #333;">- Michael Chen</div>
+            <div style="color: #666; font-size: 0.9rem;">Marketing Director</div>
+          </div>
+        </div>
+      </div>
+    </section>`,
+        description: "Customer testimonials section",
+        tags: ["content", "testimonials", "social-proof"]
+      },
+      stats: {
+        code: `<!-- Statistics Section -->
+    <section style="padding: 4rem 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+      <div style="max-width: 1200px; margin: 0 auto;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; text-align: center;">
+          <div>
+            <div style="font-size: 3rem; font-weight: bold; margin-bottom: 0.5rem;">500+</div>
+            <div style="font-size: 1.1rem;">Happy Clients</div>
+          </div>
+          <div>
+            <div style="font-size: 3rem; font-weight: bold; margin-bottom: 0.5rem;">99%</div>
+            <div style="font-size: 1.1rem;">Satisfaction Rate</div>
+          </div>
+          <div>
+            <div style="font-size: 3rem; font-weight: bold; margin-bottom: 0.5rem;">24/7</div>
+            <div style="font-size: 1.1rem;">Support</div>
+          </div>
+          <div>
+            <div style="font-size: 3rem; font-weight: bold; margin-bottom: 0.5rem;">5+</div>
+            <div style="font-size: 1.1rem;">Years Experience</div>
+          </div>
+        </div>
+      </div>
+    </section>`,
+        description: "Statistics counter section",
+        tags: ["content", "stats", "numbers"]
+      },
+      "login-form": {
+        code: `<!-- Login Form -->
+    <div style="max-width: 400px; margin: 2rem auto; padding: 2rem; background: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+      <h2 style="text-align: center; margin-bottom: 2rem; color: #333;">Welcome Back</h2>
+      <form>
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; margin-bottom: 0.5rem; color: #333; font-weight: 500;">Email</label>
+          <input type="email" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;" placeholder="Enter your email">
+        </div>
+        <div style="margin-bottom: 1.5rem;">
+          <label style="display: block; margin-bottom: 0.5rem; color: #333; font-weight: 500;">Password</label>
+          <input type="password" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;" placeholder="Enter your password">
+        </div>
+        <button type="submit" style="width: 100%; background: #667eea; color: white; border: none; padding: 12px; border-radius: 5px; font-size: 1rem; cursor: pointer;">Sign In</button>
+      </form>
+      <div style="text-align: center; margin-top: 1rem;">
+        <a href="#" style="color: #667eea; text-decoration: none;">Forgot password?</a>
+      </div>
+    </div>`,
+        description: "Login form component",
+        tags: ["forms", "login", "authentication"]
+      },
+      newsletter: {
+        code: `<!-- Newsletter Signup -->
+    <section style="padding: 4rem 2rem; background: #667eea; color: white;">
+      <div style="max-width: 600px; margin: 0 auto; text-align: center;">
+        <h2 style="margin-bottom: 1rem;">Stay Updated</h2>
+        <p style="margin-bottom: 2rem; opacity: 0.9;">Subscribe to our newsletter for the latest updates and offers.</p>
+        <form style="display: flex; gap: 1rem; max-width: 400px; margin: 0 auto;">
+          <input type="email" placeholder="Enter your email" style="flex: 1; padding: 12px; border: none; border-radius: 5px; font-size: 1rem;">
+          <button type="submit" style="background: white; color: #667eea; border: none; padding: 12px 24px; border-radius: 5px; font-size: 1rem; cursor: pointer; font-weight: bold;">Subscribe</button>
+        </form>
+      </div>
+    </section>`,
+        description: "Newsletter signup form",
+        tags: ["forms", "newsletter", "marketing"]
+      },
+      team: {
+        code: `<!-- Team Section -->
+    <section style="padding: 4rem 2rem; background: #f8fafc;">
+      <div style="max-width: 1200px; margin: 0 auto;">
+        <h2 style="text-align: center; margin-bottom: 3rem; color: #333;">Meet Our Team</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+          <div style="text-align: center; background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <img src="https://studio-website-builder.vercel.app/icon-512.png" alt="Team Member" style="width: 150px; height: 150px; border-radius: 50%; margin: 0 auto 1rem;">
+            <h3 style="color: #333; margin-bottom: 0.5rem;">John Doe</h3>
+            <div style="color: #667eea; margin-bottom: 1rem;">CEO & Founder</div>
+            <p style="color: #666;">Visionary leader with 10+ years of experience in the industry.</p>
+          </div>
+          <div style="text-align: center; background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <img src="https://studio-website-builder.vercel.app/icon-512.png" alt="Team Member" style="width: 150px; height: 150px; border-radius: 50%; margin: 0 auto 1rem;">
+            <h3 style="color: #333; margin-bottom: 0.5rem;">Jane Smith</h3>
+            <div style="color: #667eea; margin-bottom: 1rem;">Creative Director</div>
+            <p style="color: #666;">Award-winning designer with a passion for innovation.</p>
+          </div>
+        </div>
+      </div>
+    </section>`,
+        description: "Team member showcase",
+        tags: ["content", "team", "about"]
+      },
+      faq: {
+        code: `<!-- FAQ Section -->
+    <section style="padding: 4rem 2rem; background: white;">
+      <div style="max-width: 800px; margin: 0 auto;">
+        <h2 style="text-align: center; margin-bottom: 3rem; color: #333;">Frequently Asked Questions</h2>
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem;">
+            <h3 style="color: #333; margin-bottom: 0.5rem;">What is your refund policy?</h3>
+            <p style="color: #666; margin: 0;">We offer a 30-day money-back guarantee for all our plans. If you're not satisfied, we'll refund your payment.</p>
+          </div>
+          <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem;">
+            <h3 style="color: #333; margin-bottom: 0.5rem;">Do you offer technical support?</h3>
+            <p style="color: #666; margin: 0;">Yes, we provide 24/7 technical support for all our customers via email, chat, and phone.</p>
+          </div>
+          <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem;">
+            <h3 style="color: #333; margin-bottom: 0.5rem;">Can I upgrade my plan later?</h3>
+            <p style="color: #666; margin: 0;">Absolutely! You can upgrade or downgrade your plan at any time from your account dashboard.</p>
+          </div>
+        </div>
+      </div>
+    </section>`,
+        description: "FAQ accordion section",
+        tags: ["content", "faq", "help"]
+      },
+      breadcrumb: {
+        code: `<!-- Breadcrumb Navigation -->
+    <nav style="padding: 1rem 2rem; background: #f7fafc;">
+      <div style="max-width: 1200px; margin: 0 auto;">
+        <div style="display: flex; gap: 0.5rem; font-size: 0.9rem;">
+          <a href="#" style="color: #667eea; text-decoration: none;">Home</a>
+          <span style="color: #a0aec0;">/</span>
+          <a href="#" style="color: #667eea; text-decoration: none;">Category</a>
+          <span style="color: #a0aec0;">/</span>
+          <span style="color: #718096;">Current Page</span>
+        </div>
+      </div>
+    </nav>`,
+        description: "Breadcrumb navigation",
+        tags: ["navigation", "breadcrumb", "ui"]
+      },
+      modal: {
+        code: `<!-- Modal Dialog -->
+    <div style="background: rgba(0,0,0,0.5); position: fixed; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; z-index: 1000;">
+      <div style="background: white; padding: 2rem; border-radius: 10px; max-width: 500px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <h2 style="margin-bottom: 1rem; color: #333;">Modal Title</h2>
+        <p style="color: #666; margin-bottom: 2rem;">This is a sample modal dialog. You can put any content here.</p>
+        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+          <button style="background: #e2e8f0; color: #4a5568; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Cancel</button>
+          <button style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Confirm</button>
+        </div>
+      </div>
+    </div>`,
+        description: "Modal dialog component",
+        tags: ["ui", "modal", "dialog"]
+      },
+      progress: {
+        code: `<!-- Progress Bars -->
+    <div style="max-width: 600px; margin: 2rem auto; padding: 2rem; background: white; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+      <h3 style="margin-bottom: 2rem; color: #333;">Skills & Progress</h3>
+      <div style="margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: between; margin-bottom: 0.5rem;">
+          <span style="color: #333;">Web Design</span>
+          <span style="color: #667eea;">90%</span>
+        </div>
+        <div style="background: #e2e8f0; border-radius: 10px; height: 8px;">
+          <div style="background: #667eea; height: 100%; width: 90%; border-radius: 10px;"></div>
+        </div>
+      </div>
+      <div style="margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: between; margin-bottom: 0.5rem;">
+          <span style="color: #333;">Development</span>
+          <span style="color: #667eea;">75%</span>
+        </div>
+        <div style="background: #e2e8f0; border-radius: 10px; height: 8px;">
+          <div style="background: #667eea; height: 100%; width: 75%; border-radius: 10px;"></div>
+        </div>
+      </div>
+    </div>`,
+        description: "Progress bar component",
+        tags: ["ui", "progress", "skills"]
+      },
+      timeline: {
+        code: `<!-- Timeline -->
+    <div style="max-width: 800px; margin: 2rem auto; padding: 2rem;">
+      <h3 style="margin-bottom: 2rem; color: #333; text-align: center;">Our Journey</h3>
+      <div style="position: relative;">
+        <div style="display: flex; margin-bottom: 2rem;">
+          <div style="flex: 0 0 100px; text-align: right; padding-right: 2rem;">
+            <div style="font-weight: bold; color: #667eea;">2020</div>
+          </div>
+          <div style="flex: 1; padding-left: 2rem; border-left: 2px solid #667eea; position: relative;">
+            <div style="width: 12px; height: 12px; background: #667eea; border-radius: 50%; position: absolute; left: -7px; top: 5px;"></div>
+            <h4 style="color: #333; margin-bottom: 0.5rem;">Company Founded</h4>
+            <p style="color: #666; margin: 0;">Started our journey with a small team and big dreams.</p>
+          </div>
+        </div>
+        <div style="display: flex; margin-bottom: 2rem;">
+          <div style="flex: 0 0 100px; text-align: right; padding-right: 2rem;">
+            <div style="font-weight: bold; color: #667eea;">2022</div>
+          </div>
+          <div style="flex: 1; padding-left: 2rem; border-left: 2px solid #667eea; position: relative;">
+            <div style="width: 12px; height: 12px; background: #667eea; border-radius: 50%; position: absolute; left: -7px; top: 5px;"></div>
+            <h4 style="color: #333; margin-bottom: 0.5rem;">Series A Funding</h4>
+            <p style="color: #666; margin: 0;">Raised $5M to expand our services and team.</p>
+          </div>
+        </div>
+      </div>
+    </div>`,
+        description: "Timeline component",
+        tags: ["content", "timeline", "history"]
+      },
+
+      "primary-button": {
+        code: `<!-- Primary Button -->
+    <button style="background: #667eea; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 1rem; font-weight: 500; cursor: pointer; transition: all 0.2s ease;">
+      Primary Button
+    </button>`,
+        description: "Primary action button",
+        tags: ["ui", "button", "interactive"]
+      },
+      "secondary-button": {
+        code: `<!-- Secondary Button -->
+    <button style="background: transparent; color: #667eea; border: 2px solid #667eea; padding: 10px 22px; border-radius: 6px; font-size: 1rem; font-weight: 500; cursor: pointer; transition: all 0.2s ease;">
+      Secondary Button
+    </button>`,
+        description: "Secondary action button",
+        tags: ["ui", "button", "interactive"]
+      },
+      "button-group": {
+        code: `<!-- Button Group -->
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+      <button style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">Primary</button>
+      <button style="background: transparent; color: #667eea; border: 2px solid #667eea; padding: 8px 18px; border-radius: 6px; cursor: pointer;">Secondary</button>
+      <button style="background: #e2e8f0; color: #4a5568; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">Default</button>
+    </div>`,
+        description: "Group of buttons",
+        tags: ["ui", "button", "group"]
+      },
+
+      "readme-basic": {
+        code: `<!-- Basic README Template -->
+    <div style="max-width: 800px; margin: 0 auto; padding: 2rem; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+      <h1 style="color: #333; border-bottom: 2px solid #667eea; padding-bottom: 0.5rem;">Project Name</h1>
+      
+      <div style="background: #f8fafc; padding: 1rem; border-radius: 6px; margin: 1rem 0;">
+        <p style="margin: 0; color: #4a5568;">A brief description of your project.</p>
+      </div>
+
+      <h2 style="color: #333; margin-top: 2rem;">Features</h2>
+      <ul style="color: #4a5568;">
+        <li>Feature 1</li>
+        <li>Feature 2</li>
+        <li>Feature 3</li>
+      </ul>
+
+      <h2 style="color: #333; margin-top: 2rem;">Installation</h2>
+      <pre style="background: #2d3748; color: #e2e8f0; padding: 1rem; border-radius: 6px;">
+    npm install</pre>
+
+      <h2 style="color: #333; margin-top: 2rem;">Usage</h2>
+      <pre style="background: #2d3748; color: #e2e8f0; padding: 1rem; border-radius: 6px;">
+    npm start</pre>
+    </div>`,
+        description: "Basic README template",
+        tags: ["documentation", "readme", "markdown"]
+      },
+      
+      "readme-advanced": {
+        code: `<!-- Advanced README Template -->
+    <div style="max-width: 800px; margin: 0 auto; padding: 2rem; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+      <div style="text-align: center; margin-bottom: 3rem;">
+        <h1 style="color: #333; margin-bottom: 0.5rem;">Project Name</h1>
+        <p style="color: #666; font-size: 1.2rem;">A modern web application</p>
+        <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1rem;">
+          <span style="background: #667eea; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.875rem;">JavaScript</span>
+          <span style="background: #48bb78; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.875rem;">HTML5</span>
+          <span style="background: #ed8936; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.875rem;">CSS3</span>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin: 2rem 0;">
+        <div style="text-align: center;">
+          <h3 style="color: #333;">Fast</h3>
+          <p style="color: #666;">Lightning fast performance</p>
+        </div>
+        <div style="text-align: center;">
+          <h3 style="color: #333;">Responsive</h3>
+          <p style="color: #666;">Works on all devices</p>
+        </div>
+        <div style="text-align: center;">
+          <h3 style="color: #333;">Modern</h3>
+          <p style="color: #666;">Clean, modern design</p>
+        </div>
+      </div>
+
+      <h2 style="color: #333; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">Quick Start</h2>
+      <div style="background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden;">
+        <div style="background: #edf2f7; padding: 0.5rem 1rem; font-weight: 500; color: #4a5568;">Terminal</div>
+        <pre style="margin: 0; padding: 1rem; background: #2d3748; color: #e2e8f0;">
+    git clone https://github.com/user/repo.git
+    cd project
+    npm install
+    npm run dev</pre>
+      </div>
+    </div>`,
+        description: "Advanced README with badges",
+        tags: ["documentation", "readme", "badges"]
+      },
+      
+      "search-bar": {
+        code: `<!-- Search Bar -->
+    <div style="max-width: 400px; margin: 2rem auto;">
+      <div style="position: relative;">
+        <input type="text" placeholder="Search..." style="width: 100%; padding: 12px 45px 12px 16px; border: 2px solid #e2e8f0; border-radius: 25px; font-size: 1rem; transition: border-color 0.2s ease;">
+        <button style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: #667eea; color: white; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.3-4.3"></path>
+          </svg>
+        </button>
+      </div>
+    </div>`,
+        description: "Search input with button",
+        tags: ["forms", "search", "input"]
+      },
+      "toggle-switch": {
+        code: `<!-- Toggle Switch -->
+    <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+      <div style="position: relative;">
+        <input type="checkbox" style="display: none;">
+        <div style="width: 50px; height: 24px; background: #e2e8f0; border-radius: 12px; position: relative; transition: background 0.2s ease;">
+          <div style="position: absolute; left: 2px; top: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: transform 0.2s ease;"></div>
+        </div>
+      </div>
+      <span style="color: #333;">Toggle setting</span>
+    </label>`,
+        description: "Toggle switch component",
+        tags: ["forms", "toggle", "ui"]
+      },
+
+      "mega-menu": {
+        code: `<!-- Mega Menu -->
+    <nav style="background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+      <div style="max-width: 1200px; margin: 0 auto; padding: 1rem 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div style="font-size: 1.5rem; font-weight: bold; color: #333;">Logo</div>
+          <div style="display: flex; gap: 2rem;">
+            <div style="position: relative;">
+              <button style="background: none; border: none; color: #333; font-weight: 500; cursor: pointer; padding: 0.5rem 1rem;">Products</button>
+            </div>
+            <a href="#" style="text-decoration: none; color: #333; font-weight: 500; padding: 0.5rem 1rem;">Solutions</a>
+            <a href="#" style="text-decoration: none; color: #333; font-weight: 500; padding: 0.5rem 1rem;">Pricing</a>
+          </div>
+        </div>
+      </div>
+    </nav>`,
+        description: "Mega menu navigation",
+        tags: ["navigation", "menu", "header"]
+      },
+      "breadcrumb-advanced": {
+        code: `<!-- Advanced Breadcrumb -->
+    <nav style="padding: 1rem 2rem; background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+      <div style="max-width: 1200px; margin: 0 auto;">
+        <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+          <a href="#" style="color: #667eea; text-decoration: none; display: flex; align-items: center; gap: 0.25rem;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            Home
+          </a>
+          <span style="color: #a0aec0;">/</span>
+          <a href="#" style="color: #667eea; text-decoration: none;">Products</a>
+          <span style="color: #a0aec0;">/</span>
+          <span style="color: #718096;">Current Page</span>
+        </div>
+      </div>
+    </nav>`,
+        description: "Breadcrumb with icons",
+        tags: ["navigation", "breadcrumb", "icons"]
+      }
+    };
+
 
 type AiMode = "response" | "chat";
 type ChatRole = "user" | "assistant";
@@ -853,697 +1547,5 @@ const renderAISection = () => (
 )}
   </div>
 );
-  const components: { [key: string]: ComponentInfo } = {
-      header: {
-        code: `<!-- Header Component -->
-    <header style="background-color: #333; color: white; padding: 1rem;">
-      <div style="display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto;">
-        <h1 style="margin: 0;">My Website</h1>
-        <nav>
-          <a href="#" style="color: white; margin: 0 10px; text-decoration: none;">Home</a>
-          <a href="#" style="color: white; margin: 0 10px; text-decoration: none;">About</a>
-          <a href="#" style="color: white; margin: 0 10px; text-decoration: none;">Contact</a>
-        </nav>
-      </div>
-    </header>`,
-        description: "Website header with navigation",
-        tags: ["layout", "navigation", "header"]
-      },
-      hero: {
-        code: `<!-- Hero Section -->
-    <section style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 4rem 2rem; text-align: center;">
-      <div style="max-width: 800px; margin: 0 auto;">
-        <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">World Wide Web</h2>
-        <p style="font-size: 1.2rem; margin-bottom: 2rem;">We create amazing digital experiences</p>
-        <button style="background: white; color: #333; border: none; padding: 12px 30px; font-size: 1rem; border-radius: 5px; cursor: pointer;">Get Started</button>
-      </div>
-    </section>`,
-        description: "Hero section with call-to-action",
-        tags: ["layout", "hero", "cta"]
-      },
-      about: {
-        code: `<!-- About Section -->
-    <section style="padding: 4rem 2rem; background-color: #f9f9f9;">
-      <div style="max-width: 800px; margin: 0 auto;">
-        <h2 style="text-align: center; margin-bottom: 2rem; color: #333;">About Us</h2>
-        <p style="line-height: 1.6; margin-bottom: 1rem; color: #666;">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-        <p style="line-height: 1.6; color: #666;">Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.</p>
-      </div>
-    </section>`,
-        description: "About section with company information",
-        tags: ["layout", "content", "about"]
-      },
-      services: {
-        code: `<!-- Services Section -->
-    <section style="padding: 4rem 2rem; background-color: white;">
-      <div style="max-width: 1200px; margin: 0 auto;">
-        <h2 style="text-align: center; margin-bottom: 3rem; color: #333;">Our Services</h2>
-        <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 2rem;">
-          <div style="flex: 1; min-width: 250px; background: #f9f9f9; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <h3 style="color: #333;">Web Design</h3>
-            <p style="color: #666;">Beautiful and responsive web designs.</p>
-          </div>
-          <div style="flex: 1; min-width: 250px; background: #f9f9f9; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <h3 style="color: #333;">Development</h3>
-            <p style="color: #666;">Custom web applications.</p>
-          </div>
-        </div>
-      </div>
-    </section>`,
-        description: "Services showcase section",
-        tags: ["layout", "content", "services"]
-      },
-      contact: {
-        code: `<!-- Contact Form -->
-    <section style="padding: 4rem 2rem; background-color: #f9f9f9;">
-      <div style="max-width: 600px; margin: 0 auto;">
-        <h2 style="text-align: center; margin-bottom: 2rem; color: #333;">Contact Us</h2>
-        <form style="background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-          <div style="margin-bottom: 1rem;">
-            <label style="display: block; margin-bottom: 5px; color: #333;">Name</label>
-            <input type="text" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-          </div>
-          <div style="margin-bottom: 1rem;">
-            <label style="display: block; margin-bottom: 5px; color: #333;">Email</label>
-            <input type="email" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-          </div>
-          <button type="submit" style="background: #333; color: white; border: none; padding: 12px 30px; border-radius: 4px; cursor: pointer; width: 100%;">Send Message</button>
-        </form>
-      </div>
-    </section>`,
-        description: "Contact form section",
-        tags: ["forms", "contact"]
-      },
-      footer: {
-        code: `<!-- Footer -->
-    <footer style="background-color: #333; color: white; padding: 2rem; text-align: center;">
-      <div style="max-width: 1200px; margin: 0 auto;">
-        <p>&copy; 2024 My Website. All rights reserved.</p>
-        <div style="margin-top: 1rem;">
-          <a href="#" style="color: white; margin: 0 10px; text-decoration: none;">Privacy Policy</a>
-          <a href="#" style="color: white; margin: 0 10px; text-decoration: none;">Terms of Service</a>
-        </div>
-      </div>
-    </footer>`,
-        description: "Website footer",
-        tags: ["layout", "footer"]
-      },
-      card: {
-        code: `<!-- Card Component -->
-    <div style="background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; max-width: 300px; margin: 0 auto;">
-      <img src="https://studio-website-builder.vercel.app/icon-512.png" alt="Card Image" style="width: 100%; height: auto;">
-      <div style="padding: 1.5rem;">
-        <h3 style="margin-bottom: 0.5rem; color: #333;">Card Title</h3>
-        <p style="color: #666; margin-bottom: 1rem;">This is a sample card with example content.</p>
-        <button style="background: #333; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Learn More</button>
-      </div>
-    </div>`,
-        description: "Card component with image and text",
-        tags: ["ui", "card", "content"]
-      },
-      gallery: {
-        code: `<!-- Image Gallery -->
-    <section style="padding: 2rem; background-color: white;">
-      <div style="max-width: 1200px; margin: 0 auto;">
-        <h2 style="text-align: center; margin-bottom: 2rem; color: #333;">Image Gallery</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
-          <img src="https://studio-website-builder.vercel.app/icon-512.png" alt="Gallery Image" style="width: 100%; height: auto; border-radius: 8px;">
-          <img src="https://studio-website-builder.vercel.app/icon-512.png" alt="Gallery Image" style="width: 100%; height: auto; border-radius: 8px;">
-        </div>
-      </div>
-    </section>`,
-        description: "Image gallery grid",
-        tags: ["content", "gallery", "images"]
-      },
-      seo: {
-        code: `<!-- SEO Meta Tags -->
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Your Website Title</title>
-      <meta name="description" content="Your website description for SEO">
-      <meta name="keywords" content="your, keywords, here">
-      <meta name="author" content="Your Name">
-      <meta property="og:title" content="Your Website Title">
-      <meta property="og:description" content="Your website description">
-      <meta property="og:type" content="website">
-      <meta property="og:url" content="https://yourwebsite.com">
-      <meta name="twitter:card" content="summary_large_image">
-      <meta name="twitter:title" content="Your Website Title">
-      <meta name="twitter:description" content="Your website description">
-      <link rel="canonical" href="https://yourwebsite.com">
-    </head>`,
-        description: "SEO meta tags for head section",
-        tags: ["seo", "meta", "head"]
-      },
-      "seo-schema": {
-        code: `<!-- Schema.org Structured Data -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "Your Website Name",
-      "url": "https://yourwebsite.com",
-      "description": "Your website description",
-      "publisher": {
-        "@type": "Organization",
-        "name": "Your Organization"
-      }
-    }
-    </script>`,
-        description: "Schema.org structured data",
-        tags: ["seo", "schema", "structured-data"]
-      },
-      "social-icons": {
-        code: `<!-- Social Media Icons with Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <div style="display: flex; gap: 15px; justify-content: center; padding: 2rem;">
-      <a href="#" style="color: #333; text-decoration: none; font-size: 24px;">
-        <i class="fab fa-facebook"></i>
-      </a>
-      <a href="#" style="color: #333; text-decoration: none; font-size: 24px;">
-        <i class="fab fa-twitter"></i>
-      </a>
-      <a href="#" style="color: #333; text-decoration: none; font-size: 24px;">
-        <i class="fab fa-instagram"></i>
-      </a>
-      <a href="#" style="color: #333; text-decoration: none; font-size: 24px;">
-        <i class="fab fa-linkedin"></i>
-      </a>
-      <a href="#" style="color: #333; text-decoration: none; font-size: 24px;">
-        <i class="fab fa-youtube"></i>
-      </a>
-    </div>`,
-        description: "Social media icons",
-        tags: ["icons", "social", "ui"]
-      },
-      "feature-icons": {
-        code: `<!-- Feature Icons Section -->
-    <section style="padding: 4rem 2rem; background-color: #f8fafc;">
-      <div style="max-width: 1200px; margin: 0 auto;">
-        <h2 style="text-align: center; margin-bottom: 3rem; color: #333;">Our Features</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
-          <div style="text-align: center;">
-            <div style="margin-bottom: 1rem; color: #667eea;">
-              <i class="fas fa-bolt" style="font-size: 48px;"></i>
-            </div>
-            <h3 style="color: #333; margin-bottom: 1rem;">Fast Performance</h3>
-            <p style="color: #666;">Lightning fast loading times and smooth interactions.</p>
-          </div>
-          <div style="text-align: center;">
-            <div style="margin-bottom: 1rem; color: #667eea;">
-              <i class="fas fa-shield-alt" style="font-size: 48px;"></i>
-            </div>
-            <h3 style="color: #333; margin-bottom: 1rem;">Secure</h3>
-            <p style="color: #666;">Enterprise-grade security for your peace of mind.</p>
-          </div>
-          <div style="text-align: center;">
-            <div style="margin-bottom: 1rem; color: #667eea;">
-              <i class="fas fa-mobile-alt" style="font-size: 48px;"></i>
-            </div>
-            <h3 style="color: #333; margin-bottom: 1rem;">Responsive</h3>
-            <p style="color: #666;">Looks great on all devices and screen sizes.</p>
-          </div>
-        </div>
-      </div>
-    </section>`,
-        description: "Feature showcase with icons",
-        tags: ["content", "features", "icons"]
-      },
-      "font-icons": {
-        code: `<!-- Font Awesome Icons (CDN) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <div style="display: flex; gap: 20px; justify-content: center; padding: 2rem;">
-      <i class="fas fa-home" style="font-size: 24px; color: #333;"></i>
-      <i class="fas fa-envelope" style="font-size: 24px; color: #333;"></i>
-      <i class="fas fa-phone" style="font-size: 24px; color: #333;"></i>
-      <i class="fas fa-share-alt" style="font-size: 24px; color: #333;"></i>
-    </div>`,
-        description: "Font Awesome icons",
-        tags: ["icons", "ui"]
-      },
-      navbar: {
-        code: `<!-- Modern Navigation Bar -->
-    <nav style="background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 1rem 2rem;">
-      <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
-        <div style="font-size: 1.5rem; font-weight: bold; color: #333;">Logo</div>
-        <div style="display: flex; gap: 2rem;">
-          <a href="#" style="text-decoration: none; color: #333; font-weight: 500;">Home</a>
-          <a href="#" style="text-decoration: none; color: #333; font-weight: 500;">About</a>
-          <a href="#" style="text-decoration: none; color: #333; font-weight: 500;">Services</a>
-          <a href="#" style="text-decoration: none; color: #333; font-weight: 500;">Contact</a>
-        </div>
-        <button style="background: #667eea; color: white; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer;">Get Started</button>
-      </div>
-    </nav>`,
-        description: "Modern navigation bar",
-        tags: ["navigation", "header", "ui"]
-      },
-      sidebar: {
-        code: `<!-- Sidebar Navigation -->
-    <div style="display: flex; min-height: 400px;">
-      <aside style="width: 250px; background: #2d3748; color: white; padding: 2rem;">
-        <h3 style="margin-bottom: 2rem;">Menu</h3>
-        <nav style="display: flex; flex-direction: column; gap: 1rem;">
-          <a href="#" style="color: white; text-decoration: none; padding: 0.5rem; border-radius: 4px; background: #4a5568;">Dashboard</a>
-          <a href="#" style="color: white; text-decoration: none; padding: 0.5rem; border-radius: 4px;">Profile</a>
-          <a href="#" style="color: white; text-decoration: none; padding: 0.5rem; border-radius: 4px;">Settings</a>
-          <a href="#" style="color: white; text-decoration: none; padding: 0.5rem; border-radius: 4px;">Messages</a>
-        </nav>
-      </aside>
-      <main style="flex: 1; padding: 2rem; background: #f7fafc;">
-        <h2>Main Content Area</h2>
-        <p>Your content goes here...</p>
-      </main>
-    </div>`,
-        description: "Sidebar navigation layout",
-        tags: ["layout", "navigation", "sidebar"]
-      },
-      pricing: {
-        code: `<!-- Pricing Cards -->
-    <section style="padding: 4rem 2rem; background: #f8fafc;">
-      <div style="max-width: 1200px; margin: 0 auto;">
-        <h2 style="text-align: center; margin-bottom: 3rem; color: #333;">Choose Your Plan</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
-          <div style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center;">
-            <h3 style="color: #333;">Basic</h3>
-            <div style="font-size: 2rem; font-weight: bold; color: #667eea; margin: 1rem 0;">$19<span style="font-size: 1rem; color: #666;">/month</span></div>
-            <ul style="list-style: none; padding: 0; margin: 2rem 0;">
-              <li style="padding: 0.5rem 0;">5 Projects</li>
-              <li style="padding: 0.5rem 0;">10GB Storage</li>
-              <li style="padding: 0.5rem 0;">Basic Support</li>
-            </ul>
-            <button style="background: #667eea; color: white; border: none; padding: 12px 30px; border-radius: 5px; cursor: pointer; width: 100%;">Get Started</button>
-          </div>
-          <div style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 8px 15px rgba(0,0,0,0.1); text-align: center; border: 2px solid #667eea;">
-            <div style="background: #667eea; color: white; padding: 0.5rem; border-radius: 5px; margin: -2rem -2rem 1rem -2rem;">Most Popular</div>
-            <h3 style="color: #333;">Pro</h3>
-            <div style="font-size: 2rem; font-weight: bold; color: #667eea; margin: 1rem 0;">$49<span style="font-size: 1rem; color: #666;">/month</span></div>
-            <ul style="list-style: none; padding: 0; margin: 2rem 0;">
-              <li style="padding: 0.5rem 0;">Unlimited Projects</li>
-              <li style="padding: 0.5rem 0;">50GB Storage</li>
-              <li style="padding: 0.5rem 0;">Priority Support</li>
-            </ul>
-            <button style="background: #667eea; color: white; border: none; padding: 12px 30px; border-radius: 5px; cursor: pointer; width: 100%;">Get Started</button>
-          </div>
-        </div>
-      </div>
-    </section>`,
-        description: "Pricing cards section",
-        tags: ["ui", "pricing", "cards"]
-      },
-      testimonials: {
-        code: `<!-- Testimonials Section -->
-    <section style="padding: 4rem 2rem; background: white;">
-      <div style="max-width: 1200px; margin: 0 auto;">
-        <h2 style="text-align: center; margin-bottom: 3rem; color: #333;">What Our Clients Say</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
-          <div style="background: #f8fafc; padding: 2rem; border-radius: 10px; border-left: 4px solid #667eea;">
-            <div style="color: #667eea; font-size: 1.5rem; margin-bottom: 1rem;">"</div>
-            <p style="color: #666; line-height: 1.6; margin-bottom: 1rem;">This service has completely transformed our business. The results were beyond our expectations!</p>
-            <div style="font-weight: bold; color: #333;">- Sarah Johnson</div>
-            <div style="color: #666; font-size: 0.9rem;">CEO, Tech Solutions</div>
-          </div>
-          <div style="background: #f8fafc; padding: 2rem; border-radius: 10px; border-left: 4px solid #667eea;">
-            <div style="color: #667eea; font-size: 1.5rem; margin-bottom: 1rem;">"</div>
-            <p style="color: #666; line-height: 1.6; margin-bottom: 1rem;">Outstanding quality and professional service. Highly recommended for any business.</p>
-            <div style="font-weight: bold; color: #333;">- Michael Chen</div>
-            <div style="color: #666; font-size: 0.9rem;">Marketing Director</div>
-          </div>
-        </div>
-      </div>
-    </section>`,
-        description: "Customer testimonials section",
-        tags: ["content", "testimonials", "social-proof"]
-      },
-      stats: {
-        code: `<!-- Statistics Section -->
-    <section style="padding: 4rem 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-      <div style="max-width: 1200px; margin: 0 auto;">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; text-align: center;">
-          <div>
-            <div style="font-size: 3rem; font-weight: bold; margin-bottom: 0.5rem;">500+</div>
-            <div style="font-size: 1.1rem;">Happy Clients</div>
-          </div>
-          <div>
-            <div style="font-size: 3rem; font-weight: bold; margin-bottom: 0.5rem;">99%</div>
-            <div style="font-size: 1.1rem;">Satisfaction Rate</div>
-          </div>
-          <div>
-            <div style="font-size: 3rem; font-weight: bold; margin-bottom: 0.5rem;">24/7</div>
-            <div style="font-size: 1.1rem;">Support</div>
-          </div>
-          <div>
-            <div style="font-size: 3rem; font-weight: bold; margin-bottom: 0.5rem;">5+</div>
-            <div style="font-size: 1.1rem;">Years Experience</div>
-          </div>
-        </div>
-      </div>
-    </section>`,
-        description: "Statistics counter section",
-        tags: ["content", "stats", "numbers"]
-      },
-      "login-form": {
-        code: `<!-- Login Form -->
-    <div style="max-width: 400px; margin: 2rem auto; padding: 2rem; background: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-      <h2 style="text-align: center; margin-bottom: 2rem; color: #333;">Welcome Back</h2>
-      <form>
-        <div style="margin-bottom: 1rem;">
-          <label style="display: block; margin-bottom: 0.5rem; color: #333; font-weight: 500;">Email</label>
-          <input type="email" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;" placeholder="Enter your email">
-        </div>
-        <div style="margin-bottom: 1.5rem;">
-          <label style="display: block; margin-bottom: 0.5rem; color: #333; font-weight: 500;">Password</label>
-          <input type="password" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;" placeholder="Enter your password">
-        </div>
-        <button type="submit" style="width: 100%; background: #667eea; color: white; border: none; padding: 12px; border-radius: 5px; font-size: 1rem; cursor: pointer;">Sign In</button>
-      </form>
-      <div style="text-align: center; margin-top: 1rem;">
-        <a href="#" style="color: #667eea; text-decoration: none;">Forgot password?</a>
-      </div>
-    </div>`,
-        description: "Login form component",
-        tags: ["forms", "login", "authentication"]
-      },
-      newsletter: {
-        code: `<!-- Newsletter Signup -->
-    <section style="padding: 4rem 2rem; background: #667eea; color: white;">
-      <div style="max-width: 600px; margin: 0 auto; text-align: center;">
-        <h2 style="margin-bottom: 1rem;">Stay Updated</h2>
-        <p style="margin-bottom: 2rem; opacity: 0.9;">Subscribe to our newsletter for the latest updates and offers.</p>
-        <form style="display: flex; gap: 1rem; max-width: 400px; margin: 0 auto;">
-          <input type="email" placeholder="Enter your email" style="flex: 1; padding: 12px; border: none; border-radius: 5px; font-size: 1rem;">
-          <button type="submit" style="background: white; color: #667eea; border: none; padding: 12px 24px; border-radius: 5px; font-size: 1rem; cursor: pointer; font-weight: bold;">Subscribe</button>
-        </form>
-      </div>
-    </section>`,
-        description: "Newsletter signup form",
-        tags: ["forms", "newsletter", "marketing"]
-      },
-      team: {
-        code: `<!-- Team Section -->
-    <section style="padding: 4rem 2rem; background: #f8fafc;">
-      <div style="max-width: 1200px; margin: 0 auto;">
-        <h2 style="text-align: center; margin-bottom: 3rem; color: #333;">Meet Our Team</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
-          <div style="text-align: center; background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <img src="https://studio-website-builder.vercel.app/icon-512.png" alt="Team Member" style="width: 150px; height: 150px; border-radius: 50%; margin: 0 auto 1rem;">
-            <h3 style="color: #333; margin-bottom: 0.5rem;">John Doe</h3>
-            <div style="color: #667eea; margin-bottom: 1rem;">CEO & Founder</div>
-            <p style="color: #666;">Visionary leader with 10+ years of experience in the industry.</p>
-          </div>
-          <div style="text-align: center; background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <img src="https://studio-website-builder.vercel.app/icon-512.png" alt="Team Member" style="width: 150px; height: 150px; border-radius: 50%; margin: 0 auto 1rem;">
-            <h3 style="color: #333; margin-bottom: 0.5rem;">Jane Smith</h3>
-            <div style="color: #667eea; margin-bottom: 1rem;">Creative Director</div>
-            <p style="color: #666;">Award-winning designer with a passion for innovation.</p>
-          </div>
-        </div>
-      </div>
-    </section>`,
-        description: "Team member showcase",
-        tags: ["content", "team", "about"]
-      },
-      faq: {
-        code: `<!-- FAQ Section -->
-    <section style="padding: 4rem 2rem; background: white;">
-      <div style="max-width: 800px; margin: 0 auto;">
-        <h2 style="text-align: center; margin-bottom: 3rem; color: #333;">Frequently Asked Questions</h2>
-        <div style="display: flex; flex-direction: column; gap: 1rem;">
-          <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem;">
-            <h3 style="color: #333; margin-bottom: 0.5rem;">What is your refund policy?</h3>
-            <p style="color: #666; margin: 0;">We offer a 30-day money-back guarantee for all our plans. If you're not satisfied, we'll refund your payment.</p>
-          </div>
-          <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem;">
-            <h3 style="color: #333; margin-bottom: 0.5rem;">Do you offer technical support?</h3>
-            <p style="color: #666; margin: 0;">Yes, we provide 24/7 technical support for all our customers via email, chat, and phone.</p>
-          </div>
-          <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem;">
-            <h3 style="color: #333; margin-bottom: 0.5rem;">Can I upgrade my plan later?</h3>
-            <p style="color: #666; margin: 0;">Absolutely! You can upgrade or downgrade your plan at any time from your account dashboard.</p>
-          </div>
-        </div>
-      </div>
-    </section>`,
-        description: "FAQ accordion section",
-        tags: ["content", "faq", "help"]
-      },
-      breadcrumb: {
-        code: `<!-- Breadcrumb Navigation -->
-    <nav style="padding: 1rem 2rem; background: #f7fafc;">
-      <div style="max-width: 1200px; margin: 0 auto;">
-        <div style="display: flex; gap: 0.5rem; font-size: 0.9rem;">
-          <a href="#" style="color: #667eea; text-decoration: none;">Home</a>
-          <span style="color: #a0aec0;">/</span>
-          <a href="#" style="color: #667eea; text-decoration: none;">Category</a>
-          <span style="color: #a0aec0;">/</span>
-          <span style="color: #718096;">Current Page</span>
-        </div>
-      </div>
-    </nav>`,
-        description: "Breadcrumb navigation",
-        tags: ["navigation", "breadcrumb", "ui"]
-      },
-      modal: {
-        code: `<!-- Modal Dialog -->
-    <div style="background: rgba(0,0,0,0.5); position: fixed; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; z-index: 1000;">
-      <div style="background: white; padding: 2rem; border-radius: 10px; max-width: 500px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
-        <h2 style="margin-bottom: 1rem; color: #333;">Modal Title</h2>
-        <p style="color: #666; margin-bottom: 2rem;">This is a sample modal dialog. You can put any content here.</p>
-        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-          <button style="background: #e2e8f0; color: #4a5568; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Cancel</button>
-          <button style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Confirm</button>
-        </div>
-      </div>
-    </div>`,
-        description: "Modal dialog component",
-        tags: ["ui", "modal", "dialog"]
-      },
-      progress: {
-        code: `<!-- Progress Bars -->
-    <div style="max-width: 600px; margin: 2rem auto; padding: 2rem; background: white; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-      <h3 style="margin-bottom: 2rem; color: #333;">Skills & Progress</h3>
-      <div style="margin-bottom: 1.5rem;">
-        <div style="display: flex; justify-content: between; margin-bottom: 0.5rem;">
-          <span style="color: #333;">Web Design</span>
-          <span style="color: #667eea;">90%</span>
-        </div>
-        <div style="background: #e2e8f0; border-radius: 10px; height: 8px;">
-          <div style="background: #667eea; height: 100%; width: 90%; border-radius: 10px;"></div>
-        </div>
-      </div>
-      <div style="margin-bottom: 1.5rem;">
-        <div style="display: flex; justify-content: between; margin-bottom: 0.5rem;">
-          <span style="color: #333;">Development</span>
-          <span style="color: #667eea;">75%</span>
-        </div>
-        <div style="background: #e2e8f0; border-radius: 10px; height: 8px;">
-          <div style="background: #667eea; height: 100%; width: 75%; border-radius: 10px;"></div>
-        </div>
-      </div>
-    </div>`,
-        description: "Progress bar component",
-        tags: ["ui", "progress", "skills"]
-      },
-      timeline: {
-        code: `<!-- Timeline -->
-    <div style="max-width: 800px; margin: 2rem auto; padding: 2rem;">
-      <h3 style="margin-bottom: 2rem; color: #333; text-align: center;">Our Journey</h3>
-      <div style="position: relative;">
-        <div style="display: flex; margin-bottom: 2rem;">
-          <div style="flex: 0 0 100px; text-align: right; padding-right: 2rem;">
-            <div style="font-weight: bold; color: #667eea;">2020</div>
-          </div>
-          <div style="flex: 1; padding-left: 2rem; border-left: 2px solid #667eea; position: relative;">
-            <div style="width: 12px; height: 12px; background: #667eea; border-radius: 50%; position: absolute; left: -7px; top: 5px;"></div>
-            <h4 style="color: #333; margin-bottom: 0.5rem;">Company Founded</h4>
-            <p style="color: #666; margin: 0;">Started our journey with a small team and big dreams.</p>
-          </div>
-        </div>
-        <div style="display: flex; margin-bottom: 2rem;">
-          <div style="flex: 0 0 100px; text-align: right; padding-right: 2rem;">
-            <div style="font-weight: bold; color: #667eea;">2022</div>
-          </div>
-          <div style="flex: 1; padding-left: 2rem; border-left: 2px solid #667eea; position: relative;">
-            <div style="width: 12px; height: 12px; background: #667eea; border-radius: 50%; position: absolute; left: -7px; top: 5px;"></div>
-            <h4 style="color: #333; margin-bottom: 0.5rem;">Series A Funding</h4>
-            <p style="color: #666; margin: 0;">Raised $5M to expand our services and team.</p>
-          </div>
-        </div>
-      </div>
-    </div>`,
-        description: "Timeline component",
-        tags: ["content", "timeline", "history"]
-      },
 
-      "primary-button": {
-        code: `<!-- Primary Button -->
-    <button style="background: #667eea; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 1rem; font-weight: 500; cursor: pointer; transition: all 0.2s ease;">
-      Primary Button
-    </button>`,
-        description: "Primary action button",
-        tags: ["ui", "button", "interactive"]
-      },
-      "secondary-button": {
-        code: `<!-- Secondary Button -->
-    <button style="background: transparent; color: #667eea; border: 2px solid #667eea; padding: 10px 22px; border-radius: 6px; font-size: 1rem; font-weight: 500; cursor: pointer; transition: all 0.2s ease;">
-      Secondary Button
-    </button>`,
-        description: "Secondary action button",
-        tags: ["ui", "button", "interactive"]
-      },
-      "button-group": {
-        code: `<!-- Button Group -->
-    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-      <button style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">Primary</button>
-      <button style="background: transparent; color: #667eea; border: 2px solid #667eea; padding: 8px 18px; border-radius: 6px; cursor: pointer;">Secondary</button>
-      <button style="background: #e2e8f0; color: #4a5568; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">Default</button>
-    </div>`,
-        description: "Group of buttons",
-        tags: ["ui", "button", "group"]
-      },
-
-      "readme-basic": {
-        code: `<!-- Basic README Template -->
-    <div style="max-width: 800px; margin: 0 auto; padding: 2rem; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
-      <h1 style="color: #333; border-bottom: 2px solid #667eea; padding-bottom: 0.5rem;">Project Name</h1>
-      
-      <div style="background: #f8fafc; padding: 1rem; border-radius: 6px; margin: 1rem 0;">
-        <p style="margin: 0; color: #4a5568;">A brief description of your project.</p>
-      </div>
-
-      <h2 style="color: #333; margin-top: 2rem;">Features</h2>
-      <ul style="color: #4a5568;">
-        <li>Feature 1</li>
-        <li>Feature 2</li>
-        <li>Feature 3</li>
-      </ul>
-
-      <h2 style="color: #333; margin-top: 2rem;">Installation</h2>
-      <pre style="background: #2d3748; color: #e2e8f0; padding: 1rem; border-radius: 6px;">
-    npm install</pre>
-
-      <h2 style="color: #333; margin-top: 2rem;">Usage</h2>
-      <pre style="background: #2d3748; color: #e2e8f0; padding: 1rem; border-radius: 6px;">
-    npm start</pre>
-    </div>`,
-        description: "Basic README template",
-        tags: ["documentation", "readme", "markdown"]
-      },
-      
-      "readme-advanced": {
-        code: `<!-- Advanced README Template -->
-    <div style="max-width: 800px; margin: 0 auto; padding: 2rem; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
-      <div style="text-align: center; margin-bottom: 3rem;">
-        <h1 style="color: #333; margin-bottom: 0.5rem;">Project Name</h1>
-        <p style="color: #666; font-size: 1.2rem;">A modern web application</p>
-        <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1rem;">
-          <span style="background: #667eea; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.875rem;">JavaScript</span>
-          <span style="background: #48bb78; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.875rem;">HTML5</span>
-          <span style="background: #ed8936; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.875rem;">CSS3</span>
-        </div>
-      </div>
-
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin: 2rem 0;">
-        <div style="text-align: center;">
-          <h3 style="color: #333;">Fast</h3>
-          <p style="color: #666;">Lightning fast performance</p>
-        </div>
-        <div style="text-align: center;">
-          <h3 style="color: #333;">Responsive</h3>
-          <p style="color: #666;">Works on all devices</p>
-        </div>
-        <div style="text-align: center;">
-          <h3 style="color: #333;">Modern</h3>
-          <p style="color: #666;">Clean, modern design</p>
-        </div>
-      </div>
-
-      <h2 style="color: #333; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">Quick Start</h2>
-      <div style="background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden;">
-        <div style="background: #edf2f7; padding: 0.5rem 1rem; font-weight: 500; color: #4a5568;">Terminal</div>
-        <pre style="margin: 0; padding: 1rem; background: #2d3748; color: #e2e8f0;">
-    git clone https://github.com/user/repo.git
-    cd project
-    npm install
-    npm run dev</pre>
-      </div>
-    </div>`,
-        description: "Advanced README with badges",
-        tags: ["documentation", "readme", "badges"]
-      },
-      
-      "search-bar": {
-        code: `<!-- Search Bar -->
-    <div style="max-width: 400px; margin: 2rem auto;">
-      <div style="position: relative;">
-        <input type="text" placeholder="Search..." style="width: 100%; padding: 12px 45px 12px 16px; border: 2px solid #e2e8f0; border-radius: 25px; font-size: 1rem; transition: border-color 0.2s ease;">
-        <button style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: #667eea; color: white; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <circle cx="11" cy="11" r="8"></circle>
-            <path d="m21 21-4.3-4.3"></path>
-          </svg>
-        </button>
-      </div>
-    </div>`,
-        description: "Search input with button",
-        tags: ["forms", "search", "input"]
-      },
-      "toggle-switch": {
-        code: `<!-- Toggle Switch -->
-    <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
-      <div style="position: relative;">
-        <input type="checkbox" style="display: none;">
-        <div style="width: 50px; height: 24px; background: #e2e8f0; border-radius: 12px; position: relative; transition: background 0.2s ease;">
-          <div style="position: absolute; left: 2px; top: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: transform 0.2s ease;"></div>
-        </div>
-      </div>
-      <span style="color: #333;">Toggle setting</span>
-    </label>`,
-        description: "Toggle switch component",
-        tags: ["forms", "toggle", "ui"]
-      },
-
-      "mega-menu": {
-        code: `<!-- Mega Menu -->
-    <nav style="background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-      <div style="max-width: 1200px; margin: 0 auto; padding: 1rem 2rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div style="font-size: 1.5rem; font-weight: bold; color: #333;">Logo</div>
-          <div style="display: flex; gap: 2rem;">
-            <div style="position: relative;">
-              <button style="background: none; border: none; color: #333; font-weight: 500; cursor: pointer; padding: 0.5rem 1rem;">Products</button>
-            </div>
-            <a href="#" style="text-decoration: none; color: #333; font-weight: 500; padding: 0.5rem 1rem;">Solutions</a>
-            <a href="#" style="text-decoration: none; color: #333; font-weight: 500; padding: 0.5rem 1rem;">Pricing</a>
-          </div>
-        </div>
-      </div>
-    </nav>`,
-        description: "Mega menu navigation",
-        tags: ["navigation", "menu", "header"]
-      },
-      "breadcrumb-advanced": {
-        code: `<!-- Advanced Breadcrumb -->
-    <nav style="padding: 1rem 2rem; background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
-      <div style="max-width: 1200px; margin: 0 auto;">
-        <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
-          <a href="#" style="color: #667eea; text-decoration: none; display: flex; align-items: center; gap: 0.25rem;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-              <polyline points="9 22 9 12 15 12 15 22"></polyline>
-            </svg>
-            Home
-          </a>
-          <span style="color: #a0aec0;">/</span>
-          <a href="#" style="color: #667eea; text-decoration: none;">Products</a>
-          <span style="color: #a0aec0;">/</span>
-          <span style="color: #718096;">Current Page</span>
-        </div>
-      </div>
-    </nav>`,
-        description: "Breadcrumb with icons",
-        tags: ["navigation", "breadcrumb", "icons"]
-      }
-    };
           }
