@@ -31,7 +31,7 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
     if (currentFramework === "react") {
       const reactCode = content.trim();
       
-   
+      // Handle empty or invalid React code
       if (!reactCode || reactCode === "" || reactCode === "// studio.jessejesse.com") {
         return `
           <!DOCTYPE html>
@@ -72,88 +72,52 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
         `;
       }
 
-     
-      const isAiGenerated = reactCode.includes('React.useState') && 
-                           !reactCode.includes('import React') && 
-                           !reactCode.includes('ReactDOM.render') && 
-                           !reactCode.includes('createRoot');
+      // Fix common AI errors in React code
+      let fixedReactCode = reactCode
+        // Fix double React.React.useState
+        .replace(/React\.React\.useState/g, 'React.useState')
+        // Fix useState without React prefix
+        .replace(/(^|[^\.])useState\(/g, '$1React.useState(')
+        // Fix useEffect without React prefix
+        .replace(/(^|[^\.])useEffect\(/g, '$1React.useEffect(')
+        // Fix missing closing parenthesis in return statements
+        .replace(/(return\s*\([^)]*)$/gm, '$1)')
+        // Fix wrong rendering syntax
+        .replace(/const root\s*=\s*document\.getElementById\(['"']root['"']\);?/g, '')
+        .replace(/root\.render\(([^)]+)\);?/g, 'const root = ReactDOM.createRoot(document.getElementById("root"));\nroot.render(React.createElement($1));');
 
-      let finalReactCode = reactCode;
-
-      if (isAiGenerated) {
-
+      // Check if we need to add proper rendering
+      const hasProperRender = fixedReactCode.includes('ReactDOM.createRoot') && fixedReactCode.includes('root.render');
+      
+      if (!hasProperRender) {
+        // Extract component name
         let componentName = "App";
-        const fnMatch = reactCode.match(/function\s+(\w+)/);
+        const fnMatch = fixedReactCode.match(/function\s+(\w+)/);
         if (fnMatch) componentName = fnMatch[1];
         else {
-          const constMatch = reactCode.match(/(?:const|let|var)\s+(\w+)\s*=/);
+          const constMatch = fixedReactCode.match(/(?:const|let|var)\s+(\w+)\s*=/);
           if (constMatch) componentName = constMatch[1];
         }
 
-        console.log('Detected AI-generated React code, component:', componentName);
-        
-
-        finalReactCode = `
-          // Auto-wrapped AI-generated React component
-          ${reactCode}
-          
-          // Render the component
-          const root = ReactDOM.createRoot(document.getElementById("root"));
-          root.render(React.createElement(${componentName}));
-        `;
-      } else {
-   
-        const hasRender =
-          reactCode.includes("ReactDOM.render") ||
-          reactCode.includes("createRoot(");
-
-        let componentName = "App";
-        let isValidComponent = false;
-        
-        const fnMatch = reactCode.match(/function\s+(\w+)/);
-        if (fnMatch) {
-          componentName = fnMatch[1];
-          isValidComponent = true;
-        } else {
-          const constMatch = reactCode.match(/(?:const|let|var)\s+(\w+)\s*=/);
-          if (constMatch) {
-            componentName = constMatch[1];
-            isValidComponent = true;
-          }
-        }
-
-   
-        if (!isValidComponent) {
-          isValidComponent = reactCode.includes("function") || reactCode.includes("=>");
-        }
-        
-        finalReactCode = hasRender
-          ? reactCode
-          : isValidComponent
-          ? `
-            ${reactCode}
-            const root = ReactDOM.createRoot(document.getElementById("root"));
-            root.render(React.createElement(${componentName}));
-          `
-          : `
-            // Invalid React code - showing placeholder
-            function App() {
-              return React.createElement('div', { 
-                style: { 
-                  padding: '2rem', 
-                  textAlign: 'center',
-                  color: '#dc2626',
-                  background: '#fef2f2',
-                  border: '1px solid #fecaca',
-                  borderRadius: '8px',
-                  margin: '1rem'
-                } 
-              }, 'Invalid React code - please check your syntax');
-            }
-            const root = ReactDOM.createRoot(document.getElementById("root"));
-            root.render(React.createElement(App));
-          `;
+        // Add proper rendering
+        fixedReactCode += `\n\n// Render the component\nconst root = ReactDOM.createRoot(document.getElementById("root"));\nroot.render(React.createElement(${componentName}));`;
       }
+
+      // Ensure the component is properly closed
+      const openBraces = (fixedReactCode.match(/{/g) || []).length;
+      const closeBraces = (fixedReactCode.match(/}/g) || []).length;
+      
+      if (openBraces > closeBraces) {
+        fixedReactCode += '}'.repeat(openBraces - closeBraces);
+      }
+
+      // Fix common syntax errors
+      fixedReactCode = fixedReactCode
+        .replace(/,\s*\)/g, ')') // Remove trailing commas before closing parenthesis
+        .replace(/,\s*}/g, '}') // Remove trailing commas before closing braces
+        .replace(/;\s*;/g, ';') // Remove double semicolons
+        .replace(/\s+/g, ' ') // Normalize whitespace
+        .trim();
 
       return `
         <!DOCTYPE html>
@@ -192,6 +156,13 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
               padding: 2rem;
               color: #64748b;
             }
+            .success {
+              padding: 16px;
+              color: #155724;
+              background: #d4edda;
+              border-radius: 8px;
+              border: 1px solid #c3e6cb;
+            }
           </style>
         </head>
         <body>
@@ -200,7 +171,7 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
           </div>
           <script type="text/babel" data-presets="env,react">
             try {
-              ${finalReactCode}
+              ${fixedReactCode}
             } catch (e) {
               console.error('React Error:', e);
               const root = document.getElementById("root");
@@ -213,7 +184,7 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
       `;
     }
 
- 
+    // HTML mode - handle empty content
     const htmlContent = content.trim() === "" 
       ? `<div style="padding: 2rem; text-align: center; color: #64748b; font-family: system-ui;">
            <h2>HTML Mode</h2>
