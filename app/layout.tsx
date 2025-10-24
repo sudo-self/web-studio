@@ -44,8 +44,9 @@ export const metadata: Metadata = {
   },
 };
 
-
-const asString = (value: string | undefined) => value ?? "";
+// Helper to safely convert to string
+const toPlainString = (value: string | TemplateStringsArray | undefined) =>
+  value ? String(value) : "";
 
 export default function RootLayout({
   children,
@@ -56,26 +57,25 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Icons & manifest */}
         <link rel="icon" href="/app/favicon.ico" sizes="any" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="manifest" href="/manifest.json" />
 
         {/* Open Graph */}
-        <meta property="og:title" content={asString(og?.title)} />
-        <meta property="og:description" content={asString(og?.description)} />
-        <meta property="og:url" content={asString(og?.url)} />
-        <meta property="og:site_name" content={asString(og?.siteName)} />
+        <meta property="og:title" content={toPlainString(og?.title)} />
+        <meta property="og:description" content={toPlainString(og?.description)} />
+        <meta property="og:url" content={toPlainString(og?.url)} />
+        <meta property="og:site_name" content={toPlainString(og?.siteName)} />
         {og?.images?.map((img, i) => (
-          <meta key={i} property="og:image" content={asString(img.url)} />
+          <meta key={i} property="og:image" content={toPlainString(img.url)} />
         ))}
 
         {/* Twitter */}
-        <meta name="twitter:card" content={asString(tw?.card)} />
-        <meta name="twitter:title" content={asString(tw?.title)} />
-        <meta name="twitter:description" content={asString(tw?.description)} />
+        <meta name="twitter:card" content={toPlainString(tw?.card)} />
+        <meta name="twitter:title" content={toPlainString(tw?.title)} />
+        <meta name="twitter:description" content={toPlainString(tw?.description)} />
         {tw?.images?.map((img, i) => (
-          <meta key={i} name="twitter:image" content={asString(img)} />
+          <meta key={i} name="twitter:image" content={toPlainString(img)} />
         ))}
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
@@ -84,6 +84,7 @@ export default function RootLayout({
     </html>
   );
 }
+
 
 
 
