@@ -51,13 +51,35 @@ interface ActionButtonsProps { isCreatingRepo: boolean; isValid: boolean; onCrea
 
 
 const GitHubAuthSection = ({ onAuthSuccess }: GitHubAuthSectionProps) => (
-  <div className="text-center py-8">
-    <div className="p-4 bg-component-bg rounded-2xl w-20 h-20 mx-auto mb-6 flex items-center justify-center border border-panel-border">
-      <Github size={32} className="text-text-muted" />
+  <div style={{ textAlign: 'center', padding: '32px 0' }}>
+    <div style={{
+      padding: '16px',
+      backgroundColor: 'var(--surface-primary)',
+      borderRadius: 'var(--radius-xl)',
+      width: '80px',
+      height: '80px',
+      margin: '0 auto 24px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      border: '1px solid var(--border-primary)'
+    }}>
+      <Github size={32} style={{ color: 'var(--text-muted)' }} />
     </div>
-    <div className="mb-6">
-      <h4 className="text-lg font-semibold text-text-primary mb-3">Connect to GitHub</h4>
-      <p className="text-sm text-text-muted leading-relaxed">
+    <div style={{ marginBottom: '24px' }}>
+      <h4 style={{ 
+        fontSize: '18px', 
+        fontWeight: 600, 
+        color: 'var(--text-primary)',
+        marginBottom: '12px'
+      }}>
+        Connect to GitHub
+      </h4>
+      <p style={{ 
+        fontSize: '14px', 
+        color: 'var(--text-muted)', 
+        lineHeight: '1.5'
+      }}>
         Connect your GitHub account to create repositories<br />and deploy with GitHub Pages
       </p>
     </div>
@@ -75,42 +97,133 @@ const GitHubConnectedSection = ({
   onCreateRepo,
   onCancel
 }: GitHubConnectedSectionProps) => (
-  <div className="space-y-6">
+  <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
     <UserInfoCard githubUser={githubUser} onDisconnect={onDisconnect} isCreatingRepo={isCreatingRepo} />
 
-    <div className="space-y-5">
-      <FormField label="Repository Name" value={githubForm.name} onChange={(v) => setGithubForm(prev => ({ ...prev, name: v }))} placeholder="my-awesome-project" disabled={isCreatingRepo} required />
-      <FormField label="Description" value={githubForm.description} onChange={(v) => setGithubForm(prev => ({ ...prev, description: v }))} placeholder="Project created with AI Web Studio" disabled={isCreatingRepo} />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <FormField 
+        label="Repository Name" 
+        value={githubForm.name} 
+        onChange={(v) => setGithubForm(prev => ({ ...prev, name: v }))} 
+        placeholder="my-awesome-project" 
+        disabled={isCreatingRepo} 
+        required 
+      />
+      <FormField 
+        label="Description" 
+        value={githubForm.description} 
+        onChange={(v) => setGithubForm(prev => ({ ...prev, description: v }))} 
+        placeholder="Project created with AI Web Studio" 
+        disabled={isCreatingRepo} 
+      />
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <CheckboxOption id="deploy-pages" label="Deploy to Pages" description="Auto-deploy with GitHub Pages" checked={githubForm.deployPages} onChange={(c) => setGithubForm(prev => ({ ...prev, deployPages: c }))} disabled={isCreatingRepo} />
-        <CheckboxOption id="is-public" label="Public Repository" description="Visible to everyone" checked={githubForm.isPublic} onChange={(c) => setGithubForm(prev => ({ ...prev, isPublic: c }))} disabled={isCreatingRepo} />
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: '1fr 1fr', 
+        gap: '16px' 
+      }}>
+        <CheckboxOption 
+          id="deploy-pages" 
+          label="Deploy to Pages" 
+          description="Auto-deploy with GitHub Pages" 
+          checked={githubForm.deployPages} 
+          onChange={(c) => setGithubForm(prev => ({ ...prev, deployPages: c }))} 
+          disabled={isCreatingRepo} 
+        />
+        <CheckboxOption 
+          id="is-public" 
+          label="Public Repository" 
+          description="Visible to everyone" 
+          checked={githubForm.isPublic} 
+          onChange={(c) => setGithubForm(prev => ({ ...prev, isPublic: c }))} 
+          disabled={isCreatingRepo} 
+        />
       </div>
 
       <FilesPreview githubForm={githubForm} githubUser={githubUser} />
     </div>
 
-    <ActionButtons isCreatingRepo={isCreatingRepo} isValid={githubForm.name.trim().length > 0} onCreateRepo={onCreateRepo} onCancel={onCancel} />
+    <ActionButtons 
+      isCreatingRepo={isCreatingRepo} 
+      isValid={githubForm.name.trim().length > 0} 
+      onCreateRepo={onCreateRepo} 
+      onCancel={onCancel} 
+    />
   </div>
 );
 
 
 const UserInfoCard = ({ githubUser, onDisconnect, isCreatingRepo }: UserInfoCardProps) => (
-  <div className="bg-component-bg rounded-xl border border-panel-border p-5">
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-4">
-        <img src={githubUser?.avatar_url} alt={`${githubUser?.login}'s GitHub avatar`} className="w-12 h-12 rounded-full border-2 border-panel-border" />
+  <div style={{
+    backgroundColor: 'var(--surface-primary)',
+    borderRadius: 'var(--radius-xl)',
+    border: '1px solid var(--border-primary)',
+    padding: '20px'
+  }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <img 
+          src={githubUser?.avatar_url} 
+          alt={`${githubUser?.login}'s GitHub avatar`} 
+          style={{ 
+            width: '48px', 
+            height: '48px', 
+            borderRadius: '50%', 
+            border: '2px solid var(--border-primary)' 
+          }} 
+        />
         <div>
-          <div className="text-base font-semibold text-text-primary">{githubUser?.login}</div>
-          <div className="text-sm text-text-muted flex items-center gap-2 mt-1">
-            <div className="w-2 h-2 bg-green-500 rounded-full" aria-hidden="true"></div>
+          <div style={{ 
+            fontSize: '16px', 
+            fontWeight: 600, 
+            color: 'var(--text-primary)' 
+          }}>
+            {githubUser?.login}
+          </div>
+          <div style={{ 
+            fontSize: '14px', 
+            color: 'var(--text-muted)', 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '8px',
+            marginTop: '4px'
+          }}>
+            <div style={{ 
+              width: '8px', 
+              height: '8px', 
+              backgroundColor: 'var(--interactive-success)', 
+              borderRadius: '50%' 
+            }} aria-hidden="true"></div>
             Connected to GitHub
           </div>
         </div>
       </div>
       <button 
         onClick={onDisconnect} 
-        className="text-sm text-text-muted hover:text-accent-color transition-colors px-4 py-2 rounded-lg hover:bg-component-hover disabled:opacity-50 border border-panel-border hover:border-accent-color/30" 
+        style={{
+          fontSize: '14px',
+          color: 'var(--text-muted)',
+          padding: '8px 16px',
+          borderRadius: 'var(--radius-lg)',
+          border: '1px solid var(--border-primary)',
+          backgroundColor: 'transparent',
+          cursor: isCreatingRepo ? 'not-allowed' : 'pointer',
+          opacity: isCreatingRepo ? 0.5 : 1,
+          transition: 'all var(--transition-normal)',
+          fontFamily: 'inherit'
+        }}
+        onMouseOver={(e) => {
+          if (!isCreatingRepo) {
+            e.currentTarget.style.color = 'var(--interactive-accent)';
+            e.currentTarget.style.borderColor = 'var(--interactive-accent)';
+          }
+        }}
+        onMouseOut={(e) => {
+          if (!isCreatingRepo) {
+            e.currentTarget.style.color = 'var(--text-muted)';
+            e.currentTarget.style.borderColor = 'var(--border-primary)';
+          }
+        }}
         disabled={isCreatingRepo}
       >
         Disconnect
@@ -121,8 +234,14 @@ const UserInfoCard = ({ githubUser, onDisconnect, isCreatingRepo }: UserInfoCard
 
 const FormField = ({ label, value, onChange, placeholder, disabled, required }: FormFieldProps) => (
   <div>
-    <label className="block text-sm font-medium text-text-primary mb-3">
-      {label}{required && <span className="text-red-400 ml-1">*</span>}
+    <label style={{
+      display: 'block',
+      fontSize: '14px',
+      fontWeight: 600,
+      color: 'var(--text-primary)',
+      marginBottom: '12px'
+    }}>
+      {label}{required && <span style={{ color: 'var(--interactive-danger)', marginLeft: '4px' }}>*</span>}
     </label>
     <input 
       type="text" 
@@ -131,60 +250,239 @@ const FormField = ({ label, value, onChange, placeholder, disabled, required }: 
       placeholder={placeholder} 
       disabled={disabled} 
       required={required}
-      className="w-full p-4 border border-panel-border rounded-xl bg-component-bg text-text-primary text-base focus:outline-none focus:ring-2 focus:ring-accent-color focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed placeholder-text-muted" 
+      style={{
+        width: '100%',
+        padding: '16px',
+        border: '1.5px solid var(--border-primary)',
+        borderRadius: 'var(--radius-lg)',
+        backgroundColor: 'var(--surface-primary)',
+        color: 'var(--text-primary)',
+        fontSize: '16px',
+        transition: 'all var(--transition-normal)',
+        outline: 'none',
+        fontFamily: 'inherit'
+      }}
+      onFocus={(e) => {
+        e.target.style.borderColor = 'var(--interactive-accent)';
+        e.target.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1)';
+      }}
+      onBlur={(e) => {
+        e.target.style.borderColor = 'var(--border-primary)';
+        e.target.style.boxShadow = 'none';
+      }}
     />
   </div>
 );
 
 const CheckboxOption = ({ id, label, description, checked, onChange, disabled }: CheckboxOptionProps) => (
-  <label className="flex items-start gap-4 p-4 bg-component-bg rounded-xl border border-panel-border hover:border-accent-color transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 group">
+  <label style={{
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '16px',
+    padding: '16px',
+    backgroundColor: 'var(--surface-primary)',
+    borderRadius: 'var(--radius-lg)',
+    border: '1px solid var(--border-primary)',
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    opacity: disabled ? 0.5 : 1,
+    transition: 'all var(--transition-normal)'
+  }}>
     <input 
       type="checkbox" 
       id={id} 
       checked={checked} 
       onChange={(e) => onChange(e.target.checked)} 
       disabled={disabled}
-      className="mt-1 rounded border-panel-border bg-component-bg text-accent-color focus:ring-accent-color focus:ring-2 focus:ring-offset-2 focus:ring-offset-component-bg transform scale-110" 
+      style={{
+        marginTop: '2px',
+        width: '18px',
+        height: '18px',
+        borderRadius: 'var(--radius-sm)',
+        border: '1.5px solid var(--border-primary)',
+        backgroundColor: checked ? 'var(--interactive-accent)' : 'var(--surface-primary)',
+        cursor: 'pointer',
+        transition: 'all var(--transition-normal)'
+      }}
     />
-    <div className="flex-1">
-      <div className="text-base font-medium text-text-primary group-hover:text-accent-color transition-colors">{label}</div>
-      <div className="text-sm text-text-muted mt-1">{description}</div>
+    <div style={{ flex: 1 }}>
+      <div style={{ 
+        fontSize: '16px', 
+        fontWeight: 600, 
+        color: 'var(--text-primary)',
+        transition: 'color var(--transition-normal)'
+      }}>
+        {label}
+      </div>
+      <div style={{ 
+        fontSize: '14px', 
+        color: 'var(--text-muted)', 
+        marginTop: '4px' 
+      }}>
+        {description}
+      </div>
     </div>
   </label>
 );
 
 const FilesPreview = ({ githubForm, githubUser }: FilesPreviewProps) => (
-  <div className="bg-component-bg rounded-xl border border-panel-border overflow-hidden">
-    <div className="p-4 border-b border-panel-border bg-component-bg">
-      <p className="font-semibold text-text-primary flex items-center gap-3 text-base">
+  <div style={{
+    backgroundColor: 'var(--surface-primary)',
+    borderRadius: 'var(--radius-xl)',
+    border: '1px solid var(--border-primary)',
+    overflow: 'hidden'
+  }}>
+    <div style={{ 
+      padding: '16px', 
+      borderBottom: '1px solid var(--border-primary)',
+      backgroundColor: 'var(--surface-primary)'
+    }}>
+      <p style={{ 
+        fontWeight: 600, 
+        color: 'var(--text-primary)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        fontSize: '16px',
+        margin: 0
+      }}>
         <FileText size={18} />
         Files to be created
       </p>
     </div>
-    <div className="p-4">
-      <ul className="space-y-3">
-        <li className="flex items-center gap-4 p-3 rounded-lg hover:bg-component-hover transition-colors group">
-          <div className="w-3 h-3 bg-blue-500 rounded-full flex-shrink-0" aria-hidden="true"></div>
-          <code className="text-sm text-text-primary font-medium flex-1">index.html</code>
-          <span className="text-xs text-text-muted bg-component-bg px-2 py-1 rounded">Your website</span>
+    <div style={{ padding: '16px' }}>
+      <ul style={{ display: 'flex', flexDirection: 'column', gap: '12px', margin: 0, padding: 0 }}>
+        <li style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '16px', 
+          padding: '12px',
+          borderRadius: 'var(--radius-lg)',
+          transition: 'background-color var(--transition-normal)'
+        }}>
+          <div style={{ 
+            width: '12px', 
+            height: '12px', 
+            backgroundColor: 'var(--interactive-primary)', 
+            borderRadius: '50%',
+            flexShrink: 0
+          }} aria-hidden="true"></div>
+          <code style={{ 
+            fontSize: '14px', 
+            color: 'var(--text-primary)', 
+            fontWeight: 600, 
+            flex: 1,
+            fontFamily: 'var(--font-mono)'
+          }}>
+            index.html
+          </code>
+          <span style={{ 
+            fontSize: '12px', 
+            color: 'var(--text-muted)', 
+            backgroundColor: 'var(--surface-secondary)',
+            padding: '4px 8px',
+            borderRadius: 'var(--radius-md)'
+          }}>
+            Your website
+          </span>
         </li>
-        <li className="flex items-center gap-4 p-3 rounded-lg hover:bg-component-hover transition-colors group">
-          <div className="w-3 h-3 bg-green-500 rounded-full flex-shrink-0" aria-hidden="true"></div>
-          <code className="text-sm text-text-primary font-medium flex-1">README.md</code>
-          <span className="text-xs text-text-muted bg-component-bg px-2 py-1 rounded">Project documentation</span>
+        <li style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '16px', 
+          padding: '12px',
+          borderRadius: 'var(--radius-lg)',
+          transition: 'background-color var(--transition-normal)'
+        }}>
+          <div style={{ 
+            width: '12px', 
+            height: '12px', 
+            backgroundColor: 'var(--interactive-success)', 
+            borderRadius: '50%',
+            flexShrink: 0
+          }} aria-hidden="true"></div>
+          <code style={{ 
+            fontSize: '14px', 
+            color: 'var(--text-primary)', 
+            fontWeight: 600, 
+            flex: 1,
+            fontFamily: 'var(--font-mono)'
+          }}>
+            README.md
+          </code>
+          <span style={{ 
+            fontSize: '12px', 
+            color: 'var(--text-muted)', 
+            backgroundColor: 'var(--surface-secondary)',
+            padding: '4px 8px',
+            borderRadius: 'var(--radius-md)'
+          }}>
+            Project documentation
+          </span>
         </li>
         {githubForm.deployPages && (
-          <li className="flex items-center gap-4 p-3 rounded-lg hover:bg-component-hover transition-colors group">
-            <div className="w-3 h-3 bg-purple-500 rounded-full flex-shrink-0" aria-hidden="true"></div>
-            <code className="text-sm text-text-primary font-medium flex-1">.github/workflows/deploy.yml</code>
-            <span className="text-xs text-text-muted bg-component-bg px-2 py-1 rounded">Deployment workflow</span>
+          <li style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '16px', 
+            padding: '12px',
+            borderRadius: 'var(--radius-lg)',
+            transition: 'background-color var(--transition-normal)'
+          }}>
+            <div style={{ 
+              width: '12px', 
+              height: '12px', 
+              backgroundColor: 'var(--interactive-accent)', 
+              borderRadius: '50%',
+              flexShrink: 0
+            }} aria-hidden="true"></div>
+            <code style={{ 
+              fontSize: '14px', 
+              color: 'var(--text-primary)', 
+              fontWeight: 600, 
+              flex: 1,
+              fontFamily: 'var(--font-mono)'
+            }}>
+              .github/workflows/deploy.yml
+            </code>
+            <span style={{ 
+              fontSize: '12px', 
+              color: 'var(--text-muted)', 
+              backgroundColor: 'var(--surface-secondary)',
+              padding: '4px 8px',
+              borderRadius: 'var(--radius-md)'
+            }}>
+              Deployment workflow
+            </span>
           </li>
         )}
       </ul>
       {githubForm.deployPages && githubForm.name && (
-        <div className="mt-5 p-4 bg-accent-color bg-opacity-5 rounded-lg border border-accent-color border-opacity-20">
-          <p className="text-sm text-text-primary font-medium mb-2">Your website will be available at:</p>
-          <code className="text-sm text-accent-color break-all bg-black bg-opacity-10 px-3 py-2 rounded border border-accent-color border-opacity-20">
+        <div style={{ 
+          marginTop: '20px', 
+          padding: '16px', 
+          backgroundColor: 'rgba(139, 92, 246, 0.05)',
+          borderRadius: 'var(--radius-lg)',
+          border: '1px solid rgba(139, 92, 246, 0.2)'
+        }}>
+          <p style={{ 
+            fontSize: '14px', 
+            color: 'var(--text-primary)', 
+            fontWeight: 600, 
+            marginBottom: '8px' 
+          }}>
+            Your website will be available at:
+          </p>
+          <code style={{ 
+            fontSize: '14px', 
+            color: 'var(--interactive-accent)', 
+            wordBreak: 'break-all',
+            backgroundColor: 'rgba(0, 0, 0, 0.05)',
+            padding: '8px 12px',
+            borderRadius: 'var(--radius-md)',
+            border: '1px solid rgba(139, 92, 246, 0.2)',
+            display: 'block',
+            fontFamily: 'var(--font-mono)'
+          }}>
             https://{githubUser?.login}.github.io/{githubForm.name}/
           </code>
         </div>
@@ -194,22 +492,83 @@ const FilesPreview = ({ githubForm, githubUser }: FilesPreviewProps) => (
 );
 
 const ActionButtons = ({ isCreatingRepo, isValid, onCreateRepo, onCancel }: ActionButtonsProps) => (
-  <div className="flex gap-4 pt-4">
+  <div style={{ display: 'flex', gap: '16px', paddingTop: '16px' }}>
     <button 
-      className="btn btn-outline flex-1 disabled:opacity-50 disabled:cursor-not-allowed py-3 text-base" 
+      style={{
+        flex: 1,
+        padding: '12px 20px',
+        backgroundColor: 'transparent',
+        color: 'var(--text-primary)',
+        border: '1.5px solid var(--border-primary)',
+        borderRadius: 'var(--radius-lg)',
+        fontWeight: 600,
+        fontSize: '16px',
+        cursor: isCreatingRepo ? 'not-allowed' : 'pointer',
+        opacity: isCreatingRepo ? 0.5 : 1,
+        transition: 'all var(--transition-normal)',
+        fontFamily: 'inherit'
+      }}
       onClick={onCancel} 
       disabled={isCreatingRepo}
+      onMouseOver={(e) => {
+        if (!isCreatingRepo) {
+          e.currentTarget.style.borderColor = 'var(--interactive-accent)';
+          e.currentTarget.style.color = 'var(--interactive-accent)';
+        }
+      }}
+      onMouseOut={(e) => {
+        if (!isCreatingRepo) {
+          e.currentTarget.style.borderColor = 'var(--border-primary)';
+          e.currentTarget.style.color = 'var(--text-primary)';
+        }
+      }}
     >
       Cancel
     </button>
     <button 
-      className="btn btn-primary flex-1 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed py-3 text-base" 
+      style={{
+        flex: 1,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '12px',
+        padding: '12px 20px',
+        background: 'linear-gradient(135deg, var(--interactive-primary), var(--interactive-primary-hover))',
+        color: 'var(--text-inverse)',
+        border: 'none',
+        borderRadius: 'var(--radius-lg)',
+        fontWeight: 600,
+        fontSize: '16px',
+        cursor: (isCreatingRepo || !isValid) ? 'not-allowed' : 'pointer',
+        opacity: (isCreatingRepo || !isValid) ? 0.5 : 1,
+        transition: 'all var(--transition-normal)',
+        fontFamily: 'inherit'
+      }}
       onClick={onCreateRepo} 
       disabled={isCreatingRepo || !isValid}
+      onMouseOver={(e) => {
+        if (!isCreatingRepo && isValid) {
+          e.currentTarget.style.transform = 'translateY(-2px)';
+          e.currentTarget.style.boxShadow = '0 8px 16px rgba(59, 130, 246, 0.3)';
+        }
+      }}
+      onMouseOut={(e) => {
+        if (!isCreatingRepo && isValid) {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = 'none';
+        }
+      }}
     >
       {isCreatingRepo ? (
         <>
-          <div className="loading-spinner w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          <div style={{
+            width: '20px',
+            height: '20px',
+            border: '2px solid var(--text-inverse)',
+            borderTopColor: 'transparent',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite'
+          }}></div>
           Creating Repository...
         </>
       ) : (
@@ -251,88 +610,201 @@ export const GitHubModal = ({
     }
   };
 
+  if (!showGithubModal) return null;
+
   return (
-    showGithubModal && (
-      <div className="modal-overlay" onClick={() => !isCreatingRepo && setShowGithubModal(false)}>
-        <div className="modal-content" onClick={(e) => e.stopPropagation()} role="dialog" aria-labelledby="github-modal-title" aria-modal="true">
+    <div 
+      className="modal-overlay" 
+      onClick={() => !isCreatingRepo && setShowGithubModal(false)}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px',
+        zIndex: 1000,
+        backdropFilter: 'blur(8px)'
+      }}
+    >
+      <div 
+        className="modal-content github-modal-content"
+        onClick={(e) => e.stopPropagation()} 
+        role="dialog" 
+        aria-labelledby="github-modal-title" 
+        aria-modal="true"
+        style={{
+          backgroundColor: 'var(--surface-primary)',
+          border: '1px solid var(--border-primary)',
+          borderRadius: 'var(--radius-2xl)',
+          padding: '32px',
+          maxWidth: '500px',
+          width: '100%',
+          maxHeight: '90vh',
+          overflowY: 'auto',
+          boxShadow: 'var(--shadow-xl)',
+          position: 'relative'
+        }}
+      >
 
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-accent-color bg-opacity-10 rounded-xl" aria-hidden="true">
-                <Github size={24} className="text-accent-color" />
-              </div>
-              <div>
-                <h3 id="github-modal-title" className="text-xl font-semibold text-text-primary">Create GitHub Repository</h3>
-                <p className="text-sm text-text-muted mt-2">Deploy your website with GitHub Pages</p>
-              </div>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{
+              padding: '12px',
+              backgroundColor: 'rgba(139, 92, 246, 0.1)',
+              borderRadius: 'var(--radius-xl)'
+            }} aria-hidden="true">
+              <Github size={24} style={{ color: 'var(--interactive-accent)' }} />
             </div>
-            <button
-              onClick={() => setShowGithubModal(false)}
-              className="btn btn-outline btn-sm btn-icon hover:bg-component-hover transition-colors"
-              disabled={isCreatingRepo}
-              aria-label="Close modal"
-            >
-              <X size={18} />
-            </button>
+            <div>
+              <h3 id="github-modal-title" style={{ 
+                fontSize: '20px', 
+                fontWeight: 600, 
+                color: 'var(--text-primary)',
+                margin: 0
+              }}>
+                Create GitHub Repository
+              </h3>
+              <p style={{ 
+                fontSize: '14px', 
+                color: 'var(--text-muted)', 
+                marginTop: '8px',
+                margin: 0
+              }}>
+                Deploy your website with GitHub Pages
+              </p>
+            </div>
           </div>
+          <button
+            onClick={() => setShowGithubModal(false)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '32px',
+              height: '32px',
+              border: 'none',
+              backgroundColor: 'var(--surface-tertiary)',
+              color: 'var(--text-secondary)',
+              borderRadius: 'var(--radius-lg)',
+              cursor: isCreatingRepo ? 'not-allowed' : 'pointer',
+              opacity: isCreatingRepo ? 0.5 : 1,
+              transition: 'all var(--transition-normal)',
+              fontFamily: 'inherit'
+            }}
+            disabled={isCreatingRepo}
+            aria-label="Close modal"
+            onMouseOver={(e) => {
+              if (!isCreatingRepo) {
+                e.currentTarget.style.backgroundColor = 'var(--interactive-danger)';
+                e.currentTarget.style.color = 'var(--text-inverse)';
+              }
+            }}
+            onMouseOut={(e) => {
+              if (!isCreatingRepo) {
+                e.currentTarget.style.backgroundColor = 'var(--surface-tertiary)';
+                e.currentTarget.style.color = 'var(--text-secondary)';
+              }
+            }}
+          >
+            <X size={18} />
+          </button>
+        </div>
 
-          {!githubToken ? (
-            <GitHubAuthSection
-              onAuthSuccess={(token) => { setGithubToken(token); localStorage.setItem('github_access_token', token); fetchUserInfo(token); }}
+        {!githubToken ? (
+          <GitHubAuthSection
+            onAuthSuccess={(token) => { 
+              setGithubToken(token); 
+              localStorage.setItem('github_access_token', token); 
+              fetchUserInfo(token); 
+            }}
+          />
+        ) : (
+          <>
+            <GitHubConnectedSection
+              githubUser={githubUser}
+              githubForm={githubForm}
+              setGithubForm={setGithubForm}
+              isCreatingRepo={isCreatingRepo}
+              onDisconnect={() => { 
+                localStorage.removeItem('github_access_token'); 
+                setGithubToken(null); 
+                setGithubUser(null); 
+              }}
+              onCreateRepo={handleCreateRepoWithSuccess}
+              onCancel={() => setShowGithubModal(false)}
             />
-          ) : (
-            <>
-              <GitHubConnectedSection
-                githubUser={githubUser}
-                githubForm={githubForm}
-                setGithubForm={setGithubForm}
-                isCreatingRepo={isCreatingRepo}
-                onDisconnect={() => { localStorage.removeItem('github_access_token'); setGithubToken(null); setGithubUser(null); }}
-                onCreateRepo={handleCreateRepoWithSuccess}
-                onCancel={() => setShowGithubModal(false)}
-              />
 
-              {/* Success Message */}
-              {successData && (
-                <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl text-sm space-y-2">
-                  <p className="text-green-800 font-medium">
-                    Repository created successfully!
-                  </p>
-                  <p>
-                    <strong>URL:</strong>{" "}
+            {/* Success Message */}
+            {successData && (
+              <div style={{ 
+                marginTop: '24px', 
+                padding: '16px', 
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                border: '1px solid rgba(16, 185, 129, 0.2)',
+                borderRadius: 'var(--radius-lg)',
+                fontSize: '14px'
+              }}>
+                <p style={{ 
+                  color: 'var(--interactive-success)', 
+                  fontWeight: 600,
+                  marginBottom: '8px'
+                }}>
+                  Repository created successfully!
+                </p>
+                <p style={{ margin: '4px 0' }}>
+                  <strong style={{ color: 'var(--text-primary)' }}>URL:</strong>{" "}
+                  <a
+                    href={successData.html_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      color: 'var(--interactive-accent)',
+                      textDecoration: 'underline',
+                      transition: 'opacity var(--transition-normal)'
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.opacity = '0.8'}
+                    onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
+                  >
+                    {successData.html_url}
+                  </a>
+                </p>
+                {successData.pages_url && (
+                  <p style={{ margin: '4px 0' }}>
+                    <strong style={{ color: 'var(--text-primary)' }}>Pages:</strong>{" "}
                     <a
-                      href={successData.html_url}
+                      href={successData.pages_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-accent-color underline hover:opacity-80"
+                      style={{
+                        color: 'var(--interactive-accent)',
+                        textDecoration: 'underline',
+                        transition: 'opacity var(--transition-normal)'
+                      }}
+                      onMouseOver={(e) => e.currentTarget.style.opacity = '0.8'}
+                      onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
                     >
-                      {successData.html_url}
+                      {successData.pages_url}
                     </a>
                   </p>
-                  {successData.pages_url && (
-                    <p>
-                      <strong>Pages:</strong>{" "}
-                      <a
-                        href={successData.pages_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-accent-color underline hover:opacity-80"
-                      >
-                        {successData.pages_url}
-                      </a>
-                    </p>
-                  )}
-                </div>
-              )}
-            </>
-          )}
-        </div>
+                )}
+              </div>
+            )}
+          </>
+        )}
       </div>
-    )
+
+      <style jsx>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
   );
 };
-
-
-
-
