@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from "react";
 import { ReactElement } from "react";
 import BuildPrompts from "./BuildPrompts";
 import { GitHubModal } from "./GitHubModal";
+import PDFGenerator from './PDFGenerator';
 import {
   FileText, Sparkles, Info, Wrench, Phone, SquareStack, CreditCard,
   Image, Search, Tag, Users, Stars, Type, Bot, Settings, Navigation,
@@ -286,6 +287,7 @@ export default function ComponentsPanel({
   const [isRequesting, setIsRequesting] = useState(false);
   const [showGithubModal, setShowGithubModal] = useState(false);
   const [isCreatingRepo, setIsCreatingRepo] = useState(false);
+  const [showPdfGenerator, setShowPdfGenerator] = useState(false);
   
   const [favorites, setFavorites] = useLocalStorageState<Set<string>>('component-favorites', new Set());
   const [recentComponents, setRecentComponents] = useLocalStorageState<string[]>('recent-components', []);
@@ -671,22 +673,30 @@ CRITICAL REQUIREMENTS:
     </div>
   );
 
-  const renderAISection = () => (
-    <div className="ai-section">
-      <div className="panel-header">
-        <div className="flex items-center justify-between w-full">
-          <div className="flex items-center gap-2">
-            <BuildPrompts onPromptSelect={setPrompt} />
-            <button
-              className="btn btn-outline btn-sm flex items-center gap-2"
-              onClick={() => setShowGithubModal(true)}
-            >
-              <Github size={14} />
-              Create Repo
-            </button>
-          </div>
+const renderAISection = () => (
+  <div className="ai-section">
+    <div className="panel-header">
+      <div className="flex items-center justify-between w-full">
+        <div className="flex items-center gap-2">
+          <BuildPrompts onPromptSelect={setPrompt} />
+          <button
+            className="btn btn-outline btn-sm flex items-center gap-2"
+            onClick={() => setShowGithubModal(true)}
+          >
+            <Github size={14} />
+            Create Repo
+          </button>
+      
+          <button
+            className="btn btn-outline btn-sm flex items-center gap-2"
+            onClick={() => setShowPdfGenerator(true)}
+          >
+            <FileText size={14} />
+            Generate PDF
+          </button>
         </div>
       </div>
+    </div>
 
       <div className="mode-toggle">
         <label className="mode-option">
@@ -780,35 +790,57 @@ CRITICAL REQUIREMENTS:
   );
 
   return (
-    <div className="flex flex-col h-full overflow-hidden relative">
-      {onResizeStart && (
-        <div
-          className="absolute -right-2 top-0 bottom-0 w-4 cursor-col-resize z-20 hover:bg-accent-color hover:bg-opacity-50 transition-colors"
-          onMouseDown={onResizeStart}
-        />
-      )}
-
-      {renderHeader()}
-      {renderComponentsList()}
-      {renderAISection()}
-
-      <GitHubModal
-        showGithubModal={showGithubModal}
-        setShowGithubModal={setShowGithubModal}
-        githubToken={githubToken}
-        setGithubToken={setGithubToken}
-        githubUser={githubUser}
-        setGithubUser={setGithubUser}
-        githubForm={githubForm}
-        setGithubForm={setGithubForm}
-        isCreatingRepo={isCreatingRepo}
-        handleCreateRepo={handleCreateRepo}
-        fetchUserInfo={fetchUserInfo}
+  <div className="flex flex-col h-full overflow-hidden relative">
+    {onResizeStart && (
+      <div
+        className="absolute -right-2 top-0 bottom-0 w-4 cursor-col-resize z-20 hover:bg-accent-color hover:bg-opacity-50 transition-colors"
+        onMouseDown={onResizeStart}
       />
-    </div>
-  );
-}
+    )}
 
+    {renderHeader()}
+    {renderComponentsList()}
+    {renderAISection()}
+
+ 
+    <GitHubModal
+      showGithubModal={showGithubModal}
+      setShowGithubModal={setShowGithubModal}
+      githubToken={githubToken}
+      setGithubToken={setGithubToken}
+      githubUser={githubUser}
+      setGithubUser={setGithubUser}
+      githubForm={githubForm}
+      setGithubForm={setGithubForm}
+      isCreatingRepo={isCreatingRepo}
+      handleCreateRepo={handleCreateRepo}
+      fetchUserInfo={fetchUserInfo}
+    />
+
+   
+    {showPdfGenerator && (
+      <div className="modal-overlay" onClick={() => setShowPdfGenerator(false)}>
+        <div 
+          className="modal-content" 
+          onClick={(e) => e.stopPropagation()}
+          style={{ maxWidth: '800px' }} 
+        >
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-text-primary">PDF Generator</h2>
+            <button
+              onClick={() => setShowPdfGenerator(false)}
+              className="btn btn-outline btn-sm btn-icon hover:bg-component-hover transition-colors"
+              aria-label="Close PDF generator"
+            >
+              <X size={18} />
+            </button>
+          </div>
+          <PDFGenerator currentCode={currentCode} />
+        </div>
+      </div>
+    )}
+  </div>
+);
   const components: { [key: string]: ComponentInfo } = {
       header: {
         code: `<!-- Header Component -->
