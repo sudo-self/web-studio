@@ -1387,29 +1387,26 @@ const renderAISection = () => (
     <div className="panel-header">
       <div className="flex items-center justify-between w-full">
         <div className="grid grid-cols-2 gap-2 w-full">
-          {/* Row 1 */}
+     
           <BuildPrompts onPromptSelect={setPrompt} />
           <button
             className="btn btn-outline btn-sm flex items-center gap-2 justify-center"
             onClick={() => setShowGithubModal(true)}
           >
-            <Github size={14} />
             Create Repo
           </button>
           
-          {/* Row 2 */}
+      
           <button
             className="btn btn-outline btn-sm flex items-center gap-2 justify-center"
             onClick={() => setShowPdfGenerator(true)}
           >
-            <FileText size={14} />
             Generate PDF
           </button>
           <button
             className="btn btn-outline btn-sm flex items-center gap-2 justify-center"
             onClick={() => setShowBadgeBuilder(true)}
           >
-            <Image size={14} />
             Badge Builder
           </button>
         </div>
