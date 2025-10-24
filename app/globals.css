@@ -1385,7 +1385,6 @@ body {
   border-top: 2px solid var(--border-accent);
 }
 
-/* Form Elements in Modals */
 .modal-form {
   display: flex;
   flex-direction: column;
@@ -1489,7 +1488,7 @@ body {
   cursor: pointer;
 }
 
-/* Modal Animations */
+
 @keyframes modalFadeIn {
   from {
     opacity: 0;
@@ -1527,7 +1526,7 @@ body {
   animation: modalSlideDown 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Modal Loading States */
+
 .modal-loading {
   pointer-events: none;
   position: relative;
@@ -1561,7 +1560,7 @@ body {
   z-index: 11;
 }
 
-/* Success/Error States */
+
 .modal-success .modal-header::after {
   background: var(--interactive-success);
 }
@@ -1574,7 +1573,7 @@ body {
   background: var(--interactive-warning);
 }
 
-/* Responsive Design */
+
 @media (max-width: 768px) {
   .modal-overlay {
     padding: 12px;
@@ -1642,7 +1641,6 @@ body {
   }
 }
 
-/* Dark mode enhancements */
 @media (prefers-color-scheme: dark) {
   .modal-glass {
     background: rgba(10, 10, 10, 0.8);
@@ -1654,7 +1652,7 @@ body {
   }
 }
 
-/* Utility classes for modal content */
+
 .modal-section {
   margin-bottom: 24px;
 }
@@ -1710,7 +1708,7 @@ body {
   line-height: 1.5;
 }
 
-/* GitHub Modal Specific Styles */
+
 .github-modal-content {
   width: 500px;
   max-width: 90vw;
@@ -1740,13 +1738,21 @@ body {
 
 
 .pdf-modal-content {
-  width: 800px;
-  max-width: 90vw;
-  max-height: 90vh;
+  width: 900px;
+  max-width: 95vw;
+  max-height: 95vh;
+  background: var(--surface-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
 }
 
 .pdf-modal-body {
   padding: 0;
+  background: var(--surface-primary);
+  height: 100%;
+  overflow: auto;
 }
 
 .pdf-modal-body .pdf-generator {
@@ -1754,9 +1760,39 @@ body {
   border-radius: 0;
   box-shadow: none;
   height: 100%;
+  min-height: 600px;
+  background: var(--surface-primary);
 }
 
-/* Badge Builder Custom Styles - CORRECTED */
+
+@media (max-width: 768px) {
+  .pdf-modal-content {
+    width: 95vw;
+    margin: 0 12px;
+    max-height: 90vh;
+  }
+  
+  .pdf-modal-body .pdf-generator {
+    min-height: 500px;
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pdf-modal-content {
+    width: 100vw;
+    border-radius: var(--radius-xl);
+    max-height: 100vh;
+    margin: 0;
+  }
+  
+  .pdf-modal-body .pdf-generator {
+    min-height: auto;
+    padding: 12px;
+  }
+}
+
+
 .badge-builder {
   font-family: var(--font-sans);
   background: var(--surface-primary);
