@@ -1,4 +1,4 @@
-"use client";
+  "use client";
 
 import { useEffect, useRef, useState } from "react";
 import { GridPattern } from "./GridPattern";
@@ -32,7 +32,7 @@ const generateHtml = (content: string, currentFramework: string) => {
     const reactCode = content.trim();
     
 
-    if (!reactCode || reactCode === "" || reactCode === "// Welcome to React mode!") {
+    if (!reactCode || reactCode === "" || reactCode === "// Welcome to React Mode!") {
       return `
         <!DOCTYPE html>
         <html lang="en">
@@ -64,7 +64,7 @@ const generateHtml = (content: string, currentFramework: string) => {
         </head>
         <body>
           <div class="empty-state">
-            <h2>Ready for React Code</h2>
+            <h2>React Mode</h2>
             <p>Start writing your React components in the editor</p>
           </div>
         </body>
@@ -183,7 +183,7 @@ const generateHtml = (content: string, currentFramework: string) => {
 
   const htmlContent = content.trim() === "" 
     ? `<div style="padding: 2rem; text-align: center; color: #64748b; font-family: system-ui;">
-         <h2>Ready for HTML</h2>
+         <h2>HTML Mode</h2>
          <p>Start writing your HTML in the editor</p>
        </div>`
     : content;
