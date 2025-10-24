@@ -1,6 +1,4 @@
-"use client";
-
-import type { Metadata, OpenGraph, Twitter } from "next";
+import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SettingsProvider } from "@/contexts/SettingsContext";
@@ -46,19 +44,19 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const og: OpenGraph | undefined = metadata.openGraph;
-  const tw: Twitter | undefined = metadata.twitter;
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  const og = metadata.openGraph;
+  const tw = metadata.twitter;
 
-  const normalizeOGImages = (images: OpenGraph["images"]): { url: string }[] => {
-    if (!images) return [];
-    return Array.isArray(images) ? images.map(img => ({ url: String(img.url) })) : [{ url: String(images.url) }];
-  };
+  const ogImages = Array.isArray(og?.images)
+    ? og.images.map((img) => img.url)
+    : og?.images
+    ? [og.images.url]
+    : [];
 
-  const normalizeTwitterImages = (images: Twitter["images"]): string[] => {
-    if (!images) return [];
-    return Array.isArray(images) ? images.map(img => (typeof img === "string" ? img : String(img.url))) : [typeof images === "string" ? images : String(images.url)];
-  };
+  const twImages = Array.isArray(tw?.images) ? tw.images : tw?.images ? [tw.images] : [];
 
   return (
     <html lang="en">
@@ -72,16 +70,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta property="og:description" content={og?.description as string} />
         <meta property="og:url" content={og?.url as string} />
         <meta property="og:site_name" content={og?.siteName as string} />
-        {normalizeOGImages(og?.images).map((img, i) => (
-          <meta key={i} property="og:image" content={img.url} />
+        {ogImages.map((url, i) => (
+          <meta key={i} property="og:image" content={url} />
         ))}
 
         {/* Twitter */}
         <meta name="twitter:card" content={tw?.card as string} />
         <meta name="twitter:title" content={tw?.title as string} />
         <meta name="twitter:description" content={tw?.description as string} />
-        {normalizeTwitterImages(tw?.images).map((img, i) => (
-          <meta key={i} name="twitter:image" content={img} />
+        {twImages.map((url, i) => (
+          <meta key={i} name="twitter:image" content={url} />
         ))}
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
@@ -90,6 +88,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
+
 
 
 
