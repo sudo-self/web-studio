@@ -49,7 +49,7 @@ interface CheckboxOptionProps { id: string; label: string; description: string; 
 interface FilesPreviewProps { githubForm: GithubForm; githubUser: GithubUser | null; }
 interface ActionButtonsProps { isCreatingRepo: boolean; isValid: boolean; onCreateRepo: () => void; onCancel: () => void; }
 
-// GitHub Auth Section - MOVED TO TOP
+
 const GitHubAuthSection = ({ onAuthSuccess }: GitHubAuthSectionProps) => (
   <div className="text-center py-8">
     <div className="p-4 bg-component-bg rounded-2xl w-20 h-20 mx-auto mb-6 flex items-center justify-center border border-panel-border">
@@ -65,7 +65,7 @@ const GitHubAuthSection = ({ onAuthSuccess }: GitHubAuthSectionProps) => (
   </div>
 );
 
-// GitHub Connected Section - MOVED TO TOP
+
 const GitHubConnectedSection = ({
   githubUser,
   githubForm,
@@ -94,7 +94,7 @@ const GitHubConnectedSection = ({
   </div>
 );
 
-// Supporting Components - MOVED TO TOP
+
 const UserInfoCard = ({ githubUser, onDisconnect, isCreatingRepo }: UserInfoCardProps) => (
   <div className="bg-component-bg rounded-xl border border-panel-border p-5">
     <div className="flex items-center justify-between">
@@ -222,7 +222,7 @@ const ActionButtons = ({ isCreatingRepo, isValid, onCreateRepo, onCancel }: Acti
   </div>
 );
 
-// Main Component - NOW AT THE BOTTOM
+
 export const GitHubModal = ({
   showGithubModal,
   setShowGithubModal,
