@@ -11,6 +11,8 @@ interface GridPatternProps extends React.SVGProps<SVGSVGElement> {
   strokeDasharray?: string;
   className?: string;
   perspective?: boolean;
+  color?: string;
+  intensity?: "light" | "medium" | "dark";
   [key: string]: unknown;
 }
 
@@ -23,25 +25,60 @@ export function GridPattern({
   squares,
   className = "",
   perspective = true,
+  color = "accent", 
+  intensity = "medium",
   ...props
 }: GridPatternProps) {
   const id = useId();
 
+
+  const intensityConfig = {
+    light: {
+      patternOpacity: 0.4,
+      gradientOpacity: 0.3,
+      lineOpacity: 0.3,
+      squareOpacity: 0.15,
+      centerOpacity: 0.4
+    },
+    medium: {
+      patternOpacity: 0.7,
+      gradientOpacity: 0.5,
+      lineOpacity: 0.5,
+      squareOpacity: 0.25,
+      centerOpacity: 0.6
+    },
+    dark: {
+      patternOpacity: 0.9,
+      gradientOpacity: 0.7,
+      lineOpacity: 0.7,
+      squareOpacity: 0.35,
+      centerOpacity: 0.8
+    }
+  };
+
+  const config = intensityConfig[intensity];
+
+  const accentColor = "var(--interactive-accent, #0891b2)";
+  const accentColorLight = "var(--interactive-accent-light, #0e7490)";
+  
   return (
     <>
-
       {perspective && (
         <div className="absolute inset-0 -z-10 overflow-hidden">
-          <div className="absolute inset-0 transform-gpu" style={{
-            transform: 'perspective(1000px) rotateX(60deg) scale(1.2)',
-            transformOrigin: 'center bottom',
-          }}>
+          <div 
+            className="absolute inset-0 transform-gpu" 
+            style={{
+              transform: 'perspective(1000px) rotateX(60deg) scale(1.2)',
+              transformOrigin: 'center bottom',
+            }}
+          >
             <svg
               aria-hidden="true"
-              className="h-full w-full fill-gray-400/20 stroke-gray-500/30"
+              className={`h-full w-full ${className}`}
               {...props}
             >
               <defs>
+            
                 <pattern
                   id={`${id}-pattern`}
                   width={width}
@@ -53,37 +90,46 @@ export function GridPattern({
                   <path
                     d={`M.5 ${height}V.5H${width}`}
                     fill="none"
-                    stroke="currentColor"
-                    strokeWidth="0.5"
+                    stroke={accentColor}
+                    strokeWidth="0.75"
                     strokeDasharray={strokeDasharray}
+                    opacity="0.6"
                   />
                 </pattern>
+
+             
                 <linearGradient id={`${id}-gradient`} x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="rgb(107 114 128 / 0.3)" />
-                  <stop offset="50%" stopColor="rgb(107 114 128 / 0.15)" />
-                  <stop offset="100%" stopColor="rgb(107 114 128 / 0.05)" />
+                  <stop offset="0%" stopColor={accentColor} stopOpacity={config.gradientOpacity * 0.8} />
+                  <stop offset="50%" stopColor={accentColor} stopOpacity={config.gradientOpacity * 0.4} />
+                  <stop offset="100%" stopColor={accentColor} stopOpacity={config.gradientOpacity * 0.1} />
                 </linearGradient>
+
+             
+                <radialGradient id={`${id}-highlight`} cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor={accentColor} stopOpacity="0.1" />
+                  <stop offset="100%" stopColor={accentColor} stopOpacity="0" />
+                </radialGradient>
               </defs>
               
-         
+        
               <rect 
                 width="100%" 
                 height="100%" 
-                fill={`url(#${id}-pattern})`} 
-                opacity="0.8"
+                fill={`url(#${id}-pattern)`} 
+                opacity={config.patternOpacity}
+              />
+              
+           
+              <rect 
+                width="100%" 
+                height="100%" 
+                fill={`url(#${id}-gradient)`} 
+                opacity={config.gradientOpacity}
               />
               
      
-              <rect 
-                width="100%" 
-                height="100%" 
-                fill={`url(#${id}-gradient})`} 
-                opacity="0.6"
-              />
-              
-          
-              <g stroke="rgb(107 114 128 / 0.4)" strokeWidth="0.25">
-               
+              <g stroke={accentColor} strokeWidth="0.5" opacity={config.lineOpacity}>
+
                 {Array.from({ length: Math.ceil(1000 / width) + 2 }).map((_, i) => (
                   <line
                     key={`v-${i}`}
@@ -93,7 +139,7 @@ export function GridPattern({
                     y2="100%"
                   />
                 ))}
-             
+            
                 {Array.from({ length: Math.ceil(1000 / height) + 2 }).map((_, i) => (
                   <line
                     key={`h-${i}`}
@@ -105,9 +151,15 @@ export function GridPattern({
                 ))}
               </g>
 
-         
+        
               {squares && (
-                <g fill="rgb(107 114 128 / 0.1)" stroke="rgb(107 114 128 / 0.2)" strokeWidth="0.5">
+                <g 
+                  fill={accentColor} 
+                  fillOpacity={config.squareOpacity * 0.3}
+                  stroke={accentColorLight}
+                  strokeWidth="1"
+                  strokeOpacity={config.squareOpacity}
+                >
                   {squares.map(([gridX, gridY]) => (
                     <rect
                       key={`${gridX}-${gridY}`}
@@ -115,27 +167,60 @@ export function GridPattern({
                       height={height - 2}
                       x={gridX * width + 1}
                       y={gridY * height + 1}
-                      rx="2"
+                      rx="3"
                     />
                   ))}
                 </g>
               )}
 
-              <circle
-                cx="50%"
-                cy="50%"
-                r="4"
-                fill="rgb(107 114 128 / 0.4)"
-                stroke="rgb(107 114 128 / 0.6)"
-                strokeWidth="1"
-              />
+   
+              <g>
+                <circle
+                  cx="50%"
+                  cy="50%"
+                  r="6"
+                  fill={`url(#${id}-highlight)`}
+                />
+                <circle
+                  cx="50%"
+                  cy="50%"
+                  r="3"
+                  fill={accentColor}
+                  stroke={accentColorLight}
+                  strokeWidth="1.5"
+                  opacity={config.centerOpacity}
+                />
+              </g>
+
+           
+              <g stroke={accentColor} strokeWidth="1" opacity={config.lineOpacity * 0.8}>
+              
+                <line x1="20" y1="10" x2="20" y2="30" />
+                <line x1="10" y1="20" x2="30" y2="20" />
+                
+               
+                <line x1="calc(100% - 20)" y1="10" x2="calc(100% - 20)" y2="30" />
+                <line x1="calc(100% - 10)" y1="20" x2="calc(100% - 30)" y2="20" />
+                
+
+                <line x1="20" y1="calc(100% - 10)" x2="20" y2="calc(100% - 30)" />
+                <line x1="10" y1="calc(100% - 20)" x2="30" y2="calc(100% - 20)" />
+                
+           
+                <line x1="calc(100% - 20)" y1="calc(100% - 10)" x2="calc(100% - 20)" y2="calc(100% - 30)" />
+                <line x1="calc(100% - 10)" y1="calc(100% - 20)" x2="calc(100% - 30)" y2="calc(100% - 20)" />
+              </g>
             </svg>
           </div>
           
-  
+       
           <div 
-            className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/10 to-transparent"
+            className="absolute bottom-0 left-0 right-0 h-48"
             style={{
+              background: `linear-gradient(to top, 
+                color-mix(in srgb, ${accentColor} 5%, transparent 95%) 0%,
+                color-mix(in srgb, ${accentColor} 2%, transparent 98%) 50%,
+                transparent 100%)`,
               transform: 'perspective(1000px) rotateX(60deg) scale(1.2)',
               transformOrigin: 'center bottom',
             }}
@@ -143,11 +228,12 @@ export function GridPattern({
         </div>
       )}
       
-
+  
       {!perspective && (
         <svg
           aria-hidden="true"
-          className={`pointer-events-none absolute inset-0 h-full w-full fill-gray-400/10 stroke-neutral-700 -z-10 ${className}`}
+          className={`pointer-events-none absolute inset-0 h-full w-full fill-gray-400/30 stroke-current -z-10 ${className}`}
+          style={{ color: accentColor, opacity: 0.4 }}
           {...props}
         >
           <defs>
@@ -162,6 +248,8 @@ export function GridPattern({
               <path
                 d={`M.5 ${height}V.5H${width}`}
                 fill="none"
+                stroke="currentColor"
+                strokeWidth="1"
                 strokeDasharray={strokeDasharray}
               />
             </pattern>
@@ -177,6 +265,8 @@ export function GridPattern({
                   height={height - 1}
                   x={x * width + 1}
                   y={y * height + 1}
+                  fill={accentColor}
+                  fillOpacity={0.2}
                 />
               ))}
             </svg>
