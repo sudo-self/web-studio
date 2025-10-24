@@ -31,97 +31,30 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
     if (currentFramework === "react") {
       const reactCode = content.trim();
       
-      // Handle empty or invalid React code
-      if (!reactCode || reactCode === "" || reactCode === "// studio.jessejesse.com") {
+      // Simple check for empty code
+      if (!reactCode) {
         return `
           <!DOCTYPE html>
-          <html lang="en">
+          <html>
           <head>
             <meta charset="UTF-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
             <title>React Preview</title>
             <style>
-              body {
-                margin: 0;
-                font-family: system-ui, sans-serif;
-                background: #f8fafc;
-                color: #333;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                min-height: 100vh;
-              }
-              .empty-state {
-                text-align: center;
-                padding: 2rem;
-                color: #64748b;
-              }
-              .empty-state h2 {
-                color: #475569;
-                margin-bottom: 0.5rem;
-              }
+              body { margin: 0; font-family: system-ui; background: #f8fafc; }
+              #root { padding: 20px; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
             </style>
           </head>
           <body>
-            <div class="empty-state">
-              <h2>React Mode</h2>
-              <p>Start writing your React components in the editor</p>
-            </div>
+            <div id="root">Ready for React code</div>
           </body>
           </html>
         `;
       }
 
-      // Fix common AI errors in React code
-      let fixedReactCode = reactCode
-        // Fix double React.React.useState
-        .replace(/React\.React\.useState/g, 'React.useState')
-        // Fix useState without React prefix
-        .replace(/(^|[^\.])useState\(/g, '$1React.useState(')
-        // Fix useEffect without React prefix
-        .replace(/(^|[^\.])useEffect\(/g, '$1React.useEffect(')
-        // Fix missing closing parenthesis in return statements
-        .replace(/(return\s*\([^)]*)$/gm, '$1)')
-        // Fix wrong rendering syntax
-        .replace(/const root\s*=\s*document\.getElementById\(['"']root['"']\);?/g, '')
-        .replace(/root\.render\(([^)]+)\);?/g, 'const root = ReactDOM.createRoot(document.getElementById("root"));\nroot.render(React.createElement($1));');
-
-      // Check if we need to add proper rendering
-      const hasProperRender = fixedReactCode.includes('ReactDOM.createRoot') && fixedReactCode.includes('root.render');
-      
-      if (!hasProperRender) {
-        // Extract component name
-        let componentName = "App";
-        const fnMatch = fixedReactCode.match(/function\s+(\w+)/);
-        if (fnMatch) componentName = fnMatch[1];
-        else {
-          const constMatch = fixedReactCode.match(/(?:const|let|var)\s+(\w+)\s*=/);
-          if (constMatch) componentName = constMatch[1];
-        }
-
-        // Add proper rendering
-        fixedReactCode += `\n\n// Render the component\nconst root = ReactDOM.createRoot(document.getElementById("root"));\nroot.render(React.createElement(${componentName}));`;
-      }
-
-      // Ensure the component is properly closed
-      const openBraces = (fixedReactCode.match(/{/g) || []).length;
-      const closeBraces = (fixedReactCode.match(/}/g) || []).length;
-      
-      if (openBraces > closeBraces) {
-        fixedReactCode += '}'.repeat(openBraces - closeBraces);
-      }
-
-      // Fix common syntax errors
-      fixedReactCode = fixedReactCode
-        .replace(/,\s*\)/g, ')') // Remove trailing commas before closing parenthesis
-        .replace(/,\s*}/g, '}') // Remove trailing commas before closing braces
-        .replace(/;\s*;/g, ';') // Remove double semicolons
-        .replace(/\s+/g, ' ') // Normalize whitespace
-        .trim();
-
       return `
         <!DOCTYPE html>
-        <html lang="en">
+        <html>
         <head>
           <meta charset="UTF-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -130,53 +63,18 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
           <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
           <script src="https://unpkg.com/@babel/standalone@7.28.5/babel.min.js"></script>
           <style>
-            body {
-              margin: 0;
-              font-family: system-ui, sans-serif;
-              background: #fff;
-              color: #333;
-            }
-            #root { 
-              padding: 16px; 
-              min-height: 100vh;
-            }
-            .error {
-              padding: 16px;
-              color: #d32f2f;
-              background: #ffebee;
-              border-radius: 8px;
-              font-family: monospace;
-              white-space: pre-wrap;
-              border: 1px solid #fecaca;
-            }
-            .loading {
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              padding: 2rem;
-              color: #64748b;
-            }
-            .success {
-              padding: 16px;
-              color: #155724;
-              background: #d4edda;
-              border-radius: 8px;
-              border: 1px solid #c3e6cb;
-            }
+            body { margin: 0; font-family: system-ui, sans-serif; }
+            #root { padding: 16px; min-height: 100vh; }
           </style>
         </head>
         <body>
-          <div id="root">
-            <div class="loading">Loading React Preview...</div>
-          </div>
-          <script type="text/babel" data-presets="env,react">
+          <div id="root">Loading...</div>
+          <script type="text/babel">
             try {
-              ${fixedReactCode}
+              ${reactCode}
             } catch (e) {
-              console.error('React Error:', e);
-              const root = document.getElementById("root");
-              root.innerHTML = '<div class="error"><strong>React Error:</strong><br>' + 
-                (e.message || String(e)) + '</div>';
+              document.getElementById('root').innerHTML = '<div style="color: red; padding: 20px;">Error: ' + e.message + '</div>';
+              console.error(e);
             }
           </script>
         </body>
@@ -184,14 +82,8 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
       `;
     }
 
-    // HTML mode - handle empty content
-    const htmlContent = content.trim() === "" 
-      ? `<div style="padding: 2rem; text-align: center; color: #64748b; font-family: system-ui;">
-           <h2>HTML Mode</h2>
-           <p>Start writing your HTML in the editor</p>
-         </div>`
-      : content;
-
+    // HTML mode
+    const htmlContent = content.trim() || '<div style="padding: 20px;">Ready for HTML code</div>';
     return `
       <!DOCTYPE html>
       <html>
@@ -199,15 +91,7 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <style>
-          body {
-            font-family: system-ui, sans-serif;
-            margin: 0;
-            padding: 16px;
-            line-height: 1.6;
-            background: #fff;
-            min-height: 100vh;
-          }
-          img { max-width: 100%; height: auto; display: block; }
+          body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; }
         </style>
       </head>
       <body>${htmlContent}</body>
