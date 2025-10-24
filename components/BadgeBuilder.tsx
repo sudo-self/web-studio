@@ -116,7 +116,6 @@ export default function BadgeBuilder({ onInsert }: BadgeBuilderProps) {
       const htmlSnippet = `<img src="${badgeUrl}" alt="${badgeConfig.label} - ${badgeConfig.message}" />`;
       onInsert(htmlSnippet);
       
-      // Simulate loading for better UX
       await new Promise(resolve => setTimeout(resolve, 500));
     } finally {
       setIsLoading(false);
@@ -145,32 +144,53 @@ export default function BadgeBuilder({ onInsert }: BadgeBuilderProps) {
     });
   };
 
-  // Design system compliant styling functions
-  const getInputClasses = () =>
-    `w-full p-3 border rounded-lg focus:outline-none focus:ring-3 focus:ring-var(--interactive-accent)/30 transition-all duration-300 font-sans ${
-      previewMode === 'dark' 
-        ? 'bg-var(--surface-primary) border-var(--border-primary) text-var(--text-primary) placeholder-var(--text-muted)' 
-        : 'bg-var(--surface-primary) border-var(--border-primary) text-var(--text-primary) placeholder-var(--text-muted)'
-    } hover:border-var(--interactive-accent) focus:border-var(--interactive-accent)`;
+  // Style objects instead of class names
+  const getLabelStyle = () => ({
+    display: 'block',
+    marginBottom: '8px',
+    fontWeight: 600,
+    fontSize: '14px',
+    letterSpacing: '0.025em',
+    color: 'var(--text-secondary)',
+    fontFamily: 'var(--font-sans)'
+  } as const);
 
-  const getSelectClasses = () =>
-    `w-full p-3 border rounded-lg focus:outline-none focus:ring-3 focus:ring-var(--interactive-accent)/30 transition-all duration-300 cursor-pointer font-sans ${
-      previewMode === 'dark' 
-        ? 'bg-var(--surface-primary) border-var(--border-primary) text-var(--text-primary)' 
-        : 'bg-var(--surface-primary) border-var(--border-primary) text-var(--text-primary)'
-    } hover:border-var(--interactive-accent) focus:border-var(--interactive-accent)`;
+  const getInputStyle = () => ({
+    width: '100%',
+    padding: '12px',
+    border: '1px solid var(--border-primary)',
+    borderRadius: 'var(--radius-lg)',
+    backgroundColor: 'var(--surface-primary)',
+    color: 'var(--text-primary)',
+    fontFamily: 'var(--font-sans)',
+    fontSize: '14px',
+    transition: 'all var(--transition-normal)'
+  } as const);
 
-  const getLabelClasses = () =>
-    `block mb-2 font-semibold text-sm tracking-wide font-sans ${
-      previewMode === 'dark' ? 'text-var(--text-secondary)' : 'text-var(--text-secondary)'
-    }`;
+  const getSelectStyle = () => ({
+    width: '100%',
+    padding: '12px',
+    border: '1px solid var(--border-primary)',
+    borderRadius: 'var(--radius-lg)',
+    backgroundColor: 'var(--surface-primary)',
+    color: 'var(--text-primary)',
+    fontFamily: 'var(--font-sans)',
+    fontSize: '14px',
+    transition: 'all var(--transition-normal)',
+    cursor: 'pointer'
+  } as const);
 
-  const getTabClasses = (isActive: boolean) =>
-    `py-3 px-6 font-semibold transition-all duration-300 relative group font-sans ${
-      isActive 
-        ? 'text-var(--interactive-accent)' 
-        : `${previewMode === 'dark' ? 'text-var(--text-tertiary) hover:text-var(--text-secondary)' : 'text-var(--text-tertiary) hover:text-var(--text-secondary)'}`
-    }`;
+  const getTabStyle = (isActive: boolean) => ({
+    padding: '12px 24px',
+    fontWeight: 600,
+    transition: 'all var(--transition-normal)',
+    position: 'relative' as const,
+    border: 'none',
+    backgroundColor: 'transparent',
+    color: isActive ? 'var(--interactive-accent)' : 'var(--text-tertiary)',
+    cursor: 'pointer',
+    fontFamily: 'var(--font-sans)'
+  } as const);
 
   const badgeUrl = generateBadgeUrl();
   const htmlSnippet = `<img src="${badgeUrl}" alt="${badgeConfig.label} - ${badgeConfig.message}" />`;
@@ -208,7 +228,7 @@ export default function BadgeBuilder({ onInsert }: BadgeBuilderProps) {
           <div style={{
             position: 'absolute',
             inset: 0,
-            background: 'linear-gradient(to right, var(--interactive-accent)/5%, transparent)'
+            background: 'linear-gradient(to right, var(--interactive-accent) / 5%, transparent)'
           }}></div>
           <div style={{
             position: 'relative',
@@ -333,17 +353,7 @@ export default function BadgeBuilder({ onInsert }: BadgeBuilderProps) {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                style={{
-                  padding: '12px 24px',
-                  fontWeight: 600,
-                  transition: 'all 0.3s ease',
-                  position: 'relative',
-                  border: 'none',
-                  backgroundColor: 'transparent',
-                  color: activeTab === tab ? 'var(--interactive-accent)' : 'var(--text-tertiary)',
-                  cursor: 'pointer',
-                  fontFamily: 'inherit'
-                }}
+                style={getTabStyle(activeTab === tab)}
                 onMouseOver={(e) => {
                   if (activeTab !== tab) {
                     e.currentTarget.style.color = 'var(--text-secondary)';
@@ -387,7 +397,7 @@ export default function BadgeBuilder({ onInsert }: BadgeBuilderProps) {
                 gap: '16px'
               }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <label style={getLabelClasses()}>
+                  <label style={getLabelStyle()}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       Label
                       <span style={{ fontSize: '12px', color: 'var(--interactive-accent)' }}>*</span>
@@ -397,19 +407,19 @@ export default function BadgeBuilder({ onInsert }: BadgeBuilderProps) {
                     type="text"
                     value={badgeConfig.label}
                     onChange={e => updateBadgeConfig('label', e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '12px',
-                      border: '1px solid var(--border-primary)',
-                      borderRadius: 'var(--radius-lg)',
-                      backgroundColor: 'var(--surface-primary)',
-                      color: 'var(--text-primary)',
-                      fontFamily: 'inherit',
-                      fontSize: '14px',
-                      transition: 'all 0.3s ease'
-                    }}
+                    style={getInputStyle()}
                     placeholder="e.g., version, build, license"
                     maxLength={30}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = 'var(--interactive-accent)';
+                      e.target.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1)';
+                      e.target.style.transform = 'translateY(-1px)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = 'var(--border-primary)';
+                      e.target.style.boxShadow = 'none';
+                      e.target.style.transform = 'translateY(0)';
+                    }}
                   />
                   <div style={{
                     fontSize: '12px',
@@ -423,7 +433,7 @@ export default function BadgeBuilder({ onInsert }: BadgeBuilderProps) {
                 </div>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <label style={getLabelClasses()}>
+                  <label style={getLabelStyle()}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       Message
                       <span style={{ fontSize: '12px', color: 'var(--interactive-accent)' }}>*</span>
@@ -433,19 +443,19 @@ export default function BadgeBuilder({ onInsert }: BadgeBuilderProps) {
                     type="text"
                     value={badgeConfig.message}
                     onChange={e => updateBadgeConfig('message', e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '12px',
-                      border: '1px solid var(--border-primary)',
-                      borderRadius: 'var(--radius-lg)',
-                      backgroundColor: 'var(--surface-primary)',
-                      color: 'var(--text-primary)',
-                      fontFamily: 'inherit',
-                      fontSize: '14px',
-                      transition: 'all 0.3s ease'
-                    }}
+                    style={getInputStyle()}
                     placeholder="e.g., 1.0.0, passing, MIT"
                     maxLength={30}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = 'var(--interactive-accent)';
+                      e.target.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1)';
+                      e.target.style.transform = 'translateY(-1px)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = 'var(--border-primary)';
+                      e.target.style.boxShadow = 'none';
+                      e.target.style.transform = 'translateY(0)';
+                    }}
                   />
                   <div style={{
                     fontSize: '12px',
@@ -460,21 +470,20 @@ export default function BadgeBuilder({ onInsert }: BadgeBuilderProps) {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label style={getLabelClasses()}>Color Scheme</label>
+                <label style={getLabelStyle()}>Color Scheme</label>
                 <select
                   value={badgeConfig.color}
                   onChange={e => updateBadgeConfig('color', e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    border: '1px solid var(--border-primary)',
-                    borderRadius: 'var(--radius-lg)',
-                    backgroundColor: 'var(--surface-primary)',
-                    color: 'var(--text-primary)',
-                    fontFamily: 'inherit',
-                    fontSize: '14px',
-                    transition: 'all 0.3s ease',
-                    cursor: 'pointer'
+                  style={getSelectStyle()}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = 'var(--interactive-accent)';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1)';
+                    e.target.style.transform = 'translateY(-1px)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = 'var(--border-primary)';
+                    e.target.style.boxShadow = 'none';
+                    e.target.style.transform = 'translateY(0)';
                   }}
                 >
                   {colorOptions.map(color => (
@@ -494,21 +503,20 @@ export default function BadgeBuilder({ onInsert }: BadgeBuilderProps) {
                   paddingTop: '24px'
                 }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <label style={getLabelClasses()}>Badge Style</label>
+                    <label style={getLabelStyle()}>Badge Style</label>
                     <select
                       value={badgeConfig.style}
                       onChange={e => updateBadgeConfig('style', e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '12px',
-                        border: '1px solid var(--border-primary)',
-                        borderRadius: 'var(--radius-lg)',
-                        backgroundColor: 'var(--surface-primary)',
-                        color: 'var(--text-primary)',
-                        fontFamily: 'inherit',
-                        fontSize: '14px',
-                        transition: 'all 0.3s ease',
-                        cursor: 'pointer'
+                      style={getSelectStyle()}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = 'var(--interactive-accent)';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1)';
+                        e.target.style.transform = 'translateY(-1px)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = 'var(--border-primary)';
+                        e.target.style.boxShadow = 'none';
+                        e.target.style.transform = 'translateY(0)';
                       }}
                     >
                       {styleOptions.map(style => (
@@ -525,21 +533,20 @@ export default function BadgeBuilder({ onInsert }: BadgeBuilderProps) {
                     gap: '16px'
                   }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <label style={getLabelClasses()}>Logo</label>
+                      <label style={getLabelStyle()}>Logo</label>
                       <select
                         value={badgeConfig.logo}
                         onChange={e => updateBadgeConfig('logo', e.target.value)}
-                        style={{
-                          width: '100%',
-                          padding: '12px',
-                          border: '1px solid var(--border-primary)',
-                          borderRadius: 'var(--radius-lg)',
-                          backgroundColor: 'var(--surface-primary)',
-                          color: 'var(--text-primary)',
-                          fontFamily: 'inherit',
-                          fontSize: '14px',
-                          transition: 'all 0.3s ease',
-                          cursor: 'pointer'
+                        style={getSelectStyle()}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = 'var(--interactive-accent)';
+                          e.target.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1)';
+                          e.target.style.transform = 'translateY(-1px)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = 'var(--border-primary)';
+                          e.target.style.boxShadow = 'none';
+                          e.target.style.transform = 'translateY(0)';
                         }}
                       >
                         {logoOptions.map(logo => (
@@ -550,23 +557,23 @@ export default function BadgeBuilder({ onInsert }: BadgeBuilderProps) {
                       </select>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <label style={getLabelClasses()}>Logo Color</label>
+                      <label style={getLabelStyle()}>Logo Color</label>
                       <input
                         type="text"
                         value={badgeConfig.logoColor}
                         onChange={e => updateBadgeConfig('logoColor', e.target.value)}
-                        style={{
-                          width: '100%',
-                          padding: '12px',
-                          border: '1px solid var(--border-primary)',
-                          borderRadius: 'var(--radius-lg)',
-                          backgroundColor: 'var(--surface-primary)',
-                          color: 'var(--text-primary)',
-                          fontFamily: 'inherit',
-                          fontSize: '14px',
-                          transition: 'all 0.3s ease'
-                        }}
+                        style={getInputStyle()}
                         placeholder="white, black, #FF0000"
+                        onFocus={(e) => {
+                          e.target.style.borderColor = 'var(--interactive-accent)';
+                          e.target.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1)';
+                          e.target.style.transform = 'translateY(-1px)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = 'var(--border-primary)';
+                          e.target.style.boxShadow = 'none';
+                          e.target.style.transform = 'translateY(0)';
+                        }}
                       />
                     </div>
                   </div>
@@ -584,6 +591,12 @@ export default function BadgeBuilder({ onInsert }: BadgeBuilderProps) {
                       backgroundColor: 'var(--surface-secondary)'
                     }}
                     onClick={() => updateBadgeConfig('isError', !badgeConfig.isError)}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--interactive-accent)';
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.borderColor = 'var(--border-primary)';
+                    }}
                   >
                     <div style={{
                       width: '20px',
