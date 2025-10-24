@@ -1175,3 +1175,59 @@ body {
 .mb-4 { margin-bottom: 16px; }
 .mb-6 { margin-bottom: 24px; }
 .mt-4 { margin-top: 16px; }
+
+/* GitHub Modal - Wider Version */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+  animation: fadeIn var(--transition-normal);
+}
+
+.modal-content {
+  background: var(--surface-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-2xl);
+  padding: 32px;
+  max-width: 650px; 
+  width: 100%;
+  box-shadow: var(--shadow-xl);
+  max-height: 85vh;
+  overflow-y: auto;
+  gap: 24px;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp var(--transition-normal);
+  position: relative;
+}
+
+
+@media (max-width: 768px) {
+  .modal-content {
+    max-width: 95vw;
+    padding: 24px;
+    margin: 0 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-content {
+    max-width: 100vw;
+    border-radius: var(--radius-xl);
+    padding: 20px 16px;
+  }
+}
+
+
+
+
+
