@@ -44,10 +44,6 @@ export const metadata: Metadata = {
   },
 };
 
-// Helper to safely convert to string
-const toPlainString = (value: string | TemplateStringsArray | undefined) =>
-  value ? String(value) : "";
-
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -62,20 +58,20 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
 
         {/* Open Graph */}
-        <meta property="og:title" content={toPlainString(og?.title)} />
-        <meta property="og:description" content={toPlainString(og?.description)} />
-        <meta property="og:url" content={toPlainString(og?.url)} />
-        <meta property="og:site_name" content={toPlainString(og?.siteName)} />
+        <meta property="og:title" content={og?.title as string} />
+        <meta property="og:description" content={og?.description as string} />
+        <meta property="og:url" content={og?.url as string} />
+        <meta property="og:site_name" content={og?.siteName as string} />
         {og?.images?.map((img, i) => (
-          <meta key={i} property="og:image" content={toPlainString(img.url)} />
+          <meta key={i} property="og:image" content={img.url as string} />
         ))}
 
         {/* Twitter */}
-        <meta name="twitter:card" content={toPlainString(tw?.card)} />
-        <meta name="twitter:title" content={toPlainString(tw?.title)} />
-        <meta name="twitter:description" content={toPlainString(tw?.description)} />
+        <meta name="twitter:card" content={tw?.card as string} />
+        <meta name="twitter:title" content={tw?.title as string} />
+        <meta name="twitter:description" content={tw?.description as string} />
         {tw?.images?.map((img, i) => (
-          <meta key={i} name="twitter:image" content={toPlainString(img)} />
+          <meta key={i} name="twitter:image" content={img as string} />
         ))}
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
@@ -84,6 +80,7 @@ export default function RootLayout({
     </html>
   );
 }
+
 
 
 
