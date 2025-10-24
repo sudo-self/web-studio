@@ -198,9 +198,6 @@ useEffect(() => {
     }
   };
 
-  return { githubToken, setGithubToken, githubUser, setGithubUser, fetchUserInfo };
-};
-
 // Utility Functions
 const getComponentIcon = (componentKey: string): ReactElement => {
   return COMPONENT_ICONS[componentKey] || <FileText size={16} />;
