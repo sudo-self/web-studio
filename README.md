@@ -1,9 +1,10 @@
 # Web Studio
-[![Netlify Status](https://api.netlify.com/api/v1/badges/039e5ee7-573d-4103-81e1-5ea0af0b1eaa/deploy-status)](https://app.netlify.com/projects/ai-web-studio/deploys)<hr>
+<hr>
 A modern, open-source web development environment designed to streamline the creation of responsive websites using a visual interface.
 
 ---
-<img width="1512" height="857" alt="Screenshot 2025-10-18 at 15 38 52" src="https://github.com/user-attachments/assets/048ae487-4e0b-437d-8bb1-c064fe99eb7e" />
+<img width="1512" height="857" alt="Screenshot 2025-10-23 at 21 44 35" src="https://github.com/user-attachments/assets/76e2ea0d-7dd7-480a-b0d1-88bf693645c6" />
+
 
 ## Features
 
