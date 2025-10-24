@@ -302,10 +302,10 @@ export default function Home() {
   </style>
 </div>`;
 
-  const reactCode = `// React Mode
+const reactCode = `// React Mode
 function WelcomeApp() {
-  return (
-    <div style={{ 
+  return React.createElement('div', { 
+    style: { 
       display: 'flex', 
       flexDirection: 'column',
       alignItems: 'center', 
@@ -314,20 +314,26 @@ function WelcomeApp() {
       padding: '3rem 2rem',
       background: '#f8fafc',
       fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif'
-    }}>
-      <div style={{ 
+    }
+  }, 
+    React.createElement('div', { 
+      style: { 
         maxWidth: '600px', 
         textAlign: 'center'
-      }}>
-        <header style={{ marginBottom: '3rem' }}>
-          <div style={{ 
+      }
+    },
+      React.createElement('header', { style: { marginBottom: '3rem' } },
+        React.createElement('div', { 
+          style: { 
             display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'center', 
             gap: '1rem', 
             marginBottom: '1.5rem' 
-          }}>
-            <div style={{
+          }
+        },
+          React.createElement('div', {
+            style: {
               width: '48px',
               height: '48px',
               background: 'linear-gradient(135deg, #0891b2, #0e7490)',
@@ -337,12 +343,14 @@ function WelcomeApp() {
               justifyContent: 'center',
               color: 'white',
               boxShadow: '0 8px 20px rgba(8, 145, 178, 0.3)'
-            }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-              </svg>
-            </div>
-            <h1 style={{
+            }
+          },
+            React.createElement('svg', { width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor" },
+              React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "2", d: "M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" })
+            )
+          ),
+          React.createElement('h1', {
+            style: {
               fontSize: '3rem',
               fontWeight: '800',
               color: '#0f172a',
@@ -352,11 +360,11 @@ function WelcomeApp() {
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text'
-            }}>
-              React App
-            </h1>
-          </div>
-          <p style={{
+            }
+          }, 'React App')
+        ),
+        React.createElement('p', {
+          style: {
             fontSize: '1.25rem',
             color: '#64748b',
             lineHeight: '1.6',
@@ -364,36 +372,33 @@ function WelcomeApp() {
             maxWidth: '500px',
             marginLeft: 'auto',
             marginRight: 'auto'
-          }}>
-            Build React Components
-          </p>
-        </header>
-
-        <button 
-          style={{
-            background: 'linear-gradient(135deg, #0891b2, #0e7490)',
-            color: 'white',
-            border: 'none',
-            padding: '1rem 2.5rem',
-            fontSize: '1.125rem',
-            fontWeight: '600',
-            cursor: 'pointer',
-            borderRadius: '12px',
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            boxShadow: '0 4px 14px rgba(8, 145, 178, 0.4)',
-            marginBottom: '3rem'
-          }}
-          onClick={() => alert('Hello from React!')}
-        >
-          <span style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-            
-          </span>
-        </button>
-      </div>
-    </div>
+          }
+        }, 'Build React Components')
+      ),
+      React.createElement('button', { 
+        style: {
+          background: 'linear-gradient(135deg, #0891b2, #0e7490)',
+          color: 'white',
+          border: 'none',
+          padding: '1rem 2.5rem',
+          fontSize: '1.125rem',
+          fontWeight: '600',
+          cursor: 'pointer',
+          borderRadius: '12px',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          boxShadow: '0 4px 14px rgba(8, 145, 178, 0.4)',
+          marginBottom: '3rem'
+        },
+        onClick: () => alert('Hello from React!')
+      },
+        React.createElement('span', { style: { display: 'flex', alignItems: 'center', gap: '0.75rem' } },
+          React.createElement('svg', { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor" },
+            React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "2", d: "M13 10V3L4 14h7v7l9-11h-7z" })
+          ),
+          'Start Building'
+        )
+      )
+    )
   );
 }
 
