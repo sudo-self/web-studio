@@ -1,4 +1,4 @@
-  "use client";
+"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { GridPattern } from "./GridPattern";
@@ -27,12 +27,134 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [iframeKey, setIframeKey] = useState(0);
 
-const generateHtml = (content: string, currentFramework: string) => {
-  if (currentFramework === "react") {
-    const reactCode = content.trim();
-    
+  const generateHtml = (content: string, currentFramework: string) => {
+    if (currentFramework === "react") {
+      const reactCode = content.trim();
+      
+      // Handle empty or invalid React code
+      if (!reactCode || reactCode === "" || reactCode === "// Welcome to React Mode!") {
+        return `
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>React Preview</title>
+            <style>
+              body {
+                margin: 0;
+                font-family: system-ui, sans-serif;
+                background: #f8fafc;
+                color: #333;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
+              }
+              .empty-state {
+                text-align: center;
+                padding: 2rem;
+                color: #64748b;
+              }
+              .empty-state h2 {
+                color: #475569;
+                margin-bottom: 0.5rem;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="empty-state">
+              <h2>React Mode</h2>
+              <p>Start writing your React components in the editor</p>
+            </div>
+          </body>
+          </html>
+        `;
+      }
 
-    if (!reactCode || reactCode === "" || reactCode === "// Welcome to React Mode!") {
+      // Check if this looks like AI-generated React code (uses React.useState but missing render)
+      const isAiGenerated = reactCode.includes('React.useState') && 
+                           !reactCode.includes('import React') && 
+                           !reactCode.includes('ReactDOM.render') && 
+                           !reactCode.includes('createRoot');
+
+      let finalReactCode = reactCode;
+
+      if (isAiGenerated) {
+        // Extract component name from function declaration
+        let componentName = "App";
+        const fnMatch = reactCode.match(/function\s+(\w+)/);
+        if (fnMatch) componentName = fnMatch[1];
+        else {
+          const constMatch = reactCode.match(/(?:const|let|var)\s+(\w+)\s*=/);
+          if (constMatch) componentName = constMatch[1];
+        }
+
+        console.log('Detected AI-generated React code, component:', componentName);
+        
+        // Wrap AI-generated code with proper React setup
+        finalReactCode = `
+          // Auto-wrapped AI-generated React component
+          ${reactCode}
+          
+          // Render the component
+          const root = ReactDOM.createRoot(document.getElementById("root"));
+          root.render(React.createElement(${componentName}));
+        `;
+      } else {
+        // Handle regular React code with existing render logic
+        const hasRender =
+          reactCode.includes("ReactDOM.render") ||
+          reactCode.includes("createRoot(");
+
+        let componentName = "App";
+        let isValidComponent = false;
+        
+        const fnMatch = reactCode.match(/function\s+(\w+)/);
+        if (fnMatch) {
+          componentName = fnMatch[1];
+          isValidComponent = true;
+        } else {
+          const constMatch = reactCode.match(/(?:const|let|var)\s+(\w+)\s*=/);
+          if (constMatch) {
+            componentName = constMatch[1];
+            isValidComponent = true;
+          }
+        }
+
+        // Additional checks for component validity
+        if (!isValidComponent) {
+          isValidComponent = reactCode.includes("function") || reactCode.includes("=>");
+        }
+        
+        finalReactCode = hasRender
+          ? reactCode
+          : isValidComponent
+          ? `
+            ${reactCode}
+            const root = ReactDOM.createRoot(document.getElementById("root"));
+            root.render(React.createElement(${componentName}));
+          `
+          : `
+            // Invalid React code - showing placeholder
+            function App() {
+              return React.createElement('div', { 
+                style: { 
+                  padding: '2rem', 
+                  textAlign: 'center',
+                  color: '#dc2626',
+                  background: '#fef2f2',
+                  border: '1px solid #fecaca',
+                  borderRadius: '8px',
+                  margin: '1rem'
+                } 
+              }, 'Invalid React code - please check your syntax');
+            }
+            const root = ReactDOM.createRoot(document.getElementById("root"));
+            root.render(React.createElement(App));
+          `;
+      }
+
       return `
         <!DOCTYPE html>
         <html lang="en">
@@ -40,176 +162,87 @@ const generateHtml = (content: string, currentFramework: string) => {
           <meta charset="UTF-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
           <title>React Preview</title>
+          <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+          <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+          <script src="https://unpkg.com/@babel/standalone@7.28.5/babel.min.js"></script>
           <style>
             body {
               margin: 0;
               font-family: system-ui, sans-serif;
-              background: #f8fafc;
+              background: #fff;
               color: #333;
+            }
+            #root { 
+              padding: 16px; 
+              min-height: 100vh;
+            }
+            .error {
+              padding: 16px;
+              color: #d32f2f;
+              background: #ffebee;
+              border-radius: 8px;
+              font-family: monospace;
+              white-space: pre-wrap;
+              border: 1px solid #fecaca;
+            }
+            .loading {
               display: flex;
               align-items: center;
               justify-content: center;
-              min-height: 100vh;
-            }
-            .empty-state {
-              text-align: center;
               padding: 2rem;
               color: #64748b;
-            }
-            .empty-state h2 {
-              color: #475569;
-              margin-bottom: 0.5rem;
             }
           </style>
         </head>
         <body>
-          <div class="empty-state">
-            <h2>React Mode</h2>
-            <p>Start writing your React components in the editor</p>
+          <div id="root">
+            <div class="loading">Loading React Preview...</div>
           </div>
+          <script type="text/babel" data-presets="env,react">
+            try {
+              ${finalReactCode}
+            } catch (e) {
+              console.error('React Error:', e);
+              const root = document.getElementById("root");
+              root.innerHTML = '<div class="error"><strong>React Error:</strong><br>' + 
+                (e.message || String(e)) + '</div>';
+            }
+          </script>
         </body>
         </html>
       `;
     }
 
-    const hasRender =
-      reactCode.includes("ReactDOM.render") ||
-      reactCode.includes("createRoot(");
-
-    let componentName = "App";
-    let isValidComponent = false;
-    
-    const fnMatch = reactCode.match(/function\s+(\w+)/);
-    if (fnMatch) {
-      componentName = fnMatch[1];
-      isValidComponent = true;
-    } else {
-      const constMatch = reactCode.match(/(?:const|let|var)\s+(\w+)\s*=/);
-      if (constMatch) {
-        componentName = constMatch[1];
-        isValidComponent = true;
-      }
-    }
-
-    if (!isValidComponent) {
-      isValidComponent = reactCode.includes("function") || reactCode.includes("=>");
-    }
-    
-    const finalReactCode = hasRender
-      ? reactCode
-      : isValidComponent
-      ? `
-        ${reactCode}
-        const root = ReactDOM.createRoot(document.getElementById("root"));
-        root.render(<${componentName} />);
-      `
-      : `
-        // Invalid React code - showing placeholder
-        function App() {
-          return React.createElement('div', { 
-            style: { 
-              padding: '2rem', 
-              textAlign: 'center',
-              color: '#dc2626',
-              background: '#fef2f2',
-              border: '1px solid #fecaca',
-              borderRadius: '8px',
-              margin: '1rem'
-            } 
-          }, 'Invalid React code - please check your syntax');
-        }
-        const root = ReactDOM.createRoot(document.getElementById("root"));
-        root.render(React.createElement(App));
-      `;
+    // HTML mode - handle empty content
+    const htmlContent = content.trim() === "" 
+      ? `<div style="padding: 2rem; text-align: center; color: #64748b; font-family: system-ui;">
+           <h2>HTML Mode</h2>
+           <p>Start writing your HTML in the editor</p>
+         </div>`
+      : content;
 
     return `
       <!DOCTYPE html>
-      <html lang="en">
+      <html>
       <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>React Preview</title>
-        <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-        <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-        <script src="https://unpkg.com/@babel/standalone@7.28.5/babel.min.js"></script>
         <style>
           body {
-            margin: 0;
             font-family: system-ui, sans-serif;
+            margin: 0;
+            padding: 16px;
+            line-height: 1.6;
             background: #fff;
-            color: #333;
-          }
-          #root { 
-            padding: 16px; 
             min-height: 100vh;
           }
-          .error {
-            padding: 16px;
-            color: #d32f2f;
-            background: #ffebee;
-            border-radius: 8px;
-            font-family: monospace;
-            white-space: pre-wrap;
-            border: 1px solid #fecaca;
-          }
-          .loading {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-            color: #64748b;
-          }
+          img { max-width: 100%; height: auto; display: block; }
         </style>
       </head>
-      <body>
-        <div id="root">
-          <div class="loading">Loading React Preview...</div>
-        </div>
-        <script type="text/babel" data-presets="env,react">
-          try {
-            ${finalReactCode}
-          } catch (e) {
-            console.error('React Error:', e);
-            const root = document.getElementById("root");
-            root.innerHTML = '<div class="error"><strong>React Error:</strong><br>' + 
-              (e.message || String(e)) + '</div>';
-          }
-        </script>
-      </body>
+      <body>${htmlContent}</body>
       </html>
     `;
-  }
-
-
-  const htmlContent = content.trim() === "" 
-    ? `<div style="padding: 2rem; text-align: center; color: #64748b; font-family: system-ui;">
-         <h2>HTML Mode</h2>
-         <p>Start writing your HTML in the editor</p>
-       </div>`
-    : content;
-
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <style>
-        body {
-          font-family: system-ui, sans-serif;
-          margin: 0;
-          padding: 16px;
-          line-height: 1.6;
-          background: #fff;
-          min-height: 100vh;
-        }
-        img { max-width: 100%; height: auto; display: block; }
-      </style>
-    </head>
-    <body>${htmlContent}</body>
-    </html>
-  `;
-};
+  };
 
   const addToast = (message: string, type: "success" | "error" = "success") => {
     const id = Math.random().toString(36).substring(2);
