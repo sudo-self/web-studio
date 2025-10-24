@@ -453,44 +453,33 @@ const askAi = async () => {
 
   try {
     const frameworkInstructions = framework === "react"
-      ? `You are an expert React developer. Create a complete, runnable React component for: "${prompt}"
+      ? `Create a React component for: "${prompt}"
 
-CRITICAL REQUIREMENTS FOR REACT:
-- Create a COMPLETE React functional component that can run immediately
-- Use React.useState for state management
-- Include ALL necessary imports and rendering logic
-- Make it a complete, self-contained component
-- Use inline styles (style={{}})
-- Include proper event handlers if needed
-- Make it responsive and production-ready
-- Ensure good color contrast
-- Make it work on all screen sizes
-- Use camelCase for style properties
-- Include proper JSX syntax
+IMPORTANT: YOU MUST FOLLOW THESE RULES EXACTLY:
+1. Return ONLY pure React code - no explanations, no markdown, no comments
+2. Use React.useState NOT import statements
+3. Include the rendering code at the end
+4. No text before or after the code
+5. Use inline styles only
+6. Make it a complete, runnable component
 
-EXAMPLE FORMAT:
-function MyComponent() {
+CODE FORMAT:
+function ComponentName() {
   const [state, setState] = React.useState(initialValue);
-  
-  return (
-    <div style={{ /* styles here */ }}>
-      {/* component content */}
-    </div>
-  );
+  return <div style={{}}>content</div>;
 }
-
-// Render the component
 const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(React.createElement(MyComponent));`
-      : `You are an expert web developer. Create responsive HTML with inline CSS for: "${prompt}"
-CRITICAL REQUIREMENTS FOR HTML:
-- Return ONLY the HTML code with inline styles
-- No explanations, no markdown formatting, no backticks
-- Make it modern, responsive, and production-ready
-- Use semantic HTML where possible
-- Include proper hover/focus states
-- Ensure good color contrast
-- Make it work on all screen sizes`;
+root.render(React.createElement(ComponentName));`
+      : `Create HTML for: "${prompt}"
+
+IMPORTANT: YOU MUST FOLLOW THESE RULES EXACTLY:
+1. Return ONLY pure HTML with inline styles
+2. No explanations, no markdown, no comments
+3. No text before or after the code
+4. Make it responsive and modern
+
+EXAMPLE:
+<div style="color: red;">Content</div>`;
 
     const messages = [{ role: "user" as const, content: frameworkInstructions }];
     const response = await fetch('https://llm.jessejesse.workers.dev/api/chat', {
@@ -538,17 +527,35 @@ CRITICAL REQUIREMENTS FOR HTML:
       throw new Error("Worker returned empty response");
     }
 
+    // More aggressive cleaning
     const cleaned = fullContent
-      .replace(/```(html|css|js|jsx)?/gi, '')
+      .replace(/```(html|css|js|jsx|javascript)?/gi, '')
       .replace(/```/g, '')
       .replace(/^`|`$/g, '')
+      .replace(/^###.*$/gm, '') // Remove markdown headers
+      .replace(/^####.*$/gm, '') // Remove markdown headers
+      .replace(/^####.*$/gm, '') // Remove markdown headers
+      .replace(/^Overview.*$/gm, '') // Remove overview sections
+      .replace(/^Explanation.*$/gm, '') // Remove explanation sections
+      .replace(/^Code.*$/gm, '') // Remove code labels
+      .replace(/^As a loyal.*$/gm, '') // Remove footer text
+      .replace(/import React.*?;?\n?/g, '') // Remove import statements
+      .replace(/import.*?from.*?;?\n?/g, '') // Remove any imports
+      .replace(/export default.*?;?\n?/g, '') // Remove exports
+      .replace(/export.*?;?\n?/g, '') // Remove exports
       .trim();
 
     setResponse(cleaned);
 
     const timestamp = new Date().toLocaleTimeString();
     const frameworkLabel = framework === "react" ? "React" : "HTML";
-    onAiInsert(`\n<!-- AI Generated ${frameworkLabel} (${timestamp}): ${prompt.substring(0, 50)}... -->\n${cleaned}\n`);
+    
+    // Only insert if we have actual code
+    if (cleaned && (cleaned.includes('function') || cleaned.includes('const') || cleaned.includes('<div'))) {
+      onAiInsert(`\n<!-- AI Generated ${frameworkLabel} (${timestamp}): ${prompt.substring(0, 50)}... -->\n${cleaned}\n`);
+    } else {
+      throw new Error("AI returned invalid code format");
+    }
 
     if (mode === "chat") {
       setChatHistory(prev => [
@@ -572,6 +579,8 @@ CRITICAL REQUIREMENTS FOR HTML:
         userMessage = "Rate limit exceeded. Wait a moment before trying again.";
       } else if (err.message.includes('404')) {
         userMessage = "API endpoint not found. Check your worker URL.";
+      } else if (err.message.includes('invalid code format')) {
+        userMessage = "AI returned invalid code format. Please try again.";
       } else {
         userMessage = err.message;
       }
