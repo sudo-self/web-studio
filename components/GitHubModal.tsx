@@ -122,11 +122,27 @@ export const GitHubModal = ({
                 <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg text-sm space-y-1">
                   <p>
                     Repository created successfully! <br />
-                    URL: <a href={successData.html_url} target="_blank" className="text-blue-600 underline">{successData.html_url}</a>
+                    URL:{" "}
+                    <a
+                      href={successData.html_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 underline"
+                    >
+                      {successData.html_url}
+                    </a>
                   </p>
                   {successData.pages_url && (
                     <p>
-                      Pages: <a href={successData.pages_url} target="_blank" className="text-blue-600 underline">{successData.pages_url}</a>
+                      Pages:{" "}
+                      <a
+                        href={successData.pages_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 underline"
+                      >
+                        {successData.pages_url}
+                      </a>
                     </p>
                   )}
                 </div>
