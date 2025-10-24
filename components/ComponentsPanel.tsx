@@ -463,190 +463,144 @@ export default function ComponentsPanel({
     }
   };
 
-const askAi = async () => {
-  if (!prompt.trim() || isRequesting || loading) return;
-  
-  setIsRequesting(true);
-  setLoading(true);
-  setResponse("");
-
-  try {
-    const frameworkInstructions = framework === "react"
-      ? `STRICT INSTRUCTIONS: Create React component for "${prompt}". RETURN ONLY CODE. NO EXPLANATIONS. NO MARKDOWN. NO IMPORTS. Use React.useState not imports. Include rendering code.`
-      : `STRICT INSTRUCTIONS: Create HTML for "${prompt}". RETURN ONLY CODE. NO EXPLANATIONS. NO MARKDOWN.`;
-
-    const messages = [{ role: "user" as const, content: frameworkInstructions }];
-    const response = await fetch('https://llm.jessejesse.workers.dev/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Worker API error: ${response.status} - ${errorText}`);
+  const askAi = async () => {
+    if (!prompt.trim()) {
+      setResponse("Please enter a prompt");
+      return;
     }
+    if (isRequesting || loading) {
+      console.log("Request already in progress, ignoring...");
+      return;
+    }
+    setIsRequesting(true);
+    setLoading(true);
+    setResponse("");
+    try {
+      console.log("Sending AI request:", { 
+        prompt: prompt.substring(0, 100), 
+        mode, 
+        timestamp: new Date().toISOString()
+      });
+      
+      const messages = [
+        {
+          role: "user" as const,
+          content: `You are an expert web developer. Create responsive HTML with inline CSS for: "${prompt}"
 
-    const reader = response.body?.getReader();
-    if (!reader) throw new Error("No response body received");
+CRITICAL REQUIREMENTS:
+- Return ONLY the HTML code with inline styles
+- No explanations, no markdown formatting, no backticks
+- Make it modern, responsive, and production-ready
+- Use semantic HTML where possible
+- Include proper hover/focus states
+- Ensure good color contrast
+- Make it work on all screen sizes`
+        }
+      ];
 
-    let fullContent = '';
-    const decoder = new TextDecoder();
+      const response = await fetch('https://llm.jessejesse.workers.dev/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ messages }),
+      });
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+      console.log("Worker response status:", response.status);
 
-      const chunk = decoder.decode(value);
-      const lines = chunk.split('\n');
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Worker API error: ${response.status} - ${errorText}`);
+      }
 
-      for (const line of lines) {
-        if (line.startsWith('data: ') && line !== 'data: [DONE]') {
-          try {
-            const data = JSON.parse(line.slice(6));
-            if (data.response) {
-              fullContent += data.response;
-              setResponse(fullContent);
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error("No response body received");
+      }
+
+      let fullContent = '';
+      const decoder = new TextDecoder();
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+              try {
+                const data = JSON.parse(line.slice(6));
+                if (data.response) {
+                  fullContent += data.response;
+                  setResponse(fullContent);
+                }
+              } catch (e) {
+                // Ignore JSON parse errors for non-data lines
+              }
             }
-          } catch (e) {
-            // Ignore JSON parse errors for non-data lines
           }
         }
+      } finally {
+        reader.releaseLock();
       }
-    }
 
-    reader.releaseLock();
+      console.log("Raw worker response:", fullContent);
 
-    if (!fullContent.trim()) {
-      throw new Error("Worker returned empty response");
-    }
+      if (!fullContent.trim()) {
+        throw new Error("Worker returned empty response");
+      }
 
-    // Extract only the code using multiple strategies
-    let cleaned = fullContent;
-    
-    // Strategy 1: Remove all markdown and explanations
-    cleaned = cleaned
-      .replace(/```(html|css|js|jsx|javascript)?/gi, '')
-      .replace(/```/g, '')
-      .replace(/^`|`$/g, '')
-      .replace(/#{1,6}\s?.*$/gm, '') // Remove all markdown headers
-      .replace(/^###.*$/gm, '')
-      .replace(/^####.*$/gm, '')
-      .replace(/^Overview.*$/gm, '')
-      .replace(/^Explanation.*$/gm, '')
-      .replace(/^Code.*$/gm, '')
-      .replace(/^Usage.*$/gm, '')
-      .replace(/^This component.*$/gm, '')
-      .replace(/^We define.*$/gm, '')
-      .replace(/^We use.*$/gm, '')
-      .replace(/^We render.*$/gm, '')
-      .replace(/^As a loyal.*$/gm, '')
-      .replace(/^Go Broncos!.*$/gm, '')
-      .replace(/^STRICT INSTRUCTIONS:.*$/gm, '')
-      .replace(/^Finally.*$/gm, '')
-      .replace(/^The component.*$/gm, '')
-      .replace(/^This creates.*$/gm, '')
-      .replace(/^It uses.*$/gm, '')
-      .replace(/^The component is.*$/gm, '')
-      .replace(/^### Explanation[\s\S]*?### Usage/g, '') // Remove explanation sections
-      .replace(/import React.*?;?\n?/g, '')
-      .replace(/import.*?from.*?;?\n?/g, '')
-      .replace(/export default.*?;?\n?/g, '')
-      .replace(/export.*?;?\n?/g, '');
+      const cleaned = fullContent
+        .replace(/```(html|css|js)?/gi, '')
+        .replace(/```/g, '')
+        .replace(/^`|`$/g, '')
+        .trim();
 
-    // Strategy 2: If we still have non-code content, try to extract just the function
-    if (cleaned.includes('function') || cleaned.includes('const') || cleaned.includes('return')) {
-      // Try to find the actual component code
-      const functionMatch = cleaned.match(/(function\s+\w+|const\s+\w+\s*=)/);
-      if (functionMatch) {
-        const startIndex = cleaned.indexOf(functionMatch[0]);
-        // Find the end of the component (last closing brace before rendering)
-        const lastBraceIndex = cleaned.lastIndexOf('}');
-        const renderIndex = cleaned.indexOf('ReactDOM.createRoot');
-        
-        if (startIndex !== -1 && lastBraceIndex !== -1 && renderIndex !== -1) {
-          cleaned = cleaned.substring(startIndex, renderIndex + cleaned.substring(renderIndex).indexOf(');') + 2);
+      setResponse(cleaned);
+
+      const timestamp = new Date().toLocaleTimeString();
+      onAiInsert(`\n<!-- AI Generated (${timestamp}): ${prompt.substring(0, 50)}... -->\n${cleaned}\n`);
+
+      if (mode === "chat") {
+        setChatHistory(prev => [
+          ...prev,
+          { role: "user", content: prompt },
+          { role: "assistant", content: cleaned }
+        ]);
+      }
+      
+      setPrompt("");
+
+    } catch (err) {
+      console.error("AI request failed:", err);
+      let userMessage = "An error occurred";
+      
+      if (err instanceof Error) {
+        if (err.message.includes('Failed to fetch')) {
+          userMessage = "Network error. Check your connection and API endpoint.";
+        } else if (err.message.includes('403')) {
+          userMessage = "Access denied. Check your worker configuration.";
+        } else if (err.message.includes('429')) {
+          userMessage = "Rate limit exceeded. Wait a moment before trying again.";
+        } else if (err.message.includes('404')) {
+          userMessage = "API endpoint not found. Check your worker URL.";
+        } else {
+          userMessage = err.message;
         }
       }
+      
+      setResponse(`Error: ${userMessage}`);
+      
+    } finally {
+      setLoading(false);
+      setTimeout(() => {
+        setIsRequesting(false);
+      }, 1000);
     }
-
-    // Strategy 3: Fix React.useState if needed
-    cleaned = cleaned.replace(/useState\(/g, 'React.useState(');
-    cleaned = cleaned.replace(/useEffect\(/g, 'React.useEffect(');
-
-    // Strategy 4: Remove any remaining non-code lines
-    const lines = cleaned.split('\n').filter(line => {
-      const trimmed = line.trim();
-      return (
-        trimmed.length > 0 &&
-        !trimmed.startsWith('//') &&
-        !trimmed.startsWith('/*') &&
-        !trimmed.startsWith('*') &&
-        !trimmed.endsWith('*/') &&
-        !trimmed.match(/^[#\*\-]/) && // No markdown bullets
-        !trimmed.match(/^[A-Z][a-z]/) && // No sentence starts
-        (trimmed.includes('function') || 
-         trimmed.includes('const') || 
-         trimmed.includes('return') || 
-         trimmed.includes('<') || 
-         trimmed.includes('>') || 
-         trimmed.includes('{') || 
-         trimmed.includes('}') ||
-         trimmed.includes('React.') ||
-         trimmed.includes('style=') ||
-         trimmed.includes('onClick='))
-      );
-    });
-
-    cleaned = lines.join('\n').trim();
-
-    // If we still don't have valid code, create a fallback
-    if (!cleaned || (!cleaned.includes('function') && !cleaned.includes('const') && !cleaned.includes('return'))) {
-      throw new Error("AI returned invalid code format");
-    }
-
-    setResponse(cleaned);
-
-    const timestamp = new Date().toLocaleTimeString();
-    const frameworkLabel = framework === "react" ? "React" : "HTML";
-    
-    onAiInsert(`\n<!-- AI Generated ${frameworkLabel} (${timestamp}): ${prompt.substring(0, 50)}... -->\n${cleaned}\n`);
-
-    if (mode === "chat") {
-      setChatHistory(prev => [
-        ...prev,
-        { role: "user", content: prompt },
-        { role: "assistant", content: cleaned }
-      ]);
-    }
-    
-    setPrompt("");
-  } catch (err) {
-    console.error("AI request failed:", err);
-    let userMessage = "An error occurred";
-    
-    if (err instanceof Error) {
-      if (err.message.includes('Failed to fetch')) {
-        userMessage = "Network error. Check your connection and API endpoint.";
-      } else if (err.message.includes('403')) {
-        userMessage = "Access denied. Check your worker configuration.";
-      } else if (err.message.includes('429')) {
-        userMessage = "Rate limit exceeded. Wait a moment before trying again.";
-      } else if (err.message.includes('404')) {
-        userMessage = "API endpoint not found. Check your worker URL.";
-      } else if (err.message.includes('invalid code format')) {
-        userMessage = "AI returned invalid code format. Please try a different prompt.";
-      } else {
-        userMessage = err.message;
-      }
-    }
-    
-    setResponse(`Error: ${userMessage}`);
-  } finally {
-    setLoading(false);
-    setTimeout(() => setIsRequesting(false), 1000);
-  }
-};
+  };
 
   // Render methods
   const renderHeader = () => (
