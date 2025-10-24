@@ -306,27 +306,6 @@ export default function Home() {
 
   const reactCode = `// Welcome to studio.jessejesse.com
 function WelcomeApp() {
-  // Add CSS to head for animations
-  React.useEffect(() => {
-    const style = document.createElement('style');
-    style.textContent = \`
-      @keyframes fadeInUp {
-        from {
-          opacity: 0;
-          transform: translateY(30px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-    \`;
-    document.head.appendChild(style);
-    return () => {
-      document.head.removeChild(style);
-    };
-  }, []);
-
   return (
     <div style={{ 
       display: 'flex', 
@@ -340,8 +319,7 @@ function WelcomeApp() {
     }}>
       <div style={{ 
         maxWidth: '600px', 
-        textAlign: 'center',
-        animation: 'fadeInUp 0.8s ease-out'
+        textAlign: 'center'
       }}>
         <header style={{ marginBottom: '3rem' }}>
           <div style={{ 
