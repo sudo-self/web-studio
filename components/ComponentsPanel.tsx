@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useSettings } from "@/contexts/SettingsContext";
 
-// Types
+
 type AiMode = "response" | "chat";
 type ChatRole = "user" | "assistant";
 
@@ -46,7 +46,7 @@ interface GitHubFormData {
   deployPages: boolean;
 }
 
-// Constants
+
 const COMPONENT_ICONS: { [key: string]: ReactElement } = {
   header: <FileText size={16} />,
   hero: <Sparkles size={16} />,
@@ -85,7 +85,7 @@ const COMPONENT_ICONS: { [key: string]: ReactElement } = {
   "breadcrumb-advanced": <Navigation size={16} />,
 };
 
-// Custom Hooks
+
 const useLocalStorageState = <T,>(key: string, defaultValue: T) => {
   const [state, setState] = useState<T>(() => {
     if (typeof window === "undefined") return defaultValue;
@@ -189,7 +189,7 @@ const createProjectFiles = (
     ``,
     `## About`,
     ``,
-    `This project was created with [studio.jessejesse.com](https://studio.jessejesse.com) - an AI-powered development studio.`,
+    `[studio.jessejesse.com](https://studio.jessejesse.com)`,
     ``,
     `## Getting Started`,
     ``,
