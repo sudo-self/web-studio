@@ -829,27 +829,28 @@ const renderAISection = () => (
     />
 
    
-    {showPdfGenerator && (
-      <div className="modal-overlay" onClick={() => setShowPdfGenerator(false)}>
-        <div 
-          className="modal-content" 
-          onClick={(e) => e.stopPropagation()}
-          style={{ maxWidth: '800px' }} 
+{showPdfGenerator && (
+  <div className="modal-overlay" onClick={() => setShowPdfGenerator(false)}>
+    <div 
+      className="modal-content pdf-modal-content" 
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="modal-header">
+        <h2 className="modal-title">PDF Generator</h2>
+        <button
+          onClick={() => setShowPdfGenerator(false)}
+          className="modal-close-btn"
+          aria-label="Close PDF generator"
         >
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-text-primary">PDF Generator</h2>
-            <button
-              onClick={() => setShowPdfGenerator(false)}
-              className="btn btn-outline btn-sm btn-icon hover:bg-component-hover transition-colors"
-              aria-label="Close PDF generator"
-            >
-              <X size={18} />
-            </button>
-          </div>
-          <PDFGenerator currentCode={currentCode} />
-        </div>
+          <X size={18} />
+        </button>
       </div>
-    )}
+      <div className="modal-body pdf-modal-body">
+        <PDFGenerator currentCode={currentCode} />
+      </div>
+    </div>
+  </div>
+)}
   </div>
 );
   const components: { [key: string]: ComponentInfo } = {
