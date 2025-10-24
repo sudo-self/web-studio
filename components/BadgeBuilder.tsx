@@ -145,80 +145,140 @@ export default function BadgeBuilder({ onInsert }: BadgeBuilderProps) {
     });
   };
 
-  // Enhanced styling functions using your design system
+  // Design system compliant styling functions
   const getInputClasses = () =>
-    `w-full p-3 border-2 rounded-xl focus:outline-none focus:ring-3 focus:ring-accent-color/30 transition-all duration-300 ${
+    `w-full p-3 border rounded-lg focus:outline-none focus:ring-3 focus:ring-var(--interactive-accent)/30 transition-all duration-300 font-sans ${
       previewMode === 'dark' 
-        ? 'bg-surface-tertiary border-panel-border text-text-primary placeholder-text-muted' 
-        : 'bg-surface-primary border-panel-border text-text-primary placeholder-text-muted'
-    } hover:border-accent-color/50`;
+        ? 'bg-var(--surface-primary) border-var(--border-primary) text-var(--text-primary) placeholder-var(--text-muted)' 
+        : 'bg-var(--surface-primary) border-var(--border-primary) text-var(--text-primary) placeholder-var(--text-muted)'
+    } hover:border-var(--interactive-accent) focus:border-var(--interactive-accent)`;
 
   const getSelectClasses = () =>
-    `w-full p-3 border-2 rounded-xl focus:outline-none focus:ring-3 focus:ring-accent-color/30 transition-all duration-300 cursor-pointer ${
+    `w-full p-3 border rounded-lg focus:outline-none focus:ring-3 focus:ring-var(--interactive-accent)/30 transition-all duration-300 cursor-pointer font-sans ${
       previewMode === 'dark' 
-        ? 'bg-surface-tertiary border-panel-border text-text-primary' 
-        : 'bg-surface-primary border-panel-border text-text-primary'
-    } hover:border-accent-color/50`;
+        ? 'bg-var(--surface-primary) border-var(--border-primary) text-var(--text-primary)' 
+        : 'bg-var(--surface-primary) border-var(--border-primary) text-var(--text-primary)'
+    } hover:border-var(--interactive-accent) focus:border-var(--interactive-accent)`;
 
   const getLabelClasses = () =>
-    `block mb-3 font-semibold text-sm uppercase tracking-wide ${
-      previewMode === 'dark' ? 'text-text-secondary' : 'text-text-secondary'
+    `block mb-2 font-semibold text-sm tracking-wide font-sans ${
+      previewMode === 'dark' ? 'text-var(--text-secondary)' : 'text-var(--text-secondary)'
     }`;
 
   const getTabClasses = (isActive: boolean) =>
-    `py-4 px-6 font-semibold transition-all duration-300 relative group ${
+    `py-3 px-6 font-semibold transition-all duration-300 relative group font-sans ${
       isActive 
-        ? 'text-accent-color' 
-        : `${previewMode === 'dark' ? 'text-text-tertiary hover:text-text-secondary' : 'text-text-tertiary hover:text-text-secondary'}`
+        ? 'text-var(--interactive-accent)' 
+        : `${previewMode === 'dark' ? 'text-var(--text-tertiary) hover:text-var(--text-secondary)' : 'text-var(--text-tertiary) hover:text-var(--text-secondary)'}`
     }`;
 
   const badgeUrl = generateBadgeUrl();
   const htmlSnippet = `<img src="${badgeUrl}" alt="${badgeConfig.label} - ${badgeConfig.message}" />`;
 
   return (
-    <div className={`min-h-screen p-6 flex items-center justify-center transition-colors duration-500 ${
-      previewMode === 'dark' ? 'bg-surface-secondary' : 'bg-surface-secondary'
-    }`}>
-      <div className={`w-full max-w-6xl rounded-3xl shadow-2xl overflow-hidden transition-all duration-500 transform hover:shadow-3xl ${
-        previewMode === 'dark' ? 'bg-surface-primary' : 'bg-surface-primary'
-      }`}>
+    <div className="badge-builder" style={{
+      minHeight: '100vh',
+      padding: '24px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      transition: 'background-color 0.3s ease',
+      backgroundColor: 'var(--surface-secondary)',
+      fontFamily: 'var(--font-sans)'
+    }}>
+      <div style={{
+        width: '100%',
+        maxWidth: '1200px',
+        borderRadius: 'var(--radius-2xl)',
+        boxShadow: 'var(--shadow-xl)',
+        overflow: 'hidden',
+        transition: 'all 0.3s ease',
+        backgroundColor: 'var(--surface-primary)',
+        border: '1px solid var(--border-primary)'
+      }}>
         
-        {/* Enhanced Header */}
-        <div className={`p-8 border-b transition-colors duration-500 relative overflow-hidden ${
-          previewMode === 'dark' ? 'border-panel-border' : 'border-panel-border'
-        }`}>
-          <div className="absolute inset-0 bg-gradient-to-r from-accent-color/5 to-transparent"></div>
-          <div className="relative flex flex-col sm:flex-row justify-between items-center gap-6">
-            <div className="flex items-center space-x-4">
-              <div className={`p-3 rounded-2xl transition-all duration-500 ${
-                previewMode === 'dark' ? 'bg-accent-color/20' : 'bg-accent-color/10'
-              }`}>
-                <svg className="w-8 h-8 text-accent-color" fill="currentColor" viewBox="0 0 20 20">
+        {/* Header */}
+        <div style={{
+          padding: '32px',
+          borderBottom: '1px solid var(--border-primary)',
+          position: 'relative',
+          overflow: 'hidden',
+          backgroundColor: 'var(--surface-primary)'
+        }}>
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(to right, var(--interactive-accent)/5%, transparent)'
+          }}></div>
+          <div style={{
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '24px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{
+                padding: '12px',
+                borderRadius: 'var(--radius-xl)',
+                backgroundColor: 'var(--interactive-accent)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <svg style={{ width: '24px', height: '24px', color: 'var(--text-inverse)' }} fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd" />
                 </svg>
               </div>
               <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-accent-color to-purple-500 bg-clip-text text-transparent">
+                <h1 style={{
+                  fontSize: '28px',
+                  fontWeight: 700,
+                  background: 'linear-gradient(135deg, var(--interactive-accent), var(--interactive-accent-hover))',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  margin: 0
+                }}>
                   Badge Builder
                 </h1>
-                <p className={`text-lg mt-2 ${
-                  previewMode === 'dark' ? 'text-text-tertiary' : 'text-text-tertiary'
-                }`}>
+                <p style={{
+                  fontSize: '16px',
+                  marginTop: '8px',
+                  color: 'var(--text-secondary)',
+                  margin: 0
+                }}>
                   Create beautiful shields.io badges for your projects
                 </p>
               </div>
             </div>
             
-            <div className="flex items-center gap-4">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
               <button
                 onClick={resetToDefaults}
-                className={`px-5 py-2.5 rounded-xl font-semibold transition-all duration-300 flex items-center space-x-2 border-2 ${
-                  previewMode === 'dark' 
-                    ? 'border-panel-border hover:border-accent-color text-text-secondary hover:text-accent-color' 
-                    : 'border-panel-border hover:border-accent-color text-text-secondary hover:text-accent-color'
-                }`}
+                style={{
+                  padding: '10px 20px',
+                  borderRadius: 'var(--radius-lg)',
+                  fontWeight: 600,
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  border: '1px solid var(--border-primary)',
+                  backgroundColor: 'transparent',
+                  color: 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--interactive-accent)';
+                  e.currentTarget.style.color = 'var(--interactive-accent)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--border-primary)';
+                  e.currentTarget.style.color = 'var(--text-secondary)';
+                }}
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg style={{ width: '16px', height: '16px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
                 <span>Reset</span>
@@ -226,13 +286,30 @@ export default function BadgeBuilder({ onInsert }: BadgeBuilderProps) {
               
               <button
                 onClick={() => setPreviewMode(prev => prev === 'light' ? 'dark' : 'light')}
-                className={`px-5 py-2.5 rounded-xl font-semibold transition-all duration-300 flex items-center space-x-2 ${
-                  previewMode === 'dark' 
-                    ? 'bg-accent-color hover:bg-accent-color-hover text-text-inverse' 
-                    : 'bg-surface-tertiary hover:bg-accent-color/10 text-text-primary'
-                }`}
+                style={{
+                  padding: '10px 20px',
+                  borderRadius: 'var(--radius-lg)',
+                  fontWeight: 600,
+                  transition: 'all 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  border: 'none',
+                  backgroundColor: 'var(--surface-tertiary)',
+                  color: 'var(--text-primary)',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--interactive-accent)';
+                  e.currentTarget.style.color = 'var(--text-inverse)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--surface-tertiary)';
+                  e.currentTarget.style.color = 'var(--text-primary)';
+                }}
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg style={{ width: '16px', height: '16px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   {previewMode === 'light' ? (
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                   ) : (
@@ -245,81 +322,160 @@ export default function BadgeBuilder({ onInsert }: BadgeBuilderProps) {
           </div>
         </div>
 
-        <div className="p-8">
-          {/* Enhanced Tabs */}
-          <div className={`flex border-b mb-10 ${
-            previewMode === 'dark' ? 'border-panel-border' : 'border-panel-border'
-          }`}>
+        <div style={{ padding: '32px' }}>
+          {/* Tabs */}
+          <div style={{
+            display: 'flex',
+            borderBottom: '1px solid var(--border-primary)',
+            marginBottom: '32px'
+          }}>
             {['basic', 'advanced'].map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={getTabClasses(activeTab === tab)}
+                style={{
+                  padding: '12px 24px',
+                  fontWeight: 600,
+                  transition: 'all 0.3s ease',
+                  position: 'relative',
+                  border: 'none',
+                  backgroundColor: 'transparent',
+                  color: activeTab === tab ? 'var(--interactive-accent)' : 'var(--text-tertiary)',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit'
+                }}
+                onMouseOver={(e) => {
+                  if (activeTab !== tab) {
+                    e.currentTarget.style.color = 'var(--text-secondary)';
+                  }
+                }}
+                onMouseOut={(e) => {
+                  if (activeTab !== tab) {
+                    e.currentTarget.style.color = 'var(--text-tertiary)';
+                  }
+                }}
               >
-                <span className="relative z-10">
+                <span style={{ position: 'relative', zIndex: 10 }}>
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
                 </span>
                 {activeTab === tab && (
-                  <div className="absolute bottom-0 left-0 w-full h-1 bg-accent-color rounded-t-full"></div>
+                  <div style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '2px',
+                    backgroundColor: 'var(--interactive-accent)',
+                    borderRadius: '1px'
+                  }}></div>
                 )}
-                <div className="absolute inset-0 bg-accent-color/10 rounded-xl scale-95 opacity-0 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300"></div>
               </button>
             ))}
           </div>
 
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
-            {/* Enhanced Config Panel */}
-            <div className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <label className={getLabelClasses()}>
-                    <span className="flex items-center gap-2">
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '32px',
+            alignItems: 'start'
+          }}>
+            {/* Config Panel */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '16px'
+              }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={getLabelClasses()}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       Label
-                      <span className="text-xs text-accent-color">*</span>
+                      <span style={{ fontSize: '12px', color: 'var(--interactive-accent)' }}>*</span>
                     </span>
                   </label>
                   <input
                     type="text"
                     value={badgeConfig.label}
                     onChange={e => updateBadgeConfig('label', e.target.value)}
-                    className={getInputClasses()}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      border: '1px solid var(--border-primary)',
+                      borderRadius: 'var(--radius-lg)',
+                      backgroundColor: 'var(--surface-primary)',
+                      color: 'var(--text-primary)',
+                      fontFamily: 'inherit',
+                      fontSize: '14px',
+                      transition: 'all 0.3s ease'
+                    }}
                     placeholder="e.g., version, build, license"
                     maxLength={30}
                   />
-                  <div className="text-xs text-text-tertiary flex justify-between">
+                  <div style={{
+                    fontSize: '12px',
+                    color: 'var(--text-tertiary)',
+                    display: 'flex',
+                    justifyContent: 'space-between'
+                  }}>
                     <span>Displayed on the left</span>
                     <span>{badgeConfig.label.length}/30</span>
                   </div>
                 </div>
                 
-                <div className="space-y-3">
-                  <label className={getLabelClasses()}>
-                    <span className="flex items-center gap-2">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={getLabelClasses()}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       Message
-                      <span className="text-xs text-accent-color">*</span>
+                      <span style={{ fontSize: '12px', color: 'var(--interactive-accent)' }}>*</span>
                     </span>
                   </label>
                   <input
                     type="text"
                     value={badgeConfig.message}
                     onChange={e => updateBadgeConfig('message', e.target.value)}
-                    className={getInputClasses()}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      border: '1px solid var(--border-primary)',
+                      borderRadius: 'var(--radius-lg)',
+                      backgroundColor: 'var(--surface-primary)',
+                      color: 'var(--text-primary)',
+                      fontFamily: 'inherit',
+                      fontSize: '14px',
+                      transition: 'all 0.3s ease'
+                    }}
                     placeholder="e.g., 1.0.0, passing, MIT"
                     maxLength={30}
                   />
-                  <div className="text-xs text-text-tertiary flex justify-between">
+                  <div style={{
+                    fontSize: '12px',
+                    color: 'var(--text-tertiary)',
+                    display: 'flex',
+                    justifyContent: 'space-between'
+                  }}>
                     <span>Displayed on the right</span>
                     <span>{badgeConfig.message.length}/30</span>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <label className={getLabelClasses()}>Color Scheme</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label style={getLabelClasses()}>Color Scheme</label>
                 <select
                   value={badgeConfig.color}
                   onChange={e => updateBadgeConfig('color', e.target.value)}
-                  className={getSelectClasses()}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '1px solid var(--border-primary)',
+                    borderRadius: 'var(--radius-lg)',
+                    backgroundColor: 'var(--surface-primary)',
+                    color: 'var(--text-primary)',
+                    fontFamily: 'inherit',
+                    fontSize: '14px',
+                    transition: 'all 0.3s ease',
+                    cursor: 'pointer'
+                  }}
                 >
                   {colorOptions.map(color => (
                     <option key={color.value} value={color.value}>
@@ -330,15 +486,30 @@ export default function BadgeBuilder({ onInsert }: BadgeBuilderProps) {
               </div>
 
               {activeTab === 'advanced' && (
-                <div className={`space-y-8 border-t pt-8 ${
-                  previewMode === 'dark' ? 'border-panel-border' : 'border-panel-border'
-                }`}>
-                  <div className="space-y-3">
-                    <label className={getLabelClasses()}>Badge Style</label>
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '24px',
+                  borderTop: '1px solid var(--border-primary)',
+                  paddingTop: '24px'
+                }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <label style={getLabelClasses()}>Badge Style</label>
                     <select
                       value={badgeConfig.style}
                       onChange={e => updateBadgeConfig('style', e.target.value)}
-                      className={getSelectClasses()}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        border: '1px solid var(--border-primary)',
+                        borderRadius: 'var(--radius-lg)',
+                        backgroundColor: 'var(--surface-primary)',
+                        color: 'var(--text-primary)',
+                        fontFamily: 'inherit',
+                        fontSize: '14px',
+                        transition: 'all 0.3s ease',
+                        cursor: 'pointer'
+                      }}
                     >
                       {styleOptions.map(style => (
                         <option key={style.value} value={style.value}>
@@ -348,13 +519,28 @@ export default function BadgeBuilder({ onInsert }: BadgeBuilderProps) {
                     </select>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-3">
-                      <label className={getLabelClasses()}>Logo</label>
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '16px'
+                  }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <label style={getLabelClasses()}>Logo</label>
                       <select
                         value={badgeConfig.logo}
                         onChange={e => updateBadgeConfig('logo', e.target.value)}
-                        className={getSelectClasses()}
+                        style={{
+                          width: '100%',
+                          padding: '12px',
+                          border: '1px solid var(--border-primary)',
+                          borderRadius: 'var(--radius-lg)',
+                          backgroundColor: 'var(--surface-primary)',
+                          color: 'var(--text-primary)',
+                          fontFamily: 'inherit',
+                          fontSize: '14px',
+                          transition: 'all 0.3s ease',
+                          cursor: 'pointer'
+                        }}
                       >
                         {logoOptions.map(logo => (
                           <option key={logo.value} value={logo.value}>
@@ -363,71 +549,114 @@ export default function BadgeBuilder({ onInsert }: BadgeBuilderProps) {
                         ))}
                       </select>
                     </div>
-                    <div className="space-y-3">
-                      <label className={getLabelClasses()}>Logo Color</label>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <label style={getLabelClasses()}>Logo Color</label>
                       <input
                         type="text"
                         value={badgeConfig.logoColor}
                         onChange={e => updateBadgeConfig('logoColor', e.target.value)}
-                        className={getInputClasses()}
+                        style={{
+                          width: '100%',
+                          padding: '12px',
+                          border: '1px solid var(--border-primary)',
+                          borderRadius: 'var(--radius-lg)',
+                          backgroundColor: 'var(--surface-primary)',
+                          color: 'var(--text-primary)',
+                          fontFamily: 'inherit',
+                          fontSize: '14px',
+                          transition: 'all 0.3s ease'
+                        }}
                         placeholder="white, black, #FF0000"
                       />
                     </div>
                   </div>
 
                   <div
-                    className={`flex items-center space-x-4 p-5 rounded-2xl border-2 transition-all duration-300 cursor-pointer group ${
-                      previewMode === 'dark'
-                        ? 'bg-accent-color/10 border-accent-color/30 hover:border-accent-color'
-                        : 'bg-accent-color/5 border-accent-color/20 hover:border-accent-color'
-                    }`}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '16px',
+                      padding: '16px',
+                      borderRadius: 'var(--radius-lg)',
+                      border: '1px solid var(--border-primary)',
+                      transition: 'all 0.3s ease',
+                      cursor: 'pointer',
+                      backgroundColor: 'var(--surface-secondary)'
+                    }}
                     onClick={() => updateBadgeConfig('isError', !badgeConfig.isError)}
                   >
-                    <div className={`w-6 h-6 border-2 rounded-lg flex items-center justify-center transition-all duration-300 ${
-                      badgeConfig.isError 
-                        ? 'bg-accent-color border-accent-color scale-110' 
-                        : `${previewMode === 'dark' ? 'border-text-tertiary group-hover:border-accent-color' : 'border-text-tertiary group-hover:border-accent-color'}`
-                    }`}>
+                    <div style={{
+                      width: '20px',
+                      height: '20px',
+                      border: '2px solid var(--text-tertiary)',
+                      borderRadius: 'var(--radius-sm)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.3s ease',
+                      backgroundColor: badgeConfig.isError ? 'var(--interactive-accent)' : 'transparent',
+                      borderColor: badgeConfig.isError ? 'var(--interactive-accent)' : 'var(--text-tertiary)'
+                    }}>
                       {badgeConfig.isError && (
-                        <svg className="w-3 h-3 text-text-inverse" fill="currentColor" viewBox="0 0 20 20">
+                        <svg style={{ width: '12px', height: '12px', color: 'var(--text-inverse)' }} fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
                       )}
                     </div>
-                    <div className="flex-1">
-                      <span className="font-semibold text-text-primary">Error Style</span>
-                      <p className="text-sm text-text-tertiary mt-1">Forces red color regardless of selection</p>
+                    <div style={{ flex: 1 }}>
+                      <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Error Style</span>
+                      <p style={{ fontSize: '14px', color: 'var(--text-tertiary)', margin: '4px 0 0 0' }}>Forces red color regardless of selection</p>
                     </div>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Enhanced Preview Panel */}
-            <div className="space-y-8">
-              <div className={`p-8 rounded-3xl border-2 transition-all duration-500 ${
-                previewMode === 'dark' 
-                  ? 'bg-surface-tertiary border-panel-border' 
-                  : 'bg-surface-secondary border-panel-border'
-              }`}>
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className={`text-xl font-bold ${
-                    previewMode === 'dark' ? 'text-text-primary' : 'text-text-primary'
-                  }`}>Live Preview</h2>
-                  <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                    previewMode === 'dark' ? 'bg-accent-color/20 text-accent-color' : 'bg-accent-color/10 text-accent-color'
-                  }`}>
+            {/* Preview Panel */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div style={{
+                padding: '24px',
+                borderRadius: 'var(--radius-xl)',
+                border: '1px solid var(--border-primary)',
+                transition: 'all 0.3s ease',
+                backgroundColor: 'var(--surface-secondary)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                  <h2 style={{
+                    fontSize: '20px',
+                    fontWeight: 700,
+                    color: 'var(--text-primary)',
+                    margin: 0
+                  }}>Live Preview</h2>
+                  <div style={{
+                    padding: '4px 12px',
+                    borderRadius: '20px',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    backgroundColor: 'var(--interactive-accent)',
+                    color: 'var(--text-inverse)'
+                  }}>
                     Real-time
                   </div>
                 </div>
                 
-                <div className={`flex justify-center p-8 rounded-2xl mb-8 transition-all duration-500 ${
-                  previewMode === 'dark' ? 'bg-surface-primary' : 'bg-surface-primary'
-                }`}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  padding: '24px',
+                  borderRadius: 'var(--radius-lg)',
+                  marginBottom: '24px',
+                  backgroundColor: 'var(--surface-primary)',
+                  transition: 'all 0.3s ease'
+                }}>
                   <img
                     src={badgeUrl}
                     alt="Badge Preview"
-                    className="max-w-full h-auto transition-all duration-500 hover:scale-105 hover:rotate-1"
+                    style={{
+                      maxWidth: '100%',
+                      height: 'auto',
+                      transition: 'all 0.3s ease'
+                    }}
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.src = `https://img.shields.io/badge/error-invalid_config-red`;
@@ -435,72 +664,161 @@ export default function BadgeBuilder({ onInsert }: BadgeBuilderProps) {
                   />
                 </div>
 
-                {/* Enhanced Code Display */}
-                <div className="space-y-6">
+                {/* Code Display */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                   <div>
-                    <h3 className={`font-semibold text-sm mb-3 flex items-center gap-2 ${
-                      previewMode === 'dark' ? 'text-text-secondary' : 'text-text-secondary'
-                    }`}>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <h3 style={{
+                      fontWeight: 600,
+                      fontSize: '14px',
+                      marginBottom: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      color: 'var(--text-secondary)'
+                    }}>
+                      <svg style={{ width: '16px', height: '16px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                       </svg>
                       Badge URL
                     </h3>
-                    <div className={`p-4 rounded-xl overflow-x-auto border transition-all duration-300 ${
-                      previewMode === 'dark' ? 'bg-surface-primary border-panel-border' : 'bg-surface-primary border-panel-border'
-                    }`}>
-                      <code className="text-sm font-mono break-all text-accent-color">
+                    <div style={{
+                      padding: '16px',
+                      borderRadius: 'var(--radius-lg)',
+                      overflowX: 'auto',
+                      border: '1px solid var(--border-primary)',
+                      transition: 'all 0.3s ease',
+                      backgroundColor: 'var(--surface-primary)'
+                    }}>
+                      <code style={{
+                        fontSize: '14px',
+                        fontFamily: 'var(--font-mono)',
+                        wordBreak: 'break-all',
+                        color: 'var(--interactive-accent)'
+                      }}>
                         {badgeUrl}
                       </code>
                     </div>
                   </div>
 
                   <div>
-                    <h3 className={`font-semibold text-sm mb-3 flex items-center gap-2 ${
-                      previewMode === 'dark' ? 'text-text-secondary' : 'text-text-secondary'
-                    }`}>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <h3 style={{
+                      fontWeight: 600,
+                      fontSize: '14px',
+                      marginBottom: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      color: 'var(--text-secondary)'
+                    }}>
+                      <svg style={{ width: '16px', height: '16px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                       </svg>
                       HTML Embed Code
                     </h3>
-                    <div className={`p-4 rounded-xl overflow-x-auto border transition-all duration-300 ${
-                      previewMode === 'dark' ? 'bg-surface-primary border-panel-border' : 'bg-surface-primary border-panel-border'
-                    }`}>
-                      <code className="text-sm font-mono break-all text-accent-color">
+                    <div style={{
+                      padding: '16px',
+                      borderRadius: 'var(--radius-lg)',
+                      overflowX: 'auto',
+                      border: '1px solid var(--border-primary)',
+                      transition: 'all 0.3s ease',
+                      backgroundColor: 'var(--surface-primary)'
+                    }}>
+                      <code style={{
+                        fontSize: '14px',
+                        fontFamily: 'var(--font-mono)',
+                        wordBreak: 'break-all',
+                        color: 'var(--interactive-accent)'
+                      }}>
                         {htmlSnippet}
                       </code>
                     </div>
                   </div>
                 </div>
                 
-                {/* Enhanced Action Buttons */}
-                <div className="mt-8 space-y-4">
+                {/* Action Buttons */}
+                <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <button
                     onClick={insertBadge}
                     disabled={isLoading}
-                    className="w-full px-6 py-4 bg-success-color hover:bg-success-color-hover text-text-inverse rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-3 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95"
+                    style={{
+                      width: '100%',
+                      padding: '16px',
+                      backgroundColor: 'var(--interactive-success)',
+                      color: 'var(--text-inverse)',
+                      border: 'none',
+                      borderRadius: 'var(--radius-lg)',
+                      fontWeight: 600,
+                      transition: 'all 0.3s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '12px',
+                      cursor: isLoading ? 'not-allowed' : 'pointer',
+                      opacity: isLoading ? 0.7 : 1,
+                      fontFamily: 'inherit'
+                    }}
+                    onMouseOver={(e) => {
+                      if (!isLoading) {
+                        e.currentTarget.style.backgroundColor = 'var(--interactive-success-hover)';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                      }
+                    }}
+                    onMouseOut={(e) => {
+                      if (!isLoading) {
+                        e.currentTarget.style.backgroundColor = 'var(--interactive-success)';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                      }
+                    }}
                   >
                     {isLoading ? (
-                      <div className="w-5 h-5 border-2 border-text-inverse border-t-transparent rounded-full animate-spin"></div>
+                      <div style={{
+                        width: '18px',
+                        height: '18px',
+                        border: '2px solid var(--text-inverse)',
+                        borderTopColor: 'transparent',
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite'
+                      }}></div>
                     ) : (
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg style={{ width: '18px', height: '18px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                       </svg>
                     )}
                     <span>{isLoading ? 'Inserting...' : 'Insert Badge'}</span>
                   </button>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '12px'
+                  }}>
                     <button
                       onClick={copyToClipboard}
-                      className={`px-4 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 border-2 transform hover:scale-105 active:scale-95 ${
-                        previewMode === 'dark'
-                          ? 'border-accent-color bg-accent-color/10 hover:bg-accent-color/20 text-accent-color'
-                          : 'border-accent-color bg-accent-color/5 hover:bg-accent-color/10 text-accent-color'
-                      }`}
+                      style={{
+                        padding: '12px',
+                        borderRadius: 'var(--radius-lg)',
+                        fontWeight: 600,
+                        transition: 'all 0.3s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        border: '1px solid var(--interactive-accent)',
+                        backgroundColor: 'var(--interactive-accent)',
+                        color: 'var(--text-inverse)',
+                        cursor: 'pointer',
+                        fontFamily: 'inherit'
+                      }}
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.backgroundColor = 'var(--interactive-accent-hover)';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.backgroundColor = 'var(--interactive-accent)';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                      }}
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg style={{ width: '16px', height: '16px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                       </svg>
                       <span>Copy Code</span>
@@ -508,13 +826,33 @@ export default function BadgeBuilder({ onInsert }: BadgeBuilderProps) {
                     
                     <button
                       onClick={downloadBadge}
-                      className={`px-4 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center space-x-2 border-2 transform hover:scale-105 active:scale-95 ${
-                        previewMode === 'dark'
-                          ? 'border-panel-border hover:border-accent-color text-text-primary hover:text-accent-color'
-                          : 'border-panel-border hover:border-accent-color text-text-primary hover:text-accent-color'
-                      }`}
+                      style={{
+                        padding: '12px',
+                        borderRadius: 'var(--radius-lg)',
+                        fontWeight: 600,
+                        transition: 'all 0.3s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        border: '1px solid var(--border-primary)',
+                        backgroundColor: 'transparent',
+                        color: 'var(--text-primary)',
+                        cursor: 'pointer',
+                        fontFamily: 'inherit'
+                      }}
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--interactive-accent)';
+                        e.currentTarget.style.color = 'var(--interactive-accent)';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--border-primary)';
+                        e.currentTarget.style.color = 'var(--text-primary)';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                      }}
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg style={{ width: '16px', height: '16px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                       </svg>
                       <span>Download</span>
@@ -527,13 +865,28 @@ export default function BadgeBuilder({ onInsert }: BadgeBuilderProps) {
         </div>
       </div>
 
-      {/* Enhanced Toast Notification */}
+      {/* Toast Notification */}
       {copied && (
-        <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-success-color text-text-inverse px-6 py-4 rounded-xl shadow-2xl animate-fadeIn flex items-center space-x-3 z-50">
-          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <div style={{
+          position: 'fixed',
+          bottom: '32px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          backgroundColor: 'var(--interactive-success)',
+          color: 'var(--text-inverse)',
+          padding: '16px 24px',
+          borderRadius: 'var(--radius-lg)',
+          boxShadow: 'var(--shadow-xl)',
+          animation: 'fadeIn 0.4s ease-out',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          zIndex: 50
+        }}>
+          <svg style={{ width: '18px', height: '18px' }} fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
           </svg>
-          <span className="font-semibold">HTML code copied to clipboard!</span>
+          <span style={{ fontWeight: 600 }}>HTML code copied to clipboard!</span>
         </div>
       )}
 
@@ -548,12 +901,10 @@ export default function BadgeBuilder({ onInsert }: BadgeBuilderProps) {
             transform: translate(-50%, 0) scale(1);
           }
         }
-        .animate-fadeIn { 
-          animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
         
-        .shadow-3xl {
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
         }
       `}</style>
     </div>
