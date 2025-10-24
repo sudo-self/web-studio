@@ -5,6 +5,8 @@ import { ReactElement } from "react";
 import BuildPrompts from "./BuildPrompts";
 import { GitHubModal } from "./GitHubModal";
 import PDFGenerator from './PDFGenerator';
+import BadgeBuilder from './BadgeBuilder';
+
 import {
   FileText, Sparkles, Info, Wrench, Phone, SquareStack, CreditCard,
   Image, Search, Tag, Users, Stars, Type, Bot, Settings, Navigation,
@@ -819,6 +821,7 @@ const useLocalStorageState = <T,>(key: string, defaultValue: T) => {
 const useGitHubAuth = () => {
   const [githubToken, setGithubToken] = useState<string | null>(null);
   const [githubUser, setGithubUser] = useState<any>(null);
+    
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -993,6 +996,7 @@ export default function ComponentsPanel({
   const [showGithubModal, setShowGithubModal] = useState(false);
   const [isCreatingRepo, setIsCreatingRepo] = useState(false);
   const [showPdfGenerator, setShowPdfGenerator] = useState(false);
+  const [showBadgeBuilder, setShowBadgeBuilder] = useState(false);
   
   const [favorites, setFavorites] = useLocalStorageState<Set<string>>('component-favorites', new Set());
   const [recentComponents, setRecentComponents] = useLocalStorageState<string[]>('recent-components', []);
@@ -1402,108 +1406,108 @@ const renderAISection = () => (
             Generate PDF
           </button>
           <button
-            className="btn btn-outline btn-sm flex items-center gap-2 justify-center opacity-50 cursor-not-allowed"
-            disabled
+            className="btn btn-outline btn-sm flex items-center gap-2 justify-center"
+            onClick={() => setShowBadgeBuilder(true)}
           >
-            <Settings size={14} />
-            No Service
+            <Image size={14} />
+            Badge Builder
           </button>
         </div>
       </div>
     </div>
 
-      <div className="mode-toggle">
-        <label className="mode-option">
-          <input
-            type="radio"
-            value="response"
-            checked={mode === "response"}
-            onChange={() => setMode("response")}
-            disabled={loading || isRequesting}
-          />
-          Stateless
-        </label>
-        <label className="mode-option">
-          <input
-            type="radio"
-            value="chat"
-            checked={mode === "chat"}
-            onChange={() => setMode("chat")}
-            disabled={loading || isRequesting}
-          />
-          Chat Mode
-        </label>
-      </div>
-
-      <div className="relative">
-        <textarea
-          className="prompt-textarea"
-          placeholder="describe what to create..."
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-              e.preventDefault();
-              if (!isRequesting && !loading && prompt.trim()) {
-                askAi();
-              }
-            }
-          }}
+    <div className="mode-toggle">
+      <label className="mode-option">
+        <input
+          type="radio"
+          value="response"
+          checked={mode === "response"}
+          onChange={() => setMode("response")}
           disabled={loading || isRequesting}
         />
-        <div className="text-xs text-text-muted mt-1 px-1 flex justify-between">
-          <span>@cf/meta/llama-3.3-70b-instruct-fp8-fast</span>
-          {(loading || isRequesting) && <span className="text-accent-color">●</span>}
-        </div>
-      </div>
+        Stateless
+      </label>
+      <label className="mode-option">
+        <input
+          type="radio"
+          value="chat"
+          checked={mode === "chat"}
+          onChange={() => setMode("chat")}
+          disabled={loading || isRequesting}
+        />
+        Chat Mode
+      </label>
+    </div>
 
-      <button
-        className="btn btn-accent"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          if (!isRequesting && !loading && prompt.trim()) {
-            askAi();
+    <div className="relative">
+      <textarea
+        className="prompt-textarea"
+        placeholder="describe what to create..."
+        value={prompt}
+        onChange={(e) => setPrompt(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault();
+            if (!isRequesting && !loading && prompt.trim()) {
+              askAi();
+            }
           }
         }}
-        disabled={loading || isRequesting || !prompt.trim()}
-        style={{ opacity: (loading || isRequesting || !prompt.trim()) ? 0.5 : 1 }}
-      >
-        <Bot size={16} />
-        {loading ? "Generating..." : isRequesting ? "Please wait..." : "Ask AI"}
-      </button>
-
-      {response && (
-        <div>
-          <div className="response-label">AI Response</div>
-          <div className="ai-response">{response}</div>
-        </div>
-      )}
-
-      {mode === "chat" && chatHistory.length > 0 && (
-        <div>
-          <div className="response-label flex justify-between items-center">
-            <span>Chat History</span>
-            <button onClick={() => setChatHistory([])} className="text-xs text-text-muted hover:text-foreground">
-              Clear
-            </button>
-          </div>
-          <div className="chat-history">
-            {chatHistory.map((msg, i) => (
-              <div key={i} className={`chat-message ${msg.role}`}>
-                <div className={`message-role ${msg.role}`}>
-                  {msg.role.toUpperCase()}
-                </div>
-                <div>{msg.content}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+        disabled={loading || isRequesting}
+      />
+      <div className="text-xs text-text-muted mt-1 px-1 flex justify-between">
+        <span>@cf/meta/llama-3.3-70b-instruct-fp8-fast</span>
+        {(loading || isRequesting) && <span className="text-accent-color">●</span>}
+      </div>
     </div>
-  );
 
-  return (
+    <button
+      className="btn btn-accent"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!isRequesting && !loading && prompt.trim()) {
+          askAi();
+        }
+      }}
+      disabled={loading || isRequesting || !prompt.trim()}
+      style={{ opacity: (loading || isRequesting || !prompt.trim()) ? 0.5 : 1 }}
+    >
+      <Bot size={16} />
+      {loading ? "Generating..." : isRequesting ? "Please wait..." : "Ask AI"}
+    </button>
+
+    {response && (
+      <div>
+        <div className="response-label">AI Response</div>
+        <div className="ai-response">{response}</div>
+      </div>
+    )}
+
+    {mode === "chat" && chatHistory.length > 0 && (
+      <div>
+        <div className="response-label flex justify-between items-center">
+          <span>Chat History</span>
+          <button onClick={() => setChatHistory([])} className="text-xs text-text-muted hover:text-foreground">
+            Clear
+          </button>
+        </div>
+        <div className="chat-history">
+          {chatHistory.map((msg, i) => (
+            <div key={i} className={`chat-message ${msg.role}`}>
+              <div className={`message-role ${msg.role}`}>
+                {msg.role.toUpperCase()}
+              </div>
+              <div>{msg.content}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+);
+
+ return (
   <div className="flex flex-col h-full overflow-hidden relative">
     {onResizeStart && (
       <div
@@ -1516,7 +1520,6 @@ const renderAISection = () => (
     {renderComponentsList()}
     {renderAISection()}
 
- 
     <GitHubModal
       showGithubModal={showGithubModal}
       setShowGithubModal={setShowGithubModal}
@@ -1531,30 +1534,51 @@ const renderAISection = () => (
       fetchUserInfo={fetchUserInfo}
     />
 
-   
-{showPdfGenerator && (
-  <div className="modal-overlay" onClick={() => setShowPdfGenerator(false)}>
-    <div 
-      className="modal-content pdf-modal-content" 
-      onClick={(e) => e.stopPropagation()}
-    >
-      <div className="modal-header">
-        <h2 className="modal-title">PDF Generator</h2>
-        <button
-          onClick={() => setShowPdfGenerator(false)}
-          className="modal-close-btn"
-          aria-label="Close PDF generator"
+    {showPdfGenerator && (
+      <div className="modal-overlay" onClick={() => setShowPdfGenerator(false)}>
+        <div 
+          className="modal-content pdf-modal-content" 
+          onClick={(e) => e.stopPropagation()}
         >
-          <X size={18} />
-        </button>
+          <div className="modal-header">
+            <h2 className="modal-title">PDF Generator</h2>
+            <button
+              onClick={() => setShowPdfGenerator(false)}
+              className="modal-close-btn"
+              aria-label="Close PDF generator"
+            >
+              <X size={18} />
+            </button>
+          </div>
+          <div className="modal-body pdf-modal-body">
+            <PDFGenerator currentCode={currentCode} />
+          </div>
+        </div>
       </div>
-      <div className="modal-body pdf-modal-body">
-        <PDFGenerator currentCode={currentCode} />
+    )}
+
+    {showBadgeBuilder && (
+      <div className="modal-overlay" onClick={() => setShowBadgeBuilder(false)}>
+        <div 
+          className="modal-content badge-modal-content" 
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="modal-header">
+            <h2 className="modal-title">Badge Builder</h2>
+            <button
+              onClick={() => setShowBadgeBuilder(false)}
+              className="modal-close-btn"
+              aria-label="Close Badge Builder"
+            >
+              <X size={18} />
+            </button>
+          </div>
+          <div className="modal-body badge-modal-body">
+            <BadgeBuilder onInsert={onInsert} />
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-)}
+    )}
   </div>
 );
-
-          }
+        }
