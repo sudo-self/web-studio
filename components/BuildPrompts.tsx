@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { ChevronDown, Lightbulb } from "lucide-react";
+import { Lightbulb, X } from "lucide-react";
 
 interface BuildPromptsProps {
   onPromptSelect: (prompt: string) => void;
@@ -96,8 +96,8 @@ const promptCategories = {
 
 export default function BuildPrompts({ onPromptSelect }: BuildPromptsProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [dropdownDirection, setDropdownDirection] = useState<'down' | 'up'>('down');
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [popoverPosition, setPopoverPosition] = useState<'right' | 'left'>('right');
+  const popoverRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   const handlePromptClick = (prompt: string) => {
@@ -105,28 +105,44 @@ export default function BuildPrompts({ onPromptSelect }: BuildPromptsProps) {
     setIsOpen(false);
   };
 
-  
-    useEffect(() => {
-      const calculateDropdownDirection = () => {
-        if (buttonRef.current) {
-          const buttonRect = buttonRef.current.getBoundingClientRect();
-          const spaceBelow = window.innerHeight - buttonRect.bottom;
-          
+  useEffect(() => {
+    const calculatePopoverPosition = () => {
+      if (buttonRef.current && popoverRef.current) {
+        const buttonRect = buttonRef.current.getBoundingClientRect();
+        const popoverWidth = 400; // Approximate width of the popover
+        const spaceOnRight = window.innerWidth - buttonRect.right;
         
-          if (buttonRect.top > window.innerHeight / 2) {
-            setDropdownDirection('up');
-          } else {
-            setDropdownDirection('down');
-          }
+        // If there's not enough space on the right, show on the left
+        if (spaceOnRight < popoverWidth && buttonRect.left > popoverWidth) {
+          setPopoverPosition('left');
+        } else {
+          setPopoverPosition('right');
         }
-      };
-
-      if (isOpen) {
-        calculateDropdownDirection();
-        window.addEventListener('resize', calculateDropdownDirection);
-        return () => window.removeEventListener('resize', calculateDropdownDirection);
       }
-    }, [isOpen]);
+    };
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        popoverRef.current && 
+        !popoverRef.current.contains(event.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      calculatePopoverPosition();
+      window.addEventListener('resize', calculatePopoverPosition);
+      document.addEventListener('mousedown', handleClickOutside);
+      
+      return () => {
+        window.removeEventListener('resize', calculatePopoverPosition);
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [isOpen]);
 
   return (
     <div className="relative">
@@ -137,31 +153,47 @@ export default function BuildPrompts({ onPromptSelect }: BuildPromptsProps) {
       >
         <Lightbulb size={14} />
         Prompts
-        <ChevronDown
-          size={14}
-          className={`transition-transform ${isOpen ? 'rotate-180' : ''}`}
-        />
       </button>
 
       {isOpen && (
         <div
-          ref={dropdownRef}
-          className={`absolute left-0 w-96 bg-black border border-border-primary rounded-lg shadow-lg z-50 flex flex-col max-h-[80vh] ${
-            dropdownDirection === 'down' 
-              ? 'top-full mt-2' 
-              : 'bottom-full mb-2'
-          }`}
+          ref={popoverRef}
+          className={`
+            absolute z-50 w-96 bg-surface-primary border border-border-primary 
+            rounded-xl shadow-xl flex flex-col max-h-[80vh] transition-all duration-200
+            ${popoverPosition === 'right' 
+              ? 'left-full ml-2' 
+              : 'right-full mr-2'
+            }
+            ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}
+          `}
+          style={{
+            top: '50%',
+            transform: 'translateY(-50%)'
+          }}
         >
-          <div className="p-4 flex-shrink-0 border-b border-border-primary">
-            <h4 className="text-sm font-semibold text-text-primary mb-3 flex items-center gap-2">
-              <Lightbulb size={16} />
-              AI Builder Prompts
-            </h4>
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 border-b border-border-primary bg-surface-secondary rounded-t-xl">
+            <div className="flex items-center gap-2">
+              <Lightbulb size={16} className="text-interactive-accent" />
+              <h4 className="text-sm font-semibold text-text-primary">
+                AI Builder Prompts
+              </h4>
+            </div>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="p-1 hover:bg-surface-tertiary rounded-lg transition-colors"
+              aria-label="Close prompts"
+            >
+              <X size={16} className="text-text-secondary" />
+            </button>
           </div>
+
+          {/* Content */}
           <div className="overflow-y-auto flex-1 p-4 space-y-4">
             {Object.entries(promptCategories).map(([category, prompts]) => (
-              <div key={category}>
-                <h5 className="text-xs font-medium text-text-secondary uppercase tracking-wide mb-2">
+              <div key={category} className="space-y-2">
+                <h5 className="text-xs font-medium text-interactive-accent uppercase tracking-wide">
                   {category}
                 </h5>
                 <div className="space-y-1">
@@ -169,7 +201,7 @@ export default function BuildPrompts({ onPromptSelect }: BuildPromptsProps) {
                     <button
                       key={index}
                       onClick={() => handlePromptClick(prompt)}
-                      className="w-full text-left p-2 text-sm text-text-primary hover:bg-surface-secondary rounded transition-colors"
+                      className="w-full text-left p-3 text-sm text-text-primary hover:bg-surface-tertiary rounded-lg border border-transparent hover:border-border-primary transition-all duration-150"
                     >
                       {prompt}
                     </button>
@@ -177,6 +209,13 @@ export default function BuildPrompts({ onPromptSelect }: BuildPromptsProps) {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Footer */}
+          <div className="p-3 border-t border-border-primary bg-surface-secondary rounded-b-xl">
+            <p className="text-xs text-text-muted text-center">
+              Click any prompt to insert into AI chat
+            </p>
           </div>
         </div>
       )}
