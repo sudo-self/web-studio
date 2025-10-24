@@ -27,78 +27,189 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [iframeKey, setIframeKey] = useState(0);
 
-  const generateHtml = (content: string, currentFramework: string) => {
-    if (currentFramework === "react") {
-      const reactCode = content.trim();
-      
-      // Simple check for empty code
-      if (!reactCode) {
-        return `
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <meta charset="UTF-8" />
-            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-            <title>React Preview</title>
-            <style>
-              body { margin: 0; font-family: system-ui; background: #f8fafc; }
-              #root { padding: 20px; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-            </style>
-          </head>
-          <body>
-            <div id="root">Ready for React code</div>
-          </body>
-          </html>
-        `;
-      }
-
+ const generateHtml = (content: string, currentFramework: string) => {
+  if (currentFramework === "react") {
+    const reactCode = content.trim();
+    
+    // Handle empty or invalid React code
+    if (!reactCode || reactCode === "" || reactCode === "// studio.jessejesse.com") {
       return `
         <!DOCTYPE html>
-        <html>
+        <html lang="en">
         <head>
           <meta charset="UTF-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
           <title>React Preview</title>
-          <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-          <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-          <script src="https://unpkg.com/@babel/standalone@7.28.5/babel.min.js"></script>
           <style>
-            body { margin: 0; font-family: system-ui, sans-serif; }
-            #root { padding: 16px; min-height: 100vh; }
+            body {
+              margin: 0;
+              font-family: system-ui, sans-serif;
+              background: #f8fafc;
+              color: #333;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              min-height: 100vh;
+            }
+            .empty-state {
+              text-align: center;
+              padding: 2rem;
+              color: #64748b;
+            }
+            .empty-state h2 {
+              color: #475569;
+              margin-bottom: 0.5rem;
+            }
           </style>
         </head>
         <body>
-          <div id="root">Loading...</div>
-          <script type="text/babel">
-            try {
-              ${reactCode}
-            } catch (e) {
-              document.getElementById('root').innerHTML = '<div style="color: red; padding: 20px;">Error: ' + e.message + '</div>';
-              console.error(e);
-            }
-          </script>
+          <div class="empty-state">
+            <h2>React Mode</h2>
+            <p>Start writing your React components in the editor</p>
+          </div>
         </body>
         </html>
       `;
     }
 
-    // HTML mode
-    const htmlContent = content.trim() || '<div style="padding: 20px;">Ready for HTML code</div>';
+
+    let fixedReactCode = reactCode
+
+      .replace(/React\.React\.useState/g, 'React.useState')
+  
+      .replace(/href="\s*$/gm, 'href="#"')
+      .replace(/href="\s*\n/gm, 'href="#"')
+
+      .replace(/<a href="\s*<\/a>/g, '<a href="#">Link</a>')
+ 
+      .replace(/className=\{currentMenu ===home/g, 'className={currentMenu === "home"')
+      .replace(/className=\{currentMenu === "about \? show/g, 'className={currentMenu === "about" ? "show"')
+      .replace(/className=\{currentMenu === "about \? show"/g, 'className={currentMenu === "about" ? "show"')
+    
+      .replace(/<\/div>\s*};?\s*$/gm, '</div>\n  );\n}')
+   
+      .replace(/const root\s*=\s*document\.getElementById\(['"']root['"']\);?/g, '')
+    
+      .replace(/$/, '\n\n// Render the component\nconst root = ReactDOM.createRoot(document.getElementById("root"));\nroot.render(React.createElement(NavBar));');
+
+   
+    const openBraces = (fixedReactCode.match(/{/g) || []).length;
+    const closeBraces = (fixedReactCode.match(/}/g) || []).length;
+    
+    if (openBraces > closeBraces) {
+      fixedReactCode += '}'.repeat(openBraces - closeBraces);
+    }
+
+  
+    if (fixedReactCode.includes('href="') && !fixedReactCode.includes('href="#"')) {
+      fixedReactCode = `
+        function NavBar() {
+          return React.createElement('div', { 
+            style: { 
+              padding: '2rem', 
+              textAlign: 'center',
+              color: '#dc2626',
+              background: '#fef2f2',
+              border: '1px solid #fecaca',
+              borderRadius: '8px',
+              margin: '1rem'
+            } 
+          }, 'The AI generated broken React code. Please try again with a clearer prompt.');
+        }
+        const root = ReactDOM.createRoot(document.getElementById("root"));
+        root.render(React.createElement(NavBar));
+      `;
+    }
+
     return `
       <!DOCTYPE html>
-      <html>
+      <html lang="en">
       <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>React Preview</title>
+        <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+        <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+        <script src="https://unpkg.com/@babel/standalone@7.28.5/babel.min.js"></script>
         <style>
-          body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; }
+          body {
+            margin: 0;
+            font-family: system-ui, sans-serif;
+            background: #fff;
+            color: #333;
+          }
+          #root { 
+            padding: 16px; 
+            min-height: 100vh;
+          }
+          .error {
+            padding: 16px;
+            color: #d32f2f;
+            background: #ffebee;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            border: 1px solid #fecaca;
+          }
+          .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            color: #64748b;
+          }
         </style>
       </head>
-      <body>${htmlContent}</body>
+      <body>
+        <div id="root">
+          <div class="loading">Loading React Preview...</div>
+        </div>
+        <script type="text/babel" data-presets="env,react">
+          try {
+            ${fixedReactCode}
+          } catch (e) {
+            console.error('React Error:', e);
+            const root = document.getElementById("root");
+            root.innerHTML = '<div class="error"><strong>React Error:</strong><br>' + 
+              (e.message || String(e)) + '</div>';
+          }
+        </script>
+      </body>
       </html>
     `;
-  };
+  }
 
+
+  const htmlContent = content.trim() === "" 
+    ? `<div style="padding: 2rem; text-align: center; color: #64748b; font-family: system-ui;">
+         <h2>HTML Mode</h2>
+         <p>Start writing your HTML in the editor</p>
+       </div>`
+    : content;
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <style>
+        body {
+          font-family: system-ui, sans-serif;
+          margin: 0;
+          padding: 16px;
+          line-height: 1.6;
+          background: #fff;
+          min-height: 100vh;
+        }
+        img { max-width: 100%; height: auto; display: block; }
+      </style>
+    </head>
+    <body>${htmlContent}</body>
+    </html>
+  `;
+};
+  
   const addToast = (message: string, type: "success" | "error" = "success") => {
     const id = Math.random().toString(36).substring(2);
     setToasts(prev => [...prev, { id, message, type }]);
