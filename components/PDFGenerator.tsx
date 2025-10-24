@@ -69,26 +69,26 @@ export default function PDFGenerator({ currentCode = "" }: PDFGeneratorProps) {
 
   const debouncedUrl = useDebounce(url, 500);
 
-useEffect(() => {
-  let interval: NodeJS.Timeout | undefined;
+  useEffect(() => {
+    let interval: NodeJS.Timeout | undefined;
 
-  if (isLoading) {
-    interval = setInterval(() => {
-      setProgress(prev => Math.min(prev + 10, 90));
-    }, 500);
-  } else {
-    setProgress(0);
-    if (interval) {
-      clearInterval(interval);
+    if (isLoading) {
+      interval = setInterval(() => {
+        setProgress(prev => Math.min(prev + 10, 90));
+      }, 500);
+    } else {
+      setProgress(0);
+      if (interval) {
+        clearInterval(interval);
+      }
     }
-  }
 
-  return () => {
-    if (interval) {
-      clearInterval(interval);
-    }
-  };
-}, [isLoading]);
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [isLoading]);
 
   const updateSizeInfo = () => {
     const size = pdfSizesInches[format as keyof typeof pdfSizesInches] || [8.3, 11.7];
@@ -236,7 +236,7 @@ useEffect(() => {
       setStatus('PDF created successfully!');
       setStatusColor('green');
       toast.success('PDF generated successfully!');
-    } catch (err) {
+    } catch (err: any) {
       console.error('PDF generation error:', err);
       setStatus(`Error: ${err.message}`);
       setStatusColor('red');
