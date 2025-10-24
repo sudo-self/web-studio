@@ -3,17 +3,47 @@
 export type AiMode = "response" | "chat";
 export type ChatRole = "user" | "assistant";
 
-export interface Component {
-  [key: string]: string;
+export interface ComponentInfo {
+  code: string;
+  description: string;
+  tags: string[];
 }
 
 export interface ComponentCategories {
   [key: string]: string[];
 }
 
+export interface ComponentsPanelProps {
+  onInsert: (code: string) => void;
+  onAiInsert: (code: string) => void;
+  onOpenSettings: () => void;
+  onResizeStart?: (e: React.MouseEvent) => void;
+  currentCode?: string;
+  framework: string;
+}
+
 export interface ChatMessage {
   role: ChatRole;
   content: string;
+}
+
+export interface GitHubFormData {
+  name: string;
+  description: string;
+  isPublic: boolean;
+  deployPages: boolean;
+}
+
+export interface GitHubState {
+  token: string | null;
+  user: any | null;
+  isCreatingRepo: boolean;
+  showModal: boolean;
+  form: GitHubFormData;
+}
+
+export interface Component {
+  [key: string]: string;
 }
 
 export interface PanelWidths {
@@ -47,11 +77,10 @@ export interface AiResponse {
     content?: {
       parts?: Array<{
         text?: string;
-    }>;
+      }>;
     };
   }>;
 }
-
 
 export interface ApiRequestBody {
   prompt?: string;
@@ -63,7 +92,6 @@ export interface ApiResponse {
   text: string;
   error?: string;
 }
-
 
 export interface GeminiContentPart {
   text: string;
@@ -80,3 +108,4 @@ export interface GeminiCandidate {
 export interface GeminiResponse {
   candidates: GeminiCandidate[];
 }
+
