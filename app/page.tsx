@@ -27,7 +27,6 @@ export default function Home() {
       <p class="welcome-subtitle">Ready-made components, lightning-fast AI builder, direct code editor, and instant GitHub publishing.</p>
     </header>
 
-    <!-- Get Started Button -->
     <button class="welcome-btn" onclick="alert('Let\\'s start building!')">
       <span class="btn-content">
         <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -37,7 +36,7 @@ export default function Home() {
       </span>
     </button>
 
-    <!-- Feature Navigation -->
+ 
     <nav class="feature-nav">
       <a href="#" class="feature-link">
         <div class="feature-icon">
@@ -67,7 +66,6 @@ export default function Home() {
       </a>
     </nav>
 
-    <!-- Quick Stats -->
     <div class="quick-stats">
       <div class="stat-item">
         <div class="stat-number">50+</div>
@@ -391,7 +389,7 @@ function WelcomeApp() {
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
-            Click Me!
+            
           </span>
         </button>
       </div>
