@@ -65,7 +65,7 @@ export const GitHubModal = ({
   const handleCreateRepoWithSuccess = async () => {
     if (!githubToken) return;
     try {
-      await handleCreateRepo(); // your existing creation logic
+      await handleCreateRepo(); 
       setSuccessData({
         html_url: `https://github.com/${githubUser?.login}/${githubForm.name}`,
         pages_url: githubForm.deployPages ? `https://${githubUser?.login}.github.io/${githubForm.name}/` : undefined
@@ -76,100 +76,103 @@ export const GitHubModal = ({
   };
 
   return (
-    showGithubModal && (
-      <div className="modal-overlay" onClick={() => !isCreatingRepo && setShowGithubModal(false)}>
-        <div className="modal-content" onClick={(e) => e.stopPropagation()} role="dialog" aria-labelledby="github-modal-title" aria-modal="true">
+  showGithubModal && (
+    <div className="modal-overlay" onClick={() => !isCreatingRepo && setShowGithubModal(false)}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()} role="dialog" aria-labelledby="github-modal-title" aria-modal="true">
 
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-accent-color bg-opacity-10 rounded-lg" aria-hidden="true">
-                <Github size={20} className="text-accent-color" />
-              </div>
-              <div>
-                <h3 id="github-modal-title" className="text-lg font-semibold text-text-primary">Create a GitHub Repository</h3>
-                <p className="text-xs text-text-muted mt-1">Deploy your Website with GitHub Pages</p>
-              </div>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-accent-color bg-opacity-10 rounded-xl" aria-hidden="true">
+              <Github size={24} className="text-accent-color" />
             </div>
-            <button
-              onClick={() => setShowGithubModal(false)}
-              className="btn btn-primary btn-sm btn-icon hover:bg-component-hover transition-colors"
-              disabled={isCreatingRepo}
-              aria-label="Close modal"
-            >
-              <X size={16} />
-            </button>
+            <div>
+              <h3 id="github-modal-title" className="text-xl font-semibold text-text-primary">Create GitHub Repository</h3>
+              <p className="text-sm text-text-muted mt-2">Deploy your website with GitHub Pages</p>
+            </div>
           </div>
+          <button
+            onClick={() => setShowGithubModal(false)}
+            className="btn btn-outline btn-sm btn-icon hover:bg-component-hover transition-colors"
+            disabled={isCreatingRepo}
+            aria-label="Close modal"
+          >
+            <X size={18} />
+          </button>
+        </div>
 
-          {!githubToken ? (
-            <GitHubAuthSection
-              onAuthSuccess={(token) => { setGithubToken(token); localStorage.setItem('github_access_token', token); fetchUserInfo(token); }}
+        {!githubToken ? (
+          <GitHubAuthSection
+            onAuthSuccess={(token) => { setGithubToken(token); localStorage.setItem('github_access_token', token); fetchUserInfo(token); }}
+          />
+        ) : (
+          <>
+            <GitHubConnectedSection
+              githubUser={githubUser}
+              githubForm={githubForm}
+              setGithubForm={setGithubForm}
+              isCreatingRepo={isCreatingRepo}
+              onDisconnect={() => { localStorage.removeItem('github_access_token'); setGithubToken(null); setGithubUser(null); }}
+              onCreateRepo={handleCreateRepoWithSuccess}
+              onCancel={() => setShowGithubModal(false)}
             />
-          ) : (
-            <>
-              <GitHubConnectedSection
-                githubUser={githubUser}
-                githubForm={githubForm}
-                setGithubForm={setGithubForm}
-                isCreatingRepo={isCreatingRepo}
-                onDisconnect={() => { localStorage.removeItem('github_access_token'); setGithubToken(null); setGithubUser(null); }}
-                onCreateRepo={handleCreateRepoWithSuccess}
-                onCancel={() => setShowGithubModal(false)}
-              />
 
-              {/* Success Message */}
-              {successData && (
-                <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg text-sm space-y-1">
+            {/* Success Message */}
+            {successData && (
+              <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl text-sm space-y-2">
+                <p className="text-green-800 font-medium">
+                  Repository created successfully!
+                </p>
+                <p>
+                  <strong>URL:</strong>{" "}
+                  <a
+                    href={successData.html_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-accent-color underline hover:opacity-80"
+                  >
+                    {successData.html_url}
+                  </a>
+                </p>
+                {successData.pages_url && (
                   <p>
-                    Repository created successfully! <br />
-                    URL:{" "}
+                    <strong>Pages:</strong>{" "}
                     <a
-                      href={successData.html_url}
+                      href={successData.pages_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 underline"
+                      className="text-accent-color underline hover:opacity-80"
                     >
-                      {successData.html_url}
+                      {successData.pages_url}
                     </a>
                   </p>
-                  {successData.pages_url && (
-                    <p>
-                      Pages:{" "}
-                      <a
-                        href={successData.pages_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 underline"
-                      >
-                        {successData.pages_url}
-                      </a>
-                    </p>
-                  )}
-                </div>
-              )}
-            </>
-          )}
-        </div>
+                )}
+              </div>
+            )}
+          </>
+        )}
       </div>
-    )
-  );
-};
-
-// GitHub Auth Section
-const GitHubAuthSection = ({ onAuthSuccess }: GitHubAuthSectionProps) => (
-  <div className="text-center py-6">
-    <div className="p-4 bg-component-bg rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-      <Github size={24} className="text-text-muted" />
     </div>
-    <div className="mb-4">
-      <h4 className="text-text-primary font-medium mb-2">Connect to GitHub</h4>
-      <p className="text-sm text-text-muted">Connect your GitHub account to create repositories and deploy with GitHub Pages</p>
+  )
+);
+
+
+const GitHubAuthSection = ({ onAuthSuccess }: GitHubAuthSectionProps) => (
+  <div className="text-center py-8">
+    <div className="p-4 bg-component-bg rounded-2xl w-20 h-20 mx-auto mb-6 flex items-center justify-center border border-panel-border">
+      <Github size={32} className="text-text-muted" />
+    </div>
+    <div className="mb-6">
+      <h4 className="text-lg font-semibold text-text-primary mb-3">Connect to GitHub</h4>
+      <p className="text-sm text-text-muted leading-relaxed">
+        Connect your GitHub account to create repositories<br />and deploy with GitHub Pages
+      </p>
     </div>
     <GithubAuth onAuthSuccess={onAuthSuccess} />
   </div>
 );
 
-// GitHub Connected Section
+
 const GitHubConnectedSection = ({
   githubUser,
   githubForm,
@@ -182,13 +185,13 @@ const GitHubConnectedSection = ({
   <div className="space-y-6">
     <UserInfoCard githubUser={githubUser} onDisconnect={onDisconnect} isCreatingRepo={isCreatingRepo} />
 
-    <div className="space-y-4">
-      <FormField label="Repo Name" value={githubForm.name} onChange={(v) => setGithubForm(prev => ({ ...prev, name: v }))} placeholder="my-awesome-project" disabled={isCreatingRepo} required />
+    <div className="space-y-5">
+      <FormField label="Repository Name" value={githubForm.name} onChange={(v) => setGithubForm(prev => ({ ...prev, name: v }))} placeholder="my-awesome-project" disabled={isCreatingRepo} required />
       <FormField label="Description" value={githubForm.description} onChange={(v) => setGithubForm(prev => ({ ...prev, description: v }))} placeholder="Project created with AI Web Studio" disabled={isCreatingRepo} />
       
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <CheckboxOption id="deploy-pages" label="Deploy to Pages" description="Auto-deploy with GitHub Pages" checked={githubForm.deployPages} onChange={(c) => setGithubForm(prev => ({ ...prev, deployPages: c }))} disabled={isCreatingRepo} />
-        <CheckboxOption id="is-public" label="Public Repo" description="Visible to everyone" checked={githubForm.isPublic} onChange={(c) => setGithubForm(prev => ({ ...prev, isPublic: c }))} disabled={isCreatingRepo} />
+        <CheckboxOption id="is-public" label="Public Repository" description="Visible to everyone" checked={githubForm.isPublic} onChange={(c) => setGithubForm(prev => ({ ...prev, isPublic: c }))} disabled={isCreatingRepo} />
       </div>
 
       <FilesPreview githubForm={githubForm} githubUser={githubUser} />
@@ -200,76 +203,95 @@ const GitHubConnectedSection = ({
 
 // Supporting Components
 const UserInfoCard = ({ githubUser, onDisconnect, isCreatingRepo }: UserInfoCardProps) => (
-  <div className="bg-component-bg rounded-xl border border-panel-border p-4">
+  <div className="bg-component-bg rounded-xl border border-panel-border p-5">
     <div className="flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <img src={githubUser?.avatar_url} alt={`${githubUser?.login}'s GitHub avatar`} className="w-10 h-10 rounded-full border-2 border-panel-border" />
+      <div className="flex items-center gap-4">
+        <img src={githubUser?.avatar_url} alt={`${githubUser?.login}'s GitHub avatar`} className="w-12 h-12 rounded-full border-2 border-panel-border" />
         <div>
-          <div className="text-sm font-semibold text-text-primary">{githubUser?.login}</div>
-          <div className="text-xs text-text-muted flex items-center gap-1">
+          <div className="text-base font-semibold text-text-primary">{githubUser?.login}</div>
+          <div className="text-sm text-text-muted flex items-center gap-2 mt-1">
             <div className="w-2 h-2 bg-green-500 rounded-full" aria-hidden="true"></div>
             Connected to GitHub
           </div>
         </div>
       </div>
-      <button onClick={onDisconnect} className="text-xs text-text-muted hover:text-accent-color transition-colors px-3 py-1 rounded-lg hover:bg-component-hover disabled:opacity-50" disabled={isCreatingRepo}>Disconnect</button>
+      <button 
+        onClick={onDisconnect} 
+        className="text-sm text-text-muted hover:text-accent-color transition-colors px-4 py-2 rounded-lg hover:bg-component-hover disabled:opacity-50 border border-panel-border hover:border-accent-color/30" 
+        disabled={isCreatingRepo}
+      >
+        Disconnect
+      </button>
     </div>
   </div>
 );
 
 const FormField = ({ label, value, onChange, placeholder, disabled, required }: FormFieldProps) => (
   <div>
-    <label className="block text-sm font-medium text-text-primary mb-2">
+    <label className="block text-sm font-medium text-text-primary mb-3">
       {label}{required && <span className="text-red-400 ml-1">*</span>}
     </label>
-    <input type="text" value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} disabled={disabled} required={required}
-      className="w-full p-3 border border-panel-border rounded-lg bg-component-bg text-text-primary text-sm focus:outline-none focus:ring-2 focus:ring-accent-color focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed" />
+    <input 
+      type="text" 
+      value={value} 
+      onChange={(e) => onChange(e.target.value)} 
+      placeholder={placeholder} 
+      disabled={disabled} 
+      required={required}
+      className="w-full p-4 border border-panel-border rounded-xl bg-component-bg text-text-primary text-base focus:outline-none focus:ring-2 focus:ring-accent-color focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed placeholder-text-muted" 
+    />
   </div>
 );
 
 const CheckboxOption = ({ id, label, description, checked, onChange, disabled }: CheckboxOptionProps) => (
-  <label className="flex items-center gap-3 p-3 bg-component-bg rounded-lg border border-panel-border hover:border-accent-color transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50">
-    <input type="checkbox" id={id} checked={checked} onChange={(e) => onChange(e.target.checked)} disabled={disabled}
-      className="rounded border-panel-border bg-component-bg text-accent-color focus:ring-accent-color focus:ring-2 focus:ring-offset-2 focus:ring-offset-component-bg" />
+  <label className="flex items-start gap-4 p-4 bg-component-bg rounded-xl border border-panel-border hover:border-accent-color transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 group">
+    <input 
+      type="checkbox" 
+      id={id} 
+      checked={checked} 
+      onChange={(e) => onChange(e.target.checked)} 
+      disabled={disabled}
+      className="mt-1 rounded border-panel-border bg-component-bg text-accent-color focus:ring-accent-color focus:ring-2 focus:ring-offset-2 focus:ring-offset-component-bg transform scale-110" 
+    />
     <div className="flex-1">
-      <div className="text-sm font-medium text-text-primary">{label}</div>
-      <div className="text-xs text-text-muted">{description}</div>
+      <div className="text-base font-medium text-text-primary group-hover:text-accent-color transition-colors">{label}</div>
+      <div className="text-sm text-text-muted mt-1">{description}</div>
     </div>
   </label>
 );
 
 const FilesPreview = ({ githubForm, githubUser }: FilesPreviewProps) => (
   <div className="bg-component-bg rounded-xl border border-panel-border overflow-hidden">
-    <div className="p-4 border-b border-panel-border">
-      <p className="font-semibold text-text-primary flex items-center gap-2">
-        <FileText size={16} />
+    <div className="p-4 border-b border-panel-border bg-component-bg">
+      <p className="font-semibold text-text-primary flex items-center gap-3 text-base">
+        <FileText size={18} />
         Files to be created
       </p>
     </div>
     <div className="p-4">
       <ul className="space-y-3">
-        <li className="flex items-center gap-3 p-2 rounded-lg hover:bg-component-hover transition-colors">
-          <div className="w-2 h-2 bg-blue-500 rounded-full" aria-hidden="true"></div>
-          <code className="text-sm text-text-primary font-medium">index.html</code>
-          <span className="text-xs text-text-muted ml-auto">Your website</span>
+        <li className="flex items-center gap-4 p-3 rounded-lg hover:bg-component-hover transition-colors group">
+          <div className="w-3 h-3 bg-blue-500 rounded-full flex-shrink-0" aria-hidden="true"></div>
+          <code className="text-sm text-text-primary font-medium flex-1">index.html</code>
+          <span className="text-xs text-text-muted bg-component-bg px-2 py-1 rounded">Your website</span>
         </li>
-        <li className="flex items-center gap-3 p-2 rounded-lg hover:bg-component-hover transition-colors">
-          <div className="w-2 h-2 bg-green-500 rounded-full" aria-hidden="true"></div>
-          <code className="text-sm text-text-primary font-medium">README.md</code>
-          <span className="text-xs text-text-muted ml-auto">Project documentation</span>
+        <li className="flex items-center gap-4 p-3 rounded-lg hover:bg-component-hover transition-colors group">
+          <div className="w-3 h-3 bg-green-500 rounded-full flex-shrink-0" aria-hidden="true"></div>
+          <code className="text-sm text-text-primary font-medium flex-1">README.md</code>
+          <span className="text-xs text-text-muted bg-component-bg px-2 py-1 rounded">Project documentation</span>
         </li>
         {githubForm.deployPages && (
-          <li className="flex items-center gap-3 p-2 rounded-lg hover:bg-component-hover transition-colors">
-            <div className="w-2 h-2 bg-purple-500 rounded-full" aria-hidden="true"></div>
-            <code className="text-sm text-text-primary font-medium">.github/workflows/deploy.yml</code>
-            <span className="text-xs text-text-muted ml-auto">Deployment workflow</span>
+          <li className="flex items-center gap-4 p-3 rounded-lg hover:bg-component-hover transition-colors group">
+            <div className="w-3 h-3 bg-purple-500 rounded-full flex-shrink-0" aria-hidden="true"></div>
+            <code className="text-sm text-text-primary font-medium flex-1">.github/workflows/deploy.yml</code>
+            <span className="text-xs text-text-muted bg-component-bg px-2 py-1 rounded">Deployment workflow</span>
           </li>
         )}
       </ul>
       {githubForm.deployPages && githubForm.name && (
-        <div className="mt-4 p-3 bg-accent-color bg-opacity-5 rounded-lg border border-accent-color border-opacity-20">
-          <p className="text-sm text-text-primary font-medium mb-1">Your website will be available at:</p>
-          <code className="text-xs text-accent-color break-all bg-black bg-opacity-20 px-2 py-1 rounded">
+        <div className="mt-5 p-4 bg-accent-color bg-opacity-5 rounded-lg border border-accent-color border-opacity-20">
+          <p className="text-sm text-text-primary font-medium mb-2">Your website will be available at:</p>
+          <code className="text-sm text-accent-color break-all bg-black bg-opacity-10 px-3 py-2 rounded border border-accent-color border-opacity-20">
             https://{githubUser?.login}.github.io/{githubForm.name}/
           </code>
         </div>
@@ -279,17 +301,27 @@ const FilesPreview = ({ githubForm, githubUser }: FilesPreviewProps) => (
 );
 
 const ActionButtons = ({ isCreatingRepo, isValid, onCreateRepo, onCancel }: ActionButtonsProps) => (
-  <div className="flex gap-3 pt-2">
-    <button className="btn btn-outline flex-1 disabled:opacity-50 disabled:cursor-not-allowed" onClick={onCancel} disabled={isCreatingRepo}>Cancel</button>
-    <button className="btn btn-primary flex-1 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed" onClick={onCreateRepo} disabled={isCreatingRepo || !isValid}>
+  <div className="flex gap-4 pt-4">
+    <button 
+      className="btn btn-outline flex-1 disabled:opacity-50 disabled:cursor-not-allowed py-3 text-base" 
+      onClick={onCancel} 
+      disabled={isCreatingRepo}
+    >
+      Cancel
+    </button>
+    <button 
+      className="btn btn-primary flex-1 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed py-3 text-base" 
+      onClick={onCreateRepo} 
+      disabled={isCreatingRepo || !isValid}
+    >
       {isCreatingRepo ? (
         <>
-          <div className="loading-spinner w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-          Creating...
+          <div className="loading-spinner w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          Creating Repository...
         </>
       ) : (
         <>
-          <Github size={16} />
+          <Github size={18} />
           Create Repository
         </>
       )}
