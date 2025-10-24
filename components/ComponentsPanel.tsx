@@ -444,28 +444,45 @@ export default function ComponentsPanel({
     }
   };
 
-  const askAi = async () => {
-    if (!prompt.trim() || isRequesting || loading) return;
-    
-    setIsRequesting(true);
-    setLoading(true);
-    setResponse("");
+const askAi = async () => {
+  if (!prompt.trim() || isRequesting || loading) return;
+  
+  setIsRequesting(true);
+  setLoading(true);
+  setResponse("");
 
-    try {
-      const frameworkInstructions = framework === "react"
-        ? `You are an expert React developer. Create a React component with JSX and inline styles for: "${prompt}"
+  try {
+    const frameworkInstructions = framework === "react"
+      ? `You are an expert React developer. Create a complete, runnable React component for: "${prompt}"
+
 CRITICAL REQUIREMENTS FOR REACT:
-- Return ONLY the React JSX code with inline styles (style={{}})
-- No explanations, no markdown formatting, no backticks
-- Make it a functional component
-- Use modern React patterns
+- Create a COMPLETE React functional component that can run immediately
+- Use React.useState for state management
+- Include ALL necessary imports and rendering logic
+- Make it a complete, self-contained component
+- Use inline styles (style={{}})
 - Include proper event handlers if needed
 - Make it responsive and production-ready
 - Ensure good color contrast
 - Make it work on all screen sizes
 - Use camelCase for style properties
-- Include proper JSX syntax`
-        : `You are an expert web developer. Create responsive HTML with inline CSS for: "${prompt}"
+- Include proper JSX syntax
+
+EXAMPLE FORMAT:
+function MyComponent() {
+  const [state, setState] = React.useState(initialValue);
+  
+  return (
+    <div style={{ /* styles here */ }}>
+      {/* component content */}
+    </div>
+  );
+}
+
+// Render the component
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(React.createElement(MyComponent));`
+      : `You are an expert web developer. Create responsive HTML with inline CSS for: "${prompt}"
 CRITICAL REQUIREMENTS FOR HTML:
 - Return ONLY the HTML code with inline styles
 - No explanations, no markdown formatting, no backticks
@@ -475,97 +492,97 @@ CRITICAL REQUIREMENTS FOR HTML:
 - Ensure good color contrast
 - Make it work on all screen sizes`;
 
-      const messages = [{ role: "user" as const, content: frameworkInstructions }];
-      const response = await fetch('https://llm.jessejesse.workers.dev/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages }),
-      });
+    const messages = [{ role: "user" as const, content: frameworkInstructions }];
+    const response = await fetch('https://llm.jessejesse.workers.dev/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages }),
+    });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Worker API error: ${response.status} - ${errorText}`);
-      }
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Worker API error: ${response.status} - ${errorText}`);
+    }
 
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error("No response body received");
+    const reader = response.body?.getReader();
+    if (!reader) throw new Error("No response body received");
 
-      let fullContent = '';
-      const decoder = new TextDecoder();
+    let fullContent = '';
+    const decoder = new TextDecoder();
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
 
-        const chunk = decoder.decode(value);
-        const lines = chunk.split('\n');
+      const chunk = decoder.decode(value);
+      const lines = chunk.split('\n');
 
-        for (const line of lines) {
-          if (line.startsWith('data: ') && line !== 'data: [DONE]') {
-            try {
-              const data = JSON.parse(line.slice(6));
-              if (data.response) {
-                fullContent += data.response;
-                setResponse(fullContent);
-              }
-            } catch (e) {
-              // Ignore JSON parse errors for non-data lines
+      for (const line of lines) {
+        if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+          try {
+            const data = JSON.parse(line.slice(6));
+            if (data.response) {
+              fullContent += data.response;
+              setResponse(fullContent);
             }
+          } catch (e) {
+            // Ignore JSON parse errors for non-data lines
           }
         }
       }
-
-      reader.releaseLock();
-
-      if (!fullContent.trim()) {
-        throw new Error("Worker returned empty response");
-      }
-
-      const cleaned = fullContent
-        .replace(/```(html|css|js|jsx)?/gi, '')
-        .replace(/```/g, '')
-        .replace(/^`|`$/g, '')
-        .trim();
-
-      setResponse(cleaned);
-
-      const timestamp = new Date().toLocaleTimeString();
-      const frameworkLabel = framework === "react" ? "React" : "HTML";
-      onAiInsert(`\n<!-- AI Generated ${frameworkLabel} (${timestamp}): ${prompt.substring(0, 50)}... -->\n${cleaned}\n`);
-
-      if (mode === "chat") {
-        setChatHistory(prev => [
-          ...prev,
-          { role: "user", content: prompt },
-          { role: "assistant", content: cleaned }
-        ]);
-      }
-      
-      setPrompt("");
-    } catch (err) {
-      console.error("AI request failed:", err);
-      let userMessage = "An error occurred";
-      
-      if (err instanceof Error) {
-        if (err.message.includes('Failed to fetch')) {
-          userMessage = "Network error. Check your connection and API endpoint.";
-        } else if (err.message.includes('403')) {
-          userMessage = "Access denied. Check your worker configuration.";
-        } else if (err.message.includes('429')) {
-          userMessage = "Rate limit exceeded. Wait a moment before trying again.";
-        } else if (err.message.includes('404')) {
-          userMessage = "API endpoint not found. Check your worker URL.";
-        } else {
-          userMessage = err.message;
-        }
-      }
-      
-      setResponse(`Error: ${userMessage}`);
-    } finally {
-      setLoading(false);
-      setTimeout(() => setIsRequesting(false), 1000);
     }
-  };
+
+    reader.releaseLock();
+
+    if (!fullContent.trim()) {
+      throw new Error("Worker returned empty response");
+    }
+
+    const cleaned = fullContent
+      .replace(/```(html|css|js|jsx)?/gi, '')
+      .replace(/```/g, '')
+      .replace(/^`|`$/g, '')
+      .trim();
+
+    setResponse(cleaned);
+
+    const timestamp = new Date().toLocaleTimeString();
+    const frameworkLabel = framework === "react" ? "React" : "HTML";
+    onAiInsert(`\n<!-- AI Generated ${frameworkLabel} (${timestamp}): ${prompt.substring(0, 50)}... -->\n${cleaned}\n`);
+
+    if (mode === "chat") {
+      setChatHistory(prev => [
+        ...prev,
+        { role: "user", content: prompt },
+        { role: "assistant", content: cleaned }
+      ]);
+    }
+    
+    setPrompt("");
+  } catch (err) {
+    console.error("AI request failed:", err);
+    let userMessage = "An error occurred";
+    
+    if (err instanceof Error) {
+      if (err.message.includes('Failed to fetch')) {
+        userMessage = "Network error. Check your connection and API endpoint.";
+      } else if (err.message.includes('403')) {
+        userMessage = "Access denied. Check your worker configuration.";
+      } else if (err.message.includes('429')) {
+        userMessage = "Rate limit exceeded. Wait a moment before trying again.";
+      } else if (err.message.includes('404')) {
+        userMessage = "API endpoint not found. Check your worker URL.";
+      } else {
+        userMessage = err.message;
+      }
+    }
+    
+    setResponse(`Error: ${userMessage}`);
+  } finally {
+    setLoading(false);
+    setTimeout(() => setIsRequesting(false), 1000);
+  }
+};
 
   // Render methods
   const renderHeader = () => (
