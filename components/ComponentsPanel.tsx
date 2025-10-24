@@ -134,13 +134,8 @@ const useGitHubAuth = () => {
       localStorage.setItem("github_access_token", token);
       setGithubToken(token);
       fetchUserInfo(token);
-      
-      // Clean URL after successful auth
       const cleanUrl = window.location.pathname;
       window.history.replaceState({}, document.title, cleanUrl);
-      
-      // IMPORTANT: Return true to indicate OAuth completion
-      return true;
     }
     
     // Check for existing token in localStorage
@@ -150,16 +145,6 @@ const useGitHubAuth = () => {
       fetchUserInfo(storedToken);
     }
   }, []);
-
-
-useEffect(() => {
-  const params = new URLSearchParams(window.location.search);
-  const token = params.get("github_token");
-  
-  if (token) {
-    setShowGithubModal(true);
-  }
-}, []);
 
   const fetchUserInfo = async (token: string) => {
     try {
@@ -180,23 +165,6 @@ useEffect(() => {
 
   return { githubToken, setGithubToken, githubUser, setGithubUser, fetchUserInfo };
 };
-
-  const fetchUserInfo = async (token: string) => {
-    try {
-      const response = await fetch('https://api.github.com/user', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/vnd.github.v3+json'
-        }
-      });
-      if (response.ok) {
-        const user = await response.json();
-        setGithubUser(user);
-      }
-    } catch (error) {
-      console.error('Failed to fetch user info:', error);
-    }
-  };
 
 // Utility Functions
 const getComponentIcon = (componentKey: string): ReactElement => {
