@@ -365,7 +365,7 @@ function WelcomeApp() {
             marginLeft: 'auto',
             marginRight: 'auto'
           }}>
-            Build with React in real-time
+            Build React Components
           </p>
         </header>
 
