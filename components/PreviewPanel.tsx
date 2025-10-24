@@ -31,8 +31,8 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
     if (currentFramework === "react") {
       const reactCode = content.trim();
       
-      // Handle empty or invalid React code
-      if (!reactCode || reactCode === "" || reactCode === "// Welcome to React Mode!") {
+   
+      if (!reactCode || reactCode === "" || reactCode === "// studio.jessejesse.com") {
         return `
           <!DOCTYPE html>
           <html lang="en">
@@ -72,7 +72,7 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
         `;
       }
 
-      // Check if this looks like AI-generated React code (uses React.useState but missing render)
+     
       const isAiGenerated = reactCode.includes('React.useState') && 
                            !reactCode.includes('import React') && 
                            !reactCode.includes('ReactDOM.render') && 
@@ -81,7 +81,7 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
       let finalReactCode = reactCode;
 
       if (isAiGenerated) {
-        // Extract component name from function declaration
+
         let componentName = "App";
         const fnMatch = reactCode.match(/function\s+(\w+)/);
         if (fnMatch) componentName = fnMatch[1];
@@ -92,7 +92,7 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
 
         console.log('Detected AI-generated React code, component:', componentName);
         
-        // Wrap AI-generated code with proper React setup
+
         finalReactCode = `
           // Auto-wrapped AI-generated React component
           ${reactCode}
@@ -102,7 +102,7 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
           root.render(React.createElement(${componentName}));
         `;
       } else {
-        // Handle regular React code with existing render logic
+   
         const hasRender =
           reactCode.includes("ReactDOM.render") ||
           reactCode.includes("createRoot(");
@@ -122,7 +122,7 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
           }
         }
 
-        // Additional checks for component validity
+   
         if (!isValidComponent) {
           isValidComponent = reactCode.includes("function") || reactCode.includes("=>");
         }
@@ -213,7 +213,7 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
       `;
     }
 
-    // HTML mode - handle empty content
+ 
     const htmlContent = content.trim() === "" 
       ? `<div style="padding: 2rem; text-align: center; color: #64748b; font-family: system-ui;">
            <h2>HTML Mode</h2>
