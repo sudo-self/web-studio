@@ -1,17 +1,45 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback, ReactNode, Component } from "react";
 import ComponentsPanel from "@/components/ComponentsPanel";
 import EditorPanel from "@/components/EditorPanel";
 import PreviewPanel from "@/components/PreviewPanel";
 import StatusBar from "@/components/StatusBar";
 import SettingsPanel from "@/components/SettingsPanel";
 
-export default function Home() {
-  const [framework, setFramework] = useState("html");
-  
+// Types
+type Framework = "html" | "react";
 
-  const htmlCode = `<!-- Welcome to studio.jessejesse.com -->
+interface PanelWidths {
+  components: number;
+  editor: number;
+  preview: number;
+}
+
+interface FrameworkConfig {
+  name: string;
+  icon: string;
+  defaultCode: string;
+}
+
+// Constants
+const DEFAULT_PANEL_WIDTHS: PanelWidths = {
+  components: 300,
+  editor: 610,
+  preview: 400,
+};
+
+const MIN_MAX_WIDTHS = {
+  components: { min: 240, max: 500 },
+  editor: { min: 400, max: 800 },
+  preview: { min: 400, max: Infinity },
+} as const;
+
+const FRAMEWORK_CONFIGS: Record<Framework, FrameworkConfig> = {
+  html: {
+    name: "HTML",
+    icon: "🔶",
+    defaultCode: `<!-- Welcome to studio.jessejesse.com -->
 <div class="welcome-container">
   <div class="welcome-content">
     <!-- Main Header -->
@@ -36,7 +64,6 @@ export default function Home() {
       </span>
     </button>
 
- 
     <nav class="feature-nav">
       <a href="#" class="feature-link">
         <div class="feature-icon">
@@ -300,9 +327,12 @@ export default function Home() {
       }
     }
   </style>
-</div>`;
-
-  const reactCode = `// Welcome to studio.jessejesse.com
+</div>`
+  },
+  react: {
+    name: "React",
+    icon: "⚛️",
+    defaultCode: `// Welcome to studio.jessejesse.com
 function WelcomeApp() {
   return (
     <div style={{ 
@@ -389,7 +419,7 @@ function WelcomeApp() {
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
-            
+            Start Building
           </span>
         </button>
       </div>
@@ -399,47 +429,94 @@ function WelcomeApp() {
 
 // Render the app
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(React.createElement(WelcomeApp));`;
+root.render(React.createElement(WelcomeApp));`
+  }
+};
 
-  const [code, setCode] = useState(htmlCode); 
+// Error Boundary Component
+class PreviewErrorBoundary extends Component<
+  { children: ReactNode; framework: Framework },
+  { hasError: boolean; error?: Error }
+> {
+  constructor(props: { children: ReactNode; framework: Framework }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidUpdate(prevProps: { framework: Framework }) {
+    if (prevProps.framework !== this.props.framework) {
+      this.setState({ hasError: false });
+    }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="preview-error">
+          <h3>Error rendering {this.props.framework} code</h3>
+          <p>{this.state.error?.message}</p>
+          <button onClick={() => this.setState({ hasError: false })}>
+            Try Again
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+export default function Home() {
+  const [framework, setFramework] = useState<Framework>("html");
+  const [code, setCode] = useState(FRAMEWORK_CONFIGS.html.defaultCode);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [panelWidths, setPanelWidths] = useState({
-    components: 300,
-    editor: 610,
-    preview: 400,
-  });
-  const [resizingPanel, setResizingPanel] = useState<string | null>(null);
+  const [panelWidths, setPanelWidths] = useState<PanelWidths>(DEFAULT_PANEL_WIDTHS);
+  const [resizingPanel, setResizingPanel] = useState<keyof PanelWidths | null>(null);
+  const [codeHistory, setCodeHistory] = useState<string[]>([FRAMEWORK_CONFIGS.html.defaultCode]);
+  const [historyIndex, setHistoryIndex] = useState(0);
 
   const startXRef = useRef<number>(0);
-  const startWidthsRef = useRef(panelWidths);
+  const startWidthsRef = useRef<PanelWidths>(DEFAULT_PANEL_WIDTHS);
 
   // Update code when framework changes
   useEffect(() => {
-    if (framework === "react") {
-      setCode(reactCode);
-    } else {
-      setCode(htmlCode);
-    }
+    const newCode = FRAMEWORK_CONFIGS[framework].defaultCode;
+    setCode(newCode);
+    updateHistory(newCode);
   }, [framework]);
 
-  const runCode = () => {
+  // Enhanced code update with history
+  const updateCode = useCallback((newCode: string) => {
+    setCode(newCode);
+    updateHistory(newCode);
+  }, []);
+
+  const updateHistory = useCallback((newCode: string) => {
+    setCodeHistory(prev => [...prev.slice(0, historyIndex + 1), newCode]);
+    setHistoryIndex(prev => prev + 1);
+  }, [historyIndex]);
+
+  const runCode = useCallback(() => {
     setCode(prev => prev + "");
-  };
+  }, []);
 
-  const formatCode = () => {
+  const formatCode = useCallback(() => {
     const formatted = code.replace(/(>)(<)/g, "$1\n$2");
-    setCode(formatted);
-  };
+    updateCode(formatted);
+  }, [code, updateCode]);
 
-  const insertComponent = (html: string) => {
-    setCode(prev => prev + "\n" + html);
-  };
+  const insertComponent = useCallback((html: string) => {
+    updateCode(code + "\n" + html);
+  }, [code, updateCode]);
 
-  const insertAiCode = (html: string) => {
-    setCode(prev => prev + "\n" + html);
-  };
+  const insertAiCode = useCallback((html: string) => {
+    updateCode(code + "\n" + html);
+  }, [code, updateCode]);
 
-  const handleResizeStart = (panel: string, e: React.MouseEvent) => {
+  const handleResizeStart = useCallback((panel: keyof PanelWidths, e: React.MouseEvent) => {
     e.preventDefault();
     setResizingPanel(panel);
     startXRef.current = e.clientX;
@@ -447,49 +524,61 @@ root.render(React.createElement(WelcomeApp));`;
 
     document.body.style.cursor = "col-resize";
     document.body.style.userSelect = "none";
-  };
+  }, [panelWidths]);
+
+  const handleResizeMove = useCallback((e: MouseEvent) => {
+    if (!resizingPanel) return;
+
+    const deltaX = e.clientX - startXRef.current;
+    
+    setPanelWidths((prev) => {
+      const newWidths = { ...prev };
+      const { min, max } = MIN_MAX_WIDTHS[resizingPanel];
+      
+      const newWidth = Math.max(min, Math.min(max, startWidthsRef.current[resizingPanel] + deltaX));
+      newWidths[resizingPanel] = newWidth;
+      
+      return newWidths;
+    });
+  }, [resizingPanel]);
+
+  const handleResizeEnd = useCallback(() => {
+    setResizingPanel(null);
+    document.body.style.cursor = "";
+    document.body.style.userSelect = "";
+  }, []);
 
   useEffect(() => {
     if (!resizingPanel) return;
 
-    const handleMouseMove = (e: MouseEvent) => {
-      const deltaX = e.clientX - startXRef.current;
-
-      setPanelWidths((prev) => {
-        const newWidths = { ...prev };
-
-        if (resizingPanel === "components") {
-          const newWidth = Math.max(
-            240,
-            Math.min(500, startWidthsRef.current.components + deltaX)
-          );
-          newWidths.components = newWidth;
-        } else if (resizingPanel === "editor") {
-          const newWidth = Math.max(
-            400,
-            Math.min(800, startWidthsRef.current.editor + deltaX)
-          );
-          newWidths.editor = newWidth;
-        }
-
-        return newWidths;
-      });
-    };
-
-    const handleMouseUp = () => {
-      setResizingPanel(null);
-      document.body.style.cursor = "";
-      document.body.style.userSelect = "";
-    };
-
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
+    document.addEventListener("mousemove", handleResizeMove);
+    document.addEventListener("mouseup", handleResizeEnd);
 
     return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
+      document.removeEventListener("mousemove", handleResizeMove);
+      document.removeEventListener("mouseup", handleResizeEnd);
     };
-  }, [resizingPanel]);
+  }, [resizingPanel, handleResizeMove, handleResizeEnd]);
+
+  // Undo/Redo functionality
+  const canUndo = historyIndex > 0;
+  const canRedo = historyIndex < codeHistory.length - 1;
+
+  const handleUndo = useCallback(() => {
+    if (canUndo) {
+      const prevIndex = historyIndex - 1;
+      setHistoryIndex(prevIndex);
+      setCode(codeHistory[prevIndex]);
+    }
+  }, [canUndo, historyIndex, codeHistory]);
+
+  const handleRedo = useCallback(() => {
+    if (canRedo) {
+      const nextIndex = historyIndex + 1;
+      setHistoryIndex(nextIndex);
+      setCode(codeHistory[nextIndex]);
+    }
+  }, [canRedo, historyIndex, codeHistory]);
 
   return (
     <>
@@ -499,8 +588,8 @@ root.render(React.createElement(WelcomeApp));`;
             className="panel components-panel"
             style={{
               width: `${panelWidths.components}px`,
-              minWidth: "240px",
-              maxWidth: "500px",
+              minWidth: `${MIN_MAX_WIDTHS.components.min}px`,
+              maxWidth: `${MIN_MAX_WIDTHS.components.max}px`,
               flex: "0 0 auto",
             }}
           >
@@ -523,19 +612,23 @@ root.render(React.createElement(WelcomeApp));`;
             className="panel editor-panel"
             style={{
               width: `${panelWidths.editor}px`,
-              minWidth: "400px",
-              maxWidth: "800px",
+              minWidth: `${MIN_MAX_WIDTHS.editor.min}px`,
+              maxWidth: `${MIN_MAX_WIDTHS.editor.max}px`,
               flex: "0 0 auto",
             }}
           >
             <EditorPanel
               code={code}
-              setCode={setCode}
+              setCode={updateCode}
               runCode={runCode}
               formatCode={formatCode}
               onResizeStart={(e) => handleResizeStart("editor", e)}
               framework={framework}
               setFramework={setFramework}
+              onUndo={handleUndo}
+              onRedo={handleRedo}
+              canUndo={canUndo}
+              canRedo={canRedo}
             />
           </div>
 
@@ -546,17 +639,26 @@ root.render(React.createElement(WelcomeApp));`;
 
           <div
             className="panel preview-panel"
-            style={{ flex: 1, minWidth: "400px" }}
+            style={{ 
+              flex: 1, 
+              minWidth: `${MIN_MAX_WIDTHS.preview.min}px` 
+            }}
           >
-            <PreviewPanel
-              code={code}
-              onResizeStart={(e) => handleResizeStart("preview", e)}
-              framework={framework}
-            />
+            <PreviewErrorBoundary framework={framework}>
+              <PreviewPanel
+                code={code}
+                onResizeStart={(e) => handleResizeStart("preview", e)}
+                framework={framework}
+              />
+            </PreviewErrorBoundary>
           </div>
         </div>
 
-        <StatusBar />
+        <StatusBar 
+          framework={framework}
+          codeLength={code.length}
+          historyInfo={{ canUndo, canRedo, position: historyIndex, total: codeHistory.length }}
+        />
       </div>
 
       <SettingsPanel
@@ -565,6 +667,25 @@ root.render(React.createElement(WelcomeApp));`;
       />
 
       <style jsx global>{`
+        .app-container {
+          display: flex;
+          flex-direction: column;
+          height: 100vh;
+          overflow: hidden;
+        }
+
+        .main-content {
+          display: flex;
+          flex: 1;
+          overflow: hidden;
+        }
+
+        .panel {
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+
         .resize-handle {
           width: 8px;
           cursor: col-resize;
@@ -593,6 +714,44 @@ root.render(React.createElement(WelcomeApp));`;
         .resize-handle:hover::before {
           background: white;
           opacity: 1;
+        }
+
+        .preview-error {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: 100%;
+          padding: 2rem;
+          text-align: center;
+          background: #fef2f2;
+          color: #dc2626;
+        }
+
+        .preview-error h3 {
+          margin: 0 0 1rem 0;
+          font-size: 1.25rem;
+        }
+
+        .preview-error p {
+          margin: 0 0 1.5rem 0;
+          font-family: monospace;
+          background: #fecaca;
+          padding: 0.5rem 1rem;
+          border-radius: 4px;
+        }
+
+        .preview-error button {
+          background: #dc2626;
+          color: white;
+          border: none;
+          padding: 0.5rem 1rem;
+          border-radius: 4px;
+          cursor: pointer;
+        }
+
+        .preview-error button:hover {
+          background: #b91c1c;
         }
 
         body.resizing {
