@@ -174,9 +174,6 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
                 <img src="./html5.svg" className="w-6 h-6" alt="HTML5" />
               )}
               <h2 className="text-lg font-semibold text-text-primary">Preview</h2>
-              <span className="text-sm text-text-tertiary bg-surface-tertiary px-2 py-1 rounded border border-border-primary">
-                {framework === "react" ? "React" : "HTML"}
-              </span>
             </div>
   <div className="flex gap-2">
     <button 
