@@ -302,7 +302,7 @@ export default function Home() {
   </style>
 </div>`;
 
-const reactCode = `// React Mode
+const reactCode = `// React App
 function WelcomeApp() {
   return React.createElement('div', { 
     style: { 
