@@ -438,19 +438,21 @@ export default function EditorPanel({
         }
 
   
-        .token.comment { color: #6a737d; }
-        .token.punctuation { color: var(--text-primary); }
-        .token.tag { color: #e06c75; }
-        .token.attr-name { color: #d19a66; }
-        .token.attr-value { color: #98c379; }
-        .token.keyword { color: #d73a49; }
-        .token.function { color: #6f42c1; }
-        .token.selector { color: #32a852; }
-        .token.property { color: #22863a; }
-        .token.string { color: #032f62; }
-        .token.operator { color: #d73a49; }
-        .token.number { color: #005cc5; }
-        .token.boolean { color: #d73a49; }
+/* syntax highlighting */ 
+
+.token.comment { color: #6a737d; }
+.token.punctuation { color: var(--text-primary); }
+.token.tag { color: #e06c75; }
+.token.attr-name { color: #d19a66; }
+.token.attr-value { color: rgb(6, 182, 212); } 
+.token.keyword { color: #d73a49; }
+.token.function { color: #6f42c1; }
+.token.selector { color: #32a852; }
+.token.property { color: rgb(6, 182, 212); }
+.token.string { color: rgb(6, 182, 212); } 
+.token.operator { color: #d73a49; }
+.token.number { color: rgb(6, 182, 212); }
+.token.boolean { color: #d73a49; }
       `}</style>
     </div>
   );
