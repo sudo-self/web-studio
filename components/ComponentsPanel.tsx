@@ -20,6 +20,7 @@ const componentCategories: ComponentCategories = {
   "Content": ["card", "gallery", "team", "testimonials", "stats", "timeline", "faq"],
   "Forms": ["contact", "login-form", "newsletter", "search-bar", "toggle-switch"],
   "UI Components": ["modal", "progress", "pricing", "primary-button", "secondary-button", "button-group"],
+  "React Components": ["react-counter"],
   "Documentation": ["readme-basic", "readme-advanced"],
   "SEO": ["seo", "seo-schema"],
   "Icons": ["social-icons", "feature-icons", "font-icons"]
@@ -719,6 +720,41 @@ const componentCategories: ComponentCategories = {
       }
     };
 
+const reactComponents: { [key: string]: ComponentInfo } = {
+  "react-counter": {
+    code: `function App() {
+  const [count, setCount] = useState(0);
+  
+  return (
+    <div style={{ padding: '40px', textAlign: 'center', fontFamily: 'system-ui', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+      <h1 style={{ color: 'white', fontSize: '3rem', marginBottom: '30px' }}>Counter: {count}</h1>
+      <div style={{ display: 'flex', gap: '15px' }}>
+        <button onClick={() => setCount(count - 1)} style={{ padding: '15px 30px', fontSize: '18px', cursor: 'pointer', background: '#ef4444', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '600' }}>-</button>
+        <button onClick={() => setCount(0)} style={{ padding: '15px 30px', fontSize: '18px', cursor: 'pointer', background: '#64748b', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '600' }}>Reset</button>
+        <button onClick={() => setCount(count + 1)} style={{ padding: '15px 30px', fontSize: '18px', cursor: 'pointer', background: '#10b981', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '600' }}>+</button>
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(React.createElement(App));`,
+    description: "Interactive counter component",
+    tags: ["react", "counter", "state"]
+  }
+};
+
+
+
+
+
+
+
+const allComponents = {
+  ...components,
+  ...reactComponents
+};
+
 
 type AiMode = "response" | "chat";
 type ChatRole = "user" | "assistant";
@@ -847,7 +883,7 @@ const useGitHubAuth = () => {
       window.history.replaceState({}, document.title, cleanUrl);
     }
     
-    // Check for existing token in localStorage
+  
     const storedToken = localStorage.getItem("github_access_token");
     if (storedToken && !githubToken) {
       setGithubToken(storedToken);
@@ -974,7 +1010,7 @@ jobs:
   return files;
 };
 
-// Main Component
+
 export default function ComponentsPanel({
   onInsert,
   onAiInsert,
@@ -985,7 +1021,7 @@ export default function ComponentsPanel({
 }: ComponentsPanelProps) {
   const { settings } = useSettings();
   
-  // State management
+
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState("");
@@ -1002,7 +1038,7 @@ export default function ComponentsPanel({
   const [favorites, setFavorites] = useLocalStorageState<Set<string>>('component-favorites', new Set());
   const [recentComponents, setRecentComponents] = useLocalStorageState<string[]>('recent-components', []);
   const [githubForm, setGithubForm] = useState<GitHubFormData>({
-    name: 'web-studio-project',
+    name: 'web-studio',
     description: 'Project created with AI Web Studio',
     isPublic: true,
     deployPages: true
@@ -1042,7 +1078,7 @@ export default function ComponentsPanel({
     return filtered;
   }, [searchTerm]);
 
-  // Event handlers
+
   const toggleFavorite = (componentKey: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setFavorites(prev => {
@@ -1377,19 +1413,10 @@ export default function ComponentsPanel({
   target="_blank"
   rel="noopener noreferrer"
   className="inline-block hover:opacity-80 transition-opacity"
-><img src="https://img.shields.io/badge/npx-create--next--app%40latest-blue" alt="npx - create--next--app@latest" />
+><img src="https://img.shields.io/badge/npx-create--next--app%40latest-inactive?logo=npm" alt="npx - create--next--app@latest" />
 </a>
         </div>
-        <div className="flex items-center gap-1">
-      
-          <button
-            onClick={onOpenSettings}
-            className="!p-1.5 hover:bg-component-hover rounded transition-colors"
-            title="Settings"
-          >
-            <Settings size={18} />
-          </button>
-        </div>
+        
       </div>
       {searchTerm !== '' && (
         <div className="mt-2 relative">
@@ -1401,12 +1428,6 @@ export default function ComponentsPanel({
             className="w-full pl-2 pr-6 py-1 bg-component-bg border border-panel-border rounded text-xs focus:outline-none focus:border-accent-color text-foreground"
             autoFocus
           />
-          <button
-            onClick={() => setSearchTerm('')}
-            className="absolute right-1 top-1/2 transform -translate-y-1/2 text-text-muted hover:text-foreground text-xs"
-          >
-            ×
-          </button>
         </div>
       )}
     </div>
@@ -1417,7 +1438,7 @@ export default function ComponentsPanel({
       <div className="components-list">
         {Object.entries(filteredComponents).map(([category, keys]) => (
           <div key={category} className="component-category">
-            <div className="category-title">{category}</div>
+            <div className="category-title"></div>
             {keys.map((key) => (
               <div
                 key={key}
@@ -1436,132 +1457,145 @@ export default function ComponentsPanel({
     </div>
   );
 
-const renderAISection = () => (
-  <div className="ai-section">
-    <div className="panel-header">
-      <div className="flex items-center justify-between w-full">
-        <div className="grid grid-cols-2 gap-2 w-full">
-     
-        <BuildPrompts onPromptSelect={setPrompt} framework={framework} />
-                               
-          <button
-            className="btn btn-outline btn-sm flex items-center gap-2 justify-center"
-            onClick={() => setShowGithubModal(true)}
-          >
-                               <img src="https://img.shields.io/badge/-Github%20Repo-grey?logo=github" alt=" - GitHub Login" />
-          </button>
-          
-      
-          <button
-            className="btn btn-outline btn-sm flex items-center gap-2 justify-center"
-            onClick={() => setShowPdfGenerator(true)}
-          >
-                               <img src="https://img.shields.io/badge/image%20to-PDF-success" alt="image to - PDF" />
-          </button>
-          <button
-            className="btn btn-outline btn-sm flex items-center gap-2 justify-center"
-            onClick={() => setShowBadgeBuilder(true)}
-          >
-                               <img src="https://img.shields.io/badge/BADGE-BUILDER-blue?style=flat-square" alt="BADGE - BUILDER" />
-          </button>
+    const renderAISection = () => (
+      <div className="ai-section">
+        <div className="panel-header">
+          <div className="flex items-center justify-between w-full">
+            <div className="grid grid-cols-2 gap-2 w-full">
+              <BuildPrompts onPromptSelect={setPrompt} framework={framework} />
+                                   
+              <button
+                className="flex items-center justify-center p-0"
+                onClick={() => setShowGithubModal(true)}
+              >
+                <img
+                  src="https://img.shields.io/badge/Create Repo--lightgrey?style=plastic&logo=github"
+                  alt="Repository"
+                  className="w-full h-full"
+                />
+              </button>
+              
+                                   <button
+                                     className="flex items-center justify-center p-0"
+                                     onClick={() => setShowPdfGenerator(true)}
+                                   >
+                                     <img
+                                       src="https://img.shields.io/badge/image%20to-PDF-red?style=plastic"
+                                       alt="image to PDF"
+                                       className="w-full h-full"
+                                     />
+                                   </button>
+              
+              <button
+                className="flex items-center justify-center p-0"
+                onClick={() => setShowBadgeBuilder(true)}
+              >
+                <img
+                  src="https://img.shields.io/badge/Badge-Builder-pink?style=plastic"
+                  alt="Badge Builder"
+                  className="w-full h-full"
+                />
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <div className="mode-toggle">
-      <label className="mode-option">
-        <input
-          type="radio"
-          value="response"
-          checked={mode === "response"}
-          onChange={() => setMode("response")}
-          disabled={loading || isRequesting}
-        />
-        Stateless
-      </label>
-      <label className="mode-option">
-        <input
-          type="radio"
-          value="chat"
-          checked={mode === "chat"}
-          onChange={() => setMode("chat")}
-          disabled={loading || isRequesting}
-        />
-        Persist
-      </label>
-    </div>
+        {/* Rest of your existing code remains the same */}
+        <div className="mode-toggle">
+          <label className="mode-option">
+            <input
+              type="radio"
+              value="response"
+              checked={mode === "response"}
+              onChange={() => setMode("response")}
+              disabled={loading || isRequesting}
+            />
+            Stateless
+          </label>
+          <label className="mode-option">
+            <input
+              type="radio"
+              value="chat"
+              checked={mode === "chat"}
+              onChange={() => setMode("chat")}
+              disabled={loading || isRequesting}
+            />
+            Persist
+          </label>
+        </div>
 
-    <div className="relative">
-      <textarea
-        className="prompt-textarea"
-        placeholder="describe what to create..."
-        value={prompt}
-        onChange={(e) => setPrompt(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+        <div className="relative">
+          <textarea
+            className="prompt-textarea"
+            placeholder="describe what to create..."
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                if (!isRequesting && !loading && prompt.trim()) {
+                  askAi();
+                }
+              }
+            }}
+            disabled={loading || isRequesting}
+          />
+          <div className="text-xs text-text-muted mt-1 px-1 flex justify-between">
+            <span className="flex items-center gap-1">
+              <img src="./workers.svg" className="w-6 h-6" alt="Meta" />
+              llama-3.3-70b-instruct-fp8-fast
+            </span>
+            {(loading || isRequesting) && <span className="text-accent-color">●</span>}
+          </div>
+        </div>
+
+        <button
+          className="btn btn-outline flex items-center gap-2"
+          onClick={(e) => {
             e.preventDefault();
+            e.stopPropagation();
             if (!isRequesting && !loading && prompt.trim()) {
               askAi();
             }
-          }
-        }}
-        disabled={loading || isRequesting}
-      />
-    <div className="text-xs text-text-muted mt-1 px-1 flex justify-between">
-  <span className="flex items-center gap-1">
-    <img src="./workers.svg" className="w-6 h-6" alt="Meta" />
-    llama-3.3-70b-instruct-fp8-fast
-  </span>
-  {(loading || isRequesting) && <span className="text-accent-color">●</span>}
-</div>
-    </div>
+          }}
+          disabled={loading || isRequesting || !prompt.trim()}
+          style={{ opacity: (loading || isRequesting || !prompt.trim()) ? 0.5 : 1 }}
+        >
+          <img src="./metasvg.svg" className="w-6 h-6" alt="Meta AI" />
+          {loading ? "Generating..." : isRequesting ? "Please wait..." : "Meta Build"}
+        </button>
 
-                               <button
-                                 className="btn btn-outline flex items-center gap-2"
-                                 onClick={(e) => {
-                                   e.preventDefault();
-                                   e.stopPropagation();
-                                   if (!isRequesting && !loading && prompt.trim()) {
-                                     askAi();
-                                   }
-                                 }}
-                                 disabled={loading || isRequesting || !prompt.trim()}
-                                 style={{ opacity: (loading || isRequesting || !prompt.trim()) ? 0.5 : 1 }}
-                               >
-                                 <img src="./metasvg.svg" className="w-6 h-6" alt="Meta AI" />
-                                 {loading ? "Generating..." : isRequesting ? "Please wait..." : "Meta Build"}
-                               </button>
-
-   {response && (
-  <div>
-    <div className="response-label flex items-center gap-2">
-      Meta AI
-    </div>
-    <div className="ai-response">{response}</div>
-  </div>
-)}
-    {mode === "chat" && chatHistory.length > 0 && (
-      <div>
-        <div className="response-label flex justify-between items-center">
-          <span>Chat History</span>
-          <button onClick={() => setChatHistory([])} className="text-xs text-text-muted hover:text-foreground">
-            Clear
-          </button>
-        </div>
-        <div className="chat-history">
-          {chatHistory.map((msg, i) => (
-            <div key={i} className={`chat-message ${msg.role}`}>
-              <div className={`message-role ${msg.role}`}>
-                {msg.role.toUpperCase()}
-              </div>
-              <div>{msg.content}</div>
+        {response && (
+          <div>
+            <div className="response-label flex items-center gap-2">
+              Meta AI
             </div>
-          ))}
-        </div>
+            <div className="ai-response">{response}</div>
+          </div>
+        )}
+        
+        {mode === "chat" && chatHistory.length > 0 && (
+          <div>
+            <div className="response-label flex justify-between items-center">
+              <span>Chat History</span>
+              <button onClick={() => setChatHistory([])} className="text-xs text-text-muted hover:text-foreground">
+                Clear
+              </button>
+            </div>
+            <div className="chat-history">
+              {chatHistory.map((msg, i) => (
+                <div key={i} className={`chat-message ${msg.role}`}>
+                  <div className={`message-role ${msg.role}`}>
+                    {msg.role.toUpperCase()}
+                  </div>
+                  <div>{msg.content}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-    )}
-  </div>
-);
+    );
 
  return (
   <div className="flex flex-col h-full overflow-hidden relative">

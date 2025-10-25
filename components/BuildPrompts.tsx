@@ -5,7 +5,7 @@ import { X } from "lucide-react";
 
 interface BuildPromptsProps {
   onPromptSelect: (prompt: string) => void;
-  framework: string; // Add framework prop
+  framework: string;
 }
 
 const htmlPromptCategories = {
@@ -68,11 +68,9 @@ const reactPromptCategories = {
 
 export default function BuildPrompts({ onPromptSelect, framework }: BuildPromptsProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [popoverPosition, setPopoverPosition] = useState<'right' | 'left'>('right');
   const popoverRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  // Choose prompts based on framework
   const promptCategories = framework === "react" ? reactPromptCategories : htmlPromptCategories;
 
   const handlePromptClick = (prompt: string) => {
@@ -81,20 +79,6 @@ export default function BuildPrompts({ onPromptSelect, framework }: BuildPrompts
   };
 
   useEffect(() => {
-    const calculatePopoverPosition = () => {
-      if (buttonRef.current && popoverRef.current) {
-        const buttonRect = buttonRef.current.getBoundingClientRect();
-        const popoverWidth = 400;
-        const spaceOnRight = window.innerWidth - buttonRect.right;
-        
-        if (spaceOnRight < popoverWidth && buttonRect.left > popoverWidth) {
-          setPopoverPosition('left');
-        } else {
-          setPopoverPosition('right');
-        }
-      }
-    };
-
     const handleClickOutside = (event: MouseEvent) => {
       if (
         popoverRef.current &&
@@ -107,12 +91,8 @@ export default function BuildPrompts({ onPromptSelect, framework }: BuildPrompts
     };
 
     if (isOpen) {
-      calculatePopoverPosition();
-      window.addEventListener('resize', calculatePopoverPosition);
       document.addEventListener('mousedown', handleClickOutside);
-      
       return () => {
-        window.removeEventListener('resize', calculatePopoverPosition);
         document.removeEventListener('mousedown', handleClickOutside);
       };
     }
@@ -120,72 +100,192 @@ export default function BuildPrompts({ onPromptSelect, framework }: BuildPrompts
 
   return (
     <div className="relative">
+      {/* Button matching Badge Builder style */}
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="btn btn-outline btn-sm flex items-center gap-2"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '10px 16px',
+          borderRadius: 'var(--radius-lg)',
+          fontWeight: 600,
+          fontSize: '14px',
+          border: '1px solid var(--border-primary)',
+          backgroundColor: 'var(--surface-primary)',
+          color: 'var(--text-primary)',
+          cursor: 'pointer',
+          fontFamily: 'var(--font-sans)',
+          transition: 'all var(--transition-normal)',
+          width: '100%',
+          justifyContent: 'center'
+        }}
+        onMouseOver={(e) => {
+          e.currentTarget.style.backgroundColor = 'var(--surface-secondary)';
+          e.currentTarget.style.borderColor = 'var(--interactive-accent)';
+        }}
+        onMouseOut={(e) => {
+          e.currentTarget.style.backgroundColor = 'var(--surface-primary)';
+          e.currentTarget.style.borderColor = 'var(--border-primary)';
+        }}
       >
-        {framework === "react" ? "React Prompts" : "HTML Prompts"}
+        <img
+          src={framework === "react" ? "./react.svg" : "./html5.svg"}
+          alt={`${framework} icon`}
+          style={{ width: '16px', height: '16px' }}
+        />
+        {framework === "react" ? "Prompts" : "Prompts"}
       </button>
 
       {isOpen && (
         <div
           ref={popoverRef}
-          className={`
-            absolute z-50 w-96 bg-black border border-border-primary 
-            rounded-xl shadow-xl flex flex-col max-h-[80vh] transition-all duration-200
-            ${popoverPosition === 'right' 
-              ? 'left-full ml-2' 
-              : 'right-full mr-2'
-            }
-            ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}
-          `}
           style={{
-            top: '50%',
-            transform: 'translateY(-50%)'
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            marginTop: '8px',
+            width: '400px',
+            backgroundColor: 'var(--surface-card)',
+            borderRadius: 'var(--radius-xl)',
+            border: '1px solid var(--border-primary)',
+            boxShadow: 'var(--shadow-xl)',
+            zIndex: 50,
+            fontFamily: 'var(--font-sans)'
           }}
         >
-          <div className="flex items-center justify-between p-4 border-b border-border-primary bg-black rounded-t-xl">
-            <div className="flex items-center gap-2">
-              <h4 className="text-sm font-semibold text-text-primary">
-                {framework === "react" ? "React" : "HTML"} Builder Prompts
-              </h4>
+          {/* Header with SVG icon */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '20px',
+            borderBottom: '1px solid var(--border-primary)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{
+                    padding: '12px',
+                    borderRadius: 'var(--radius-xl)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    <img
+                      src={framework === "react" ? "./react.svg" : "./html5.svg"}
+                      alt={`${framework} icon`}
+                      style={{ width: '25px', height: '25px' }}
+                    />
+                  </div>
+              <div>
+                <p style={{
+                  fontSize: '12px',
+                  color: 'var(--text-muted)',
+                  margin: 0
+                }}>
+                  Click any prompt to have AI generate the code
+                </p>
+              </div>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="p-1 hover:bg-gray-800 rounded-lg transition-colors"
-              aria-label="Close prompts"
+              style={{
+                padding: '8px',
+                borderRadius: 'var(--radius-md)',
+                border: 'none',
+                backgroundColor: 'transparent',
+                color: 'var(--text-tertiary)',
+                cursor: 'pointer',
+                transition: 'all var(--transition-normal)'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--surface-tertiary)';
+                e.currentTarget.style.color = 'var(--text-primary)';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = 'var(--text-tertiary)';
+              }}
             >
-              <X size={16} className="text-text-secondary" />
+              <X size={18} />
             </button>
           </div>
 
-          <div className="overflow-y-auto flex-1 p-4 space-y-4 bg-black">
-            {Object.entries(promptCategories).map(([category, prompts]) => (
-              <div key={category} className="space-y-2">
-                <h5 className="text-xs font-medium text-interactive-accent uppercase tracking-wide">
-                  {category}
-                </h5>
-                <div className="space-y-1">
-                  {prompts.map((prompt, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handlePromptClick(prompt)}
-                      className="w-full text-left p-3 text-sm text-text-primary hover:bg-gray-800 rounded-lg border border-transparent hover:border-border-primary transition-all duration-150"
-                    >
-                      {prompt}
-                    </button>
-                  ))}
+          {/* Content Area */}
+          <div style={{
+            maxHeight: '400px',
+            overflowY: 'auto',
+            padding: '20px'
+          }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              {Object.entries(promptCategories).map(([category, prompts]) => (
+                <div key={category} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <h4 style={{
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    color: 'var(--interactive-accent)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    margin: 0
+                  }}>
+                    {category}
+                  </h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {prompts.map((prompt, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handlePromptClick(prompt)}
+                        style={{
+                          width: '100%',
+                          textAlign: 'left',
+                          padding: '12px 16px',
+                          borderRadius: 'var(--radius-lg)',
+                          border: '1px solid var(--border-primary)',
+                          backgroundColor: 'var(--surface-primary)',
+                          color: 'var(--text-primary)',
+                          fontSize: '14px',
+                          cursor: 'pointer',
+                          transition: 'all var(--transition-normal)',
+                          fontFamily: 'inherit'
+                        }}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.backgroundColor = 'var(--surface-secondary)';
+                          e.currentTarget.style.borderColor = 'var(--interactive-accent)';
+                          e.currentTarget.style.transform = 'translateY(-1px)';
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.backgroundColor = 'var(--surface-primary)';
+                          e.currentTarget.style.borderColor = 'var(--border-primary)';
+                          e.currentTarget.style.transform = 'translateY(0)';
+                        }}
+                      >
+                        {prompt}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
-          <div className="p-3 border-t border-border-primary bg-black rounded-b-xl">
-            <p className="text-xs text-text-muted text-center">
+          {/* Footer */}
+          <div style={{
+            padding: '16px 20px',
+            borderTop: '1px solid var(--border-primary)',
+            backgroundColor: 'var(--surface-secondary)',
+            borderBottomLeftRadius: 'var(--radius-xl)',
+            borderBottomRightRadius: 'var(--radius-xl)'
+          }}>
+            <p style={{
+              fontSize: '12px',
+              color: 'var(--text-muted)',
+              textAlign: 'center',
+              margin: 0
+            }}>
               {framework === "react"
-                ? "Click any prompt to generate React component"
-                : "Click any prompt to generate HTML"}
+                ? "Prompts will generate React components with inline styles"
+                : "Prompts will generate responsive HTML with inline CSS"
+              }
             </p>
           </div>
         </div>
