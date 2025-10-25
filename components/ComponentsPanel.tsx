@@ -928,7 +928,7 @@ const createProjectFiles = (
   githubUser: any,
   githubForm: GitHubFormData
 ) => {
-  const badge = '<img src="https://img.shields.io/badge/made%20with-studio.jessejesse.com-blue?style=flat" alt="made with studio.jessejesse.com" />';
+  const badge = '<img src="https://img.shields.io/badge/npx-create--next--app%40latest-lightgrey?style=plastic" alt="npx - create--next--app@latest" />';
 
   const pagesSection = deployPages
     ? `## GitHub Pages Deployment\n\nYour site will be automatically deployed to GitHub Pages at:\n\nhttps://${githubUser?.login}.github.io/${githubForm.name}/\n\nThe deployment will start automatically when you push to the main branch.`
@@ -1021,7 +1021,6 @@ export default function ComponentsPanel({
 }: ComponentsPanelProps) {
   const { settings } = useSettings();
   
-
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState("");
@@ -1057,7 +1056,6 @@ export default function ComponentsPanel({
     }
   }, []);
 
- 
   const filteredComponents = useMemo(() => {
     if (!searchTerm) return componentCategories;
     
@@ -1077,7 +1075,6 @@ export default function ComponentsPanel({
     });
     return filtered;
   }, [searchTerm]);
-
 
   const toggleFavorite = (componentKey: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -1211,212 +1208,205 @@ export default function ComponentsPanel({
     }
   };
 
-    const askAi = async () => {
-      if (!prompt.trim()) {
-        setResponse("Please enter a prompt");
-        return;
-      }
-      if (isRequesting || loading) {
-        console.log("Request already in progress, ignoring...");
-        return;
-      }
-      setIsRequesting(true);
-      setLoading(true);
-      setResponse("");
-      
-      try {
-        console.log("Sending AI request:", {
-          prompt: prompt.substring(0, 100),
-          mode,
-          framework,
-          timestamp: new Date().toISOString()
-        });
-        
-     
-        const systemPrompt = framework === "react"
-          ? `You are an expert React developer. Create a React component for: "${prompt}"
-
-    CRITICAL REQUIREMENTS FOR REACT:
-    - Return ONLY the React component code
-    - Component must be named "App"
-    - Use functional component with hooks
-    - Use inline styles as JavaScript objects (not strings)
-    - Include useState, useEffect if needed
-    - NO imports (React and hooks are globally available)
-    - End with these exact lines:
-
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(React.createElement(App));
-
-    Example structure:
-    function App() {
-      const [state, setState] = useState(initialValue);
-      
-      return (
-        <div style={{ padding: '20px' }}>
-          {/* Your JSX here */}
-        </div>
-      );
+  const askAi = async () => {
+    if (!prompt.trim()) {
+      setResponse("Please enter a prompt");
+      return;
     }
+    if (isRequesting || loading) {
+      console.log("Request already in progress, ignoring...");
+      return;
+    }
+    setIsRequesting(true);
+    setLoading(true);
+    setResponse("");
+    
+    try {
+      console.log("Sending AI request:", {
+        prompt: prompt.substring(0, 100),
+        mode,
+        framework,
+        timestamp: new Date().toISOString()
+      });
+      
+      const systemPrompt = framework === "react"
+        ? `You are an expert React developer. Create a React component for: "${prompt}"
 
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(React.createElement(App));`
-          : `You are an expert web developer. Create responsive HTML with inline CSS for: "${prompt}"
+CRITICAL REQUIREMENTS FOR REACT:
+- Return ONLY the React component code
+- Component must be named "App"
+- Use functional component with hooks
+- Use inline styles as JavaScript objects (not strings)
+- Include useState, useEffect if needed
+- NO imports (React and hooks are globally available)
+- End with these exact lines:
 
-    CRITICAL REQUIREMENTS FOR HTML:
-    - Return ONLY the HTML code with inline styles
-    - No explanations, no markdown formatting, no backticks
-    - Make it modern, responsive, and production-ready
-    - Use semantic HTML where possible
-    - Include proper hover/focus states
-    - Ensure good color contrast
-    - Make it work on all screen sizes`;
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(React.createElement(App));
 
-        const messages = [
-          {
-            role: "user" as const,
-            content: systemPrompt
-          }
-        ];
+Example structure:
+function App() {
+  const [state, setState] = useState(initialValue);
+  
+  return (
+    <div style={{ padding: '20px' }}>
+      {/* Your JSX here */}
+    </div>
+  );
+}
 
-        const response = await fetch('https://llm.jessejesse.workers.dev/api/chat', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ messages }),
-        });
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(React.createElement(App));`
+        : `You are an expert web developer. Create responsive HTML with inline CSS for: "${prompt}"
 
-        console.log("Worker response status:", response.status);
+CRITICAL REQUIREMENTS FOR HTML:
+- Return ONLY the HTML code with inline styles
+- No explanations, no markdown formatting, no backticks
+- Make it modern, responsive, and production-ready
+- Use semantic HTML where possible
+- Include proper hover/focus states
+- Ensure good color contrast
+- Make it work on all screen sizes`;
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Worker API error: ${response.status} - ${errorText}`);
+      const messages = [
+        {
+          role: "user" as const,
+          content: systemPrompt
         }
+      ];
 
-        const reader = response.body?.getReader();
-        if (!reader) {
-          throw new Error("No response body received");
-        }
+      const response = await fetch('https://llm.jessejesse.workers.dev/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ messages }),
+      });
 
-        let fullContent = '';
-        const decoder = new TextDecoder();
+      console.log("Worker response status:", response.status);
 
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Worker API error: ${response.status} - ${errorText}`);
+      }
 
-            const chunk = decoder.decode(value);
-            const lines = chunk.split('\n');
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error("No response body received");
+      }
 
-            for (const line of lines) {
-              if (line.startsWith('data: ') && line !== 'data: [DONE]') {
-                try {
-                  const data = JSON.parse(line.slice(6));
-                  if (data.response) {
-                    fullContent += data.response;
-                    setResponse(fullContent);
-                  }
-                } catch (e) {
-             
+      let fullContent = '';
+      const decoder = new TextDecoder();
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+              try {
+                const data = JSON.parse(line.slice(6));
+                if (data.response) {
+                  fullContent += data.response;
+                  setResponse(fullContent);
                 }
+              } catch (e) {
+                // Skip parsing errors
               }
             }
           }
-        } finally {
-          reader.releaseLock();
         }
-
-        console.log("Raw worker response:", fullContent);
-
-        if (!fullContent.trim()) {
-          throw new Error("Worker returned empty response");
-        }
-
-    
-        let cleaned = fullContent
-          .replace(/```(html|css|js|jsx|javascript|react)?/gi, '')
-          .replace(/```/g, '')
-          .replace(/^`|`$/g, '')
-          .trim();
-
-      
-        if (framework === "react") {
-       
-          if (!cleaned.includes('ReactDOM.createRoot') && !cleaned.includes('root.render')) {
-       
-            cleaned += `\n\nconst root = ReactDOM.createRoot(document.getElementById('root'));\nroot.render(React.createElement(App));`;
-          }
-          
-       
-          if (!cleaned.includes('function App') && !cleaned.includes('const App')) {
-         
-            cleaned = `function App() {\n  return (\n${cleaned}\n  );\n}\n\nconst root = ReactDOM.createRoot(document.getElementById('root'));\nroot.render(React.createElement(App));`;
-          }
-        }
-
-        setResponse(cleaned);
-
-        const timestamp = new Date().toLocaleTimeString();
-        const comment = framework === "react"
-          ? `\n// AI Generated React Component (${timestamp}): ${prompt.substring(0, 50)}...\n`
-          : `\n<!-- AI Generated (${timestamp}): ${prompt.substring(0, 50)}... -->\n`;
-        
-        onAiInsert(`${comment}${cleaned}\n`);
-
-        if (mode === "chat") {
-          setChatHistory(prev => [
-            ...prev,
-            { role: "user", content: prompt },
-            { role: "assistant", content: cleaned }
-          ]);
-        }
-        
-        setPrompt("");
-
-      } catch (err) {
-        console.error("AI request failed:", err);
-        let userMessage = "An error occurred";
-        
-        if (err instanceof Error) {
-          if (err.message.includes('Failed to fetch')) {
-            userMessage = "Network error. Check your connection and API endpoint.";
-          } else if (err.message.includes('403')) {
-            userMessage = "Access denied. Check your worker configuration.";
-          } else if (err.message.includes('429')) {
-            userMessage = "Rate limit exceeded. Wait a moment before trying again.";
-          } else if (err.message.includes('404')) {
-            userMessage = "API endpoint not found. Check your worker URL.";
-          } else {
-            userMessage = err.message;
-          }
-        }
-        
-        setResponse(`Error: ${userMessage}`);
-        
       } finally {
-        setLoading(false);
-        setTimeout(() => {
-          setIsRequesting(false);
-        }, 1000);
+        reader.releaseLock();
       }
-    };
-    
+
+      console.log("Raw worker response:", fullContent);
+
+      if (!fullContent.trim()) {
+        throw new Error("Worker returned empty response");
+      }
+
+      let cleaned = fullContent
+        .replace(/```(html|css|js|jsx|javascript|react)?/gi, '')
+        .replace(/```/g, '')
+        .replace(/^`|`$/g, '')
+        .trim();
+
+      if (framework === "react") {
+        if (!cleaned.includes('ReactDOM.createRoot') && !cleaned.includes('root.render')) {
+          cleaned += `\n\nconst root = ReactDOM.createRoot(document.getElementById('root'));\nroot.render(React.createElement(App));`;
+        }
+        
+        if (!cleaned.includes('function App') && !cleaned.includes('const App')) {
+          cleaned = `function App() {\n  return (\n${cleaned}\n  );\n}\n\nconst root = ReactDOM.createRoot(document.getElementById('root'));\nroot.render(React.createElement(App));`;
+        }
+      }
+
+      setResponse(cleaned);
+
+      const timestamp = new Date().toLocaleTimeString();
+      const comment = framework === "react"
+        ? `\n// AI Generated React Component (${timestamp}): ${prompt.substring(0, 50)}...\n`
+        : `\n<!-- AI Generated (${timestamp}): ${prompt.substring(0, 50)}... -->\n`;
+      
+      onAiInsert(`${comment}${cleaned}\n`);
+
+      if (mode === "chat") {
+        setChatHistory(prev => [
+          ...prev,
+          { role: "user", content: prompt },
+          { role: "assistant", content: cleaned }
+        ]);
+      }
+      
+      setPrompt("");
+
+    } catch (err) {
+      console.error("AI request failed:", err);
+      let userMessage = "An error occurred";
+      
+      if (err instanceof Error) {
+        if (err.message.includes('Failed to fetch')) {
+          userMessage = "Network error. Check your connection and API endpoint.";
+        } else if (err.message.includes('403')) {
+          userMessage = "Access denied. Check your worker configuration.";
+        } else if (err.message.includes('429')) {
+          userMessage = "Rate limit exceeded. Wait a moment before trying again.";
+        } else if (err.message.includes('404')) {
+          userMessage = "API endpoint not found. Check your worker URL.";
+        } else {
+          userMessage = err.message;
+        }
+      }
+      
+      setResponse(`Error: ${userMessage}`);
+      
+    } finally {
+      setLoading(false);
+      setTimeout(() => {
+        setIsRequesting(false);
+      }, 1000);
+    }
+  };
+  
   // Render methods
   const renderHeader = () => (
     <div className="!p-2 border-b border-panel-border">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-        <a 
-  href="https://nextjs.org"
-  target="_blank"
-  rel="noopener noreferrer"
-  className="inline-block hover:opacity-80 transition-opacity"
-><img src="https://img.shields.io/badge/npx-create--next--app%40latest-inactive?logo=npm" alt="npx - create--next--app@latest" />
-</a>
+          <a
+            href="https://nextjs.org"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block hover:opacity-80 transition-opacity"
+          >
+            <img src="https://img.shields.io/badge/npx-create--next--app%40latest-inactive?logo=npm" alt="npx - create--next--app@latest" />
+          </a>
         </div>
-        
       </div>
       {searchTerm !== '' && (
         <div className="mt-2 relative">
@@ -1457,219 +1447,214 @@ export default function ComponentsPanel({
     </div>
   );
 
-    const renderAISection = () => (
-      <div className="ai-section">
-        <div className="panel-header">
-          <div className="flex items-center justify-between w-full">
-            <div className="grid grid-cols-2 gap-2 w-full">
-              <BuildPrompts onPromptSelect={setPrompt} framework={framework} />
-                                   
-              <button
-                className="flex items-center justify-center p-0"
-                onClick={() => setShowGithubModal(true)}
-              >
-                <img
-                  src="https://img.shields.io/badge/Create Repo--lightgrey?style=plastic&logo=github"
-                  alt="Repository"
-                  className="w-full h-full"
-                />
-              </button>
-              
-                                   <button
-                                     className="flex items-center justify-center p-0"
-                                     onClick={() => setShowPdfGenerator(true)}
-                                   >
-                                     <img
-                                       src="https://img.shields.io/badge/image%20to-PDF-red?style=plastic"
-                                       alt="image to PDF"
-                                       className="w-full h-full"
-                                     />
-                                   </button>
-              
-              <button
-                className="flex items-center justify-center p-0"
-                onClick={() => setShowBadgeBuilder(true)}
-              >
-                <img
-                  src="https://img.shields.io/badge/Badge-Builder-pink?style=plastic"
-                  alt="Badge Builder"
-                  className="w-full h-full"
-                />
-              </button>
-            </div>
+  const renderAISection = () => (
+    <div className="ai-section">
+      <div className="panel-header">
+        <div className="flex items-center justify-between w-full">
+          <div className="grid grid-cols-2 gap-2 w-full max-w-full">
+            <BuildPrompts onPromptSelect={setPrompt} framework={framework} />
+                                  
+            <button
+              className="flex items-center justify-center p-0 min-w-0 max-w-full overflow-hidden"
+              onClick={() => setShowGithubModal(true)}
+            >
+              Github Login
+            </button>
+                                 <button
+                                   className="flex items-center justify-center p-0 min-w-0 max-w-full overflow-hidden"
+                                   onClick={() => setShowBadgeBuilder(true)}
+                                 >
+                                   <img
+                                     src="https://img.shields.io/badge/Badge-Builder-pink?style=plastic"
+                                     alt="Badge Builder"
+                                     className="w-full h-auto max-w-full object-contain"
+                                     style={{ maxHeight: '28px' }}
+                                   />
+                                 </button>
+            
+           
+                                 <button
+                                   className="flex items-center justify-center p-0 min-w-0 max-w-full overflow-hidden"
+                                   onClick={() => setShowPdfGenerator(true)}
+                                 >
+                                  PDF Pro
+                                 </button>
+                                 
+                                 
+                                
+          
           </div>
         </div>
+      </div>
 
-        {/* Rest of your existing code remains the same */}
-        <div className="mode-toggle">
-          <label className="mode-option">
-            <input
-              type="radio"
-              value="response"
-              checked={mode === "response"}
-              onChange={() => setMode("response")}
-              disabled={loading || isRequesting}
-            />
-            Stateless
-          </label>
-          <label className="mode-option">
-            <input
-              type="radio"
-              value="chat"
-              checked={mode === "chat"}
-              onChange={() => setMode("chat")}
-              disabled={loading || isRequesting}
-            />
-            Persist
-          </label>
-        </div>
-
-        <div className="relative">
-          <textarea
-            className="prompt-textarea"
-            placeholder="describe what to create..."
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-                e.preventDefault();
-                if (!isRequesting && !loading && prompt.trim()) {
-                  askAi();
-                }
-              }
-            }}
+      <div className="mode-toggle">
+        <label className="mode-option">
+          <input
+            type="radio"
+            value="response"
+            checked={mode === "response"}
+            onChange={() => setMode("response")}
             disabled={loading || isRequesting}
           />
-          <div className="text-xs text-text-muted mt-1 px-1 flex justify-between">
-            <span className="flex items-center gap-1">
-              <img src="./workers.svg" className="w-6 h-6" alt="Meta" />
-              llama-3.3-70b-instruct-fp8-fast
-            </span>
-            {(loading || isRequesting) && <span className="text-accent-color">●</span>}
-          </div>
-        </div>
+          Stateless
+        </label>
+        <label className="mode-option">
+          <input
+            type="radio"
+            value="chat"
+            checked={mode === "chat"}
+            onChange={() => setMode("chat")}
+            disabled={loading || isRequesting}
+          />
+          Persist
+        </label>
+      </div>
 
-        <button
-          className="btn btn-outline flex items-center gap-2"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (!isRequesting && !loading && prompt.trim()) {
-              askAi();
+      <div className="relative">
+        <textarea
+          className="prompt-textarea"
+          placeholder="describe what to create..."
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+              e.preventDefault();
+              if (!isRequesting && !loading && prompt.trim()) {
+                askAi();
+              }
             }
           }}
-          disabled={loading || isRequesting || !prompt.trim()}
-          style={{ opacity: (loading || isRequesting || !prompt.trim()) ? 0.5 : 1 }}
-        >
-          <img src="./metasvg.svg" className="w-6 h-6" alt="Meta AI" />
-          {loading ? "Generating..." : isRequesting ? "Please wait..." : "Meta Build"}
-        </button>
+          disabled={loading || isRequesting}
+        />
+        <div className="text-xs text-text-muted mt-1 px-1 flex justify-between">
+          <span className="flex items-center gap-1">
+            <img src="./workers.svg" className="w-6 h-6" alt="Meta" />
+            llama-3.3-70b-instruct-fp8-fast
+          </span>
+          {(loading || isRequesting) && <span className="text-accent-color">●</span>}
+        </div>
+      </div>
 
-        {response && (
-          <div>
-            <div className="response-label flex items-center gap-2">
-              Meta AI
-            </div>
-            <div className="ai-response">{response}</div>
+      <button
+        className="btn btn-outline flex items-center gap-2 w-full justify-center"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (!isRequesting && !loading && prompt.trim()) {
+            askAi();
+          }
+        }}
+        disabled={loading || isRequesting || !prompt.trim()}
+        style={{ opacity: (loading || isRequesting || !prompt.trim()) ? 0.5 : 1 }}
+      >
+        <img src="./metasvg.svg" className="w-6 h-6" alt="Meta AI" />
+        {loading ? "Generating..." : isRequesting ? "Please wait..." : "Meta Build"}
+      </button>
+
+      {response && (
+        <div>
+          <div className="response-label flex items-center gap-2">
+            Meta AI
           </div>
-        )}
-        
-        {mode === "chat" && chatHistory.length > 0 && (
-          <div>
-            <div className="response-label flex justify-between items-center">
-              <span>Chat History</span>
-              <button onClick={() => setChatHistory([])} className="text-xs text-text-muted hover:text-foreground">
-                Clear
+          <div className="ai-response">{response}</div>
+        </div>
+      )}
+      
+      {mode === "chat" && chatHistory.length > 0 && (
+        <div>
+          <div className="response-label flex justify-between items-center">
+            <span>Chat History</span>
+            <button onClick={() => setChatHistory([])} className="text-xs text-text-muted hover:text-foreground">
+              Clear
+            </button>
+          </div>
+          <div className="chat-history">
+            {chatHistory.map((msg, i) => (
+              <div key={i} className={`chat-message ${msg.role}`}>
+                <div className={`message-role ${msg.role}`}>
+                  {msg.role.toUpperCase()}
+                </div>
+                <div>{msg.content}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col h-full overflow-hidden relative">
+      {onResizeStart && (
+        <div
+          className="absolute -right-2 top-0 bottom-0 w-4 cursor-col-resize z-20 hover:bg-accent-color hover:bg-opacity-50 transition-colors"
+          onMouseDown={onResizeStart}
+        />
+      )}
+
+      {renderHeader()}
+      {renderComponentsList()}
+      {renderAISection()}
+
+      <GitHubModal
+        showGithubModal={showGithubModal}
+        setShowGithubModal={setShowGithubModal}
+        githubToken={githubToken}
+        setGithubToken={setGithubToken}
+        githubUser={githubUser}
+        setGithubUser={setGithubUser}
+        githubForm={githubForm}
+        setGithubForm={setGithubForm}
+        isCreatingRepo={isCreatingRepo}
+        handleCreateRepo={handleCreateRepo}
+        fetchUserInfo={fetchUserInfo}
+      />
+
+      {showPdfGenerator && (
+        <div className="modal-overlay" onClick={() => setShowPdfGenerator(false)}>
+          <div
+            className="modal-content pdf-modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header">
+              <h2 className="modal-title">PDF Generator</h2>
+              <button
+                onClick={() => setShowPdfGenerator(false)}
+                className="modal-close-btn"
+                aria-label="Close PDF generator"
+              >
+                <X size={18} />
               </button>
             </div>
-            <div className="chat-history">
-              {chatHistory.map((msg, i) => (
-                <div key={i} className={`chat-message ${msg.role}`}>
-                  <div className={`message-role ${msg.role}`}>
-                    {msg.role.toUpperCase()}
-                  </div>
-                  <div>{msg.content}</div>
-                </div>
-              ))}
+            <div className="modal-body pdf-modal-body">
+              <PDFGenerator currentCode={currentCode} />
             </div>
           </div>
-        )}
-      </div>
-    );
+        </div>
+      )}
 
- return (
-  <div className="flex flex-col h-full overflow-hidden relative">
-    {onResizeStart && (
-      <div
-        className="absolute -right-2 top-0 bottom-0 w-4 cursor-col-resize z-20 hover:bg-accent-color hover:bg-opacity-50 transition-colors"
-        onMouseDown={onResizeStart}
-      />
-    )}
-
-    {renderHeader()}
-    {renderComponentsList()}
-    {renderAISection()}
-
-    <GitHubModal
-      showGithubModal={showGithubModal}
-      setShowGithubModal={setShowGithubModal}
-      githubToken={githubToken}
-      setGithubToken={setGithubToken}
-      githubUser={githubUser}
-      setGithubUser={setGithubUser}
-      githubForm={githubForm}
-      setGithubForm={setGithubForm}
-      isCreatingRepo={isCreatingRepo}
-      handleCreateRepo={handleCreateRepo}
-      fetchUserInfo={fetchUserInfo}
-    />
-
-    {showPdfGenerator && (
-      <div className="modal-overlay" onClick={() => setShowPdfGenerator(false)}>
-        <div 
-          className="modal-content pdf-modal-content" 
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="modal-header">
-            <h2 className="modal-title">PDF Generator</h2>
-            <button
-              onClick={() => setShowPdfGenerator(false)}
-              className="modal-close-btn"
-              aria-label="Close PDF generator"
-            >
-              <X size={18} />
-            </button>
-          </div>
-          <div className="modal-body pdf-modal-body">
-            <PDFGenerator currentCode={currentCode} />
+      {showBadgeBuilder && (
+        <div className="modal-overlay" onClick={() => setShowBadgeBuilder(false)}>
+          <div
+            className="modal-content badge-modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="modal-header">
+              <h2 className="modal-title">Badge Builder</h2>
+              <button
+                onClick={() => setShowBadgeBuilder(false)}
+                className="modal-close-btn"
+                aria-label="Close Badge Builder"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="modal-body badge-modal-body">
+              <BadgeBuilder onInsert={onInsert} />
+            </div>
           </div>
         </div>
-      </div>
-    )}
-
-    {showBadgeBuilder && (
-      <div className="modal-overlay" onClick={() => setShowBadgeBuilder(false)}>
-        <div 
-          className="modal-content badge-modal-content" 
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="modal-header">
-            <h2 className="modal-title">Badge Builder</h2>
-            <button
-              onClick={() => setShowBadgeBuilder(false)}
-              className="modal-close-btn"
-              aria-label="Close Badge Builder"
-            >
-              <X size={18} />
-            </button>
-          </div>
-          <div className="modal-body badge-modal-body">
-            <BadgeBuilder onInsert={onInsert} />
-          </div>
-        </div>
-      </div>
-    )}
-  </div>
-);
-        }
-
+      )}
+    </div>
+  );
+}

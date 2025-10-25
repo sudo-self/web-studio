@@ -10,7 +10,7 @@ import SettingsPanel from "@/components/SettingsPanel";
 export default function Home() {
   const [framework, setFramework] = useState("html");
   
-  const htmlCode = `<!-- studio.jessejesse.com -->
+  const htmlCode = `
 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 3rem 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
   <div style="max-width: 600px; text-align: center; color: white;">
     <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 2rem;">
@@ -19,11 +19,11 @@ export default function Home() {
           <path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
         </svg>
       </div>
-      <h1 style="font-size: 3rem; font-weight: 800; margin: 0; letter-spacing: -0.02em;">Web Studio</h1>
+      <h1 style="font-size: 3rem; font-weight: 800; margin: 0; letter-spacing: -0.02em;">Your Website</h1>
     </div>
     
     <p style="font-size: 1.5rem; margin-bottom: 3rem; opacity: 0.95; line-height: 1.5;">
-      Build beautiful websites with AI-powered components
+    publish beautiful websites with ready made components and the AI-powered builder.
     </p>
     
     <button onclick="alert('Start building amazing websites!')" style="background: white; color: #667eea; border: none; padding: 16px 48px; font-size: 1.125rem; font-weight: 600; border-radius: 12px; cursor: pointer; box-shadow: 0 8px 24px rgba(0,0,0,0.15); transition: transform 0.2s, box-shadow 0.2s;">
@@ -47,171 +47,211 @@ export default function Home() {
   </div>
 </div>`;
 
-  // FIXED: Clean React component using JSX syntax
-  const reactCode = `function App() {
-  const [count, setCount] = useState(0);
-  
-  return (
-    <div style={{ 
-      display: 'flex', 
-      flexDirection: 'column',
-      alignItems: 'center', 
-      justifyContent: 'center', 
-      minHeight: '100vh', 
-      padding: '3rem 2rem',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif'
-    }}>
+    // React app gets cyan-500 with gradient blues
+    const reactCode = `function App() {
+    const [count, setCount] = useState(0);
+    
+    return (
       <div style={{ 
-        maxWidth: '600px', 
-        textAlign: 'center',
-        color: 'white'
+        display: 'flex', 
+        flexDirection: 'column',
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        minHeight: '100vh', 
+        padding: '3rem 2rem',
+        background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #1d4ed8 100%)',
+        fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif'
       }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '1rem',
-          marginBottom: '2rem'
+        <div style={{ 
+          maxWidth: '600px', 
+          textAlign: 'center',
+          color: 'white'
         }}>
           <div style={{
-            width: '64px',
-            height: '64px',
-            background: 'white',
-            borderRadius: '16px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+            gap: '1rem',
+            marginBottom: '2rem'
           }}>
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#667eea" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/>
-              <path d="M12 6v6l4 2"/>
-            </svg>
+            <div style={{
+              width: '64px',
+              height: '64px',
+              background: 'rgba(255,255,255,0.95)',
+              borderRadius: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+              backdropFilter: 'blur(10px)'
+            }}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+              </svg>
+            </div>
+            <h1 style={{ 
+              fontSize: '3rem', 
+              fontWeight: '800', 
+              margin: 0,
+              letterSpacing: '-0.02em',
+              background: 'linear-gradient(135deg, #ffffff 0%, #e0f2fe 100%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
+            }}>
+              React App
+            </h1>
           </div>
-          <h1 style={{ 
-            fontSize: '3rem', 
-            fontWeight: '800', 
-            margin: 0,
-            letterSpacing: '-0.02em'
+          
+          <p style={{ 
+            fontSize: '1.5rem', 
+            marginBottom: '3rem',
+            opacity: 0.95,
+            lineHeight: 1.5,
+            textShadow: '0 2px 4px rgba(0,0,0,0.1)'
           }}>
-            React App
-          </h1>
-        </div>
-        
-        <p style={{ 
-          fontSize: '1.5rem', 
-          marginBottom: '3rem',
-          opacity: 0.95,
-          lineHeight: 1.5
-        }}>
-          Interactive components with React hooks
-        </p>
-        
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '1rem',
-          marginBottom: '3rem'
-        }}>
-          <button 
-            onClick={() => setCount(count - 1)}
-            style={{
-              background: 'rgba(255,255,255,0.2)',
-              color: 'white',
-              border: '2px solid white',
-              padding: '12px 24px',
-              fontSize: '1.5rem',
-              fontWeight: '700',
-              borderRadius: '12px',
-              cursor: 'pointer',
-              minWidth: '60px',
-              transition: 'all 0.2s'
-            }}
-          >
-            −
-          </button>
+            Interactive components with React hooks
+          </p>
           
           <div style={{
-            background: 'white',
-            color: '#667eea',
-            padding: '20px 40px',
-            fontSize: '3rem',
-            fontWeight: '800',
-            borderRadius: '16px',
-            minWidth: '140px',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '1rem',
+            marginBottom: '3rem'
           }}>
-            {count}
+            <button 
+              onClick={() => setCount(count - 1)}
+              style={{
+                background: 'rgba(255,255,255,0.2)',
+                color: 'white',
+                border: '2px solid rgba(255,255,255,0.5)',
+                padding: '12px 24px',
+                fontSize: '1.5rem',
+                fontWeight: '700',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                minWidth: '60px',
+                transition: 'all 0.2s',
+                backdropFilter: 'blur(10px)'
+              }}
+            >
+              −
+            </button>
+            
+            <div style={{
+              background: 'rgba(255,255,255,0.95)',
+              color: '#06b6d4',
+              padding: '20px 40px',
+              fontSize: '3rem',
+              fontWeight: '800',
+              borderRadius: '16px',
+              minWidth: '140px',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255,255,255,0.2)'
+            }}>
+              {count}
+            </div>
+            
+            <button 
+              onClick={() => setCount(count + 1)}
+              style={{
+                background: 'rgba(255,255,255,0.95)',
+                color: '#06b6d4',
+                border: 'none',
+                padding: '12px 24px',
+                fontSize: '1.5rem',
+                fontWeight: '700',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                minWidth: '60px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                transition: 'all 0.2s',
+                backdropFilter: 'blur(10px)'
+              }}
+            >
+              +
+            </button>
           </div>
           
           <button 
-            onClick={() => setCount(count + 1)}
+            onClick={() => setCount(0)}
             style={{
-              background: 'white',
-              color: '#667eea',
-              border: 'none',
-              padding: '12px 24px',
-              fontSize: '1.5rem',
-              fontWeight: '700',
-              borderRadius: '12px',
+              background: 'rgba(255,255,255,0.15)',
+              color: 'white',
+              border: '1px solid rgba(255,255,255,0.3)',
+              padding: '12px 32px',
+              fontSize: '1rem',
+              fontWeight: '600',
+              borderRadius: '8px',
               cursor: 'pointer',
-              minWidth: '60px',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-              transition: 'all 0.2s'
+              marginBottom: '3rem',
+              transition: 'all 0.2s',
+              backdropFilter: 'blur(10px)'
             }}
           >
-            +
+            Reset Counter
           </button>
-        </div>
-        
-        <button 
-          onClick={() => setCount(0)}
-          style={{
-            background: 'rgba(255,255,255,0.1)',
-            color: 'white',
-            border: '1px solid rgba(255,255,255,0.3)',
-            padding: '12px 32px',
-            fontSize: '1rem',
-            fontWeight: '600',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            marginBottom: '3rem',
-            transition: 'all 0.2s'
-          }}
-        >
-          Reset Counter
-        </button>
-        
-        <div style={{ 
-          display: 'flex', 
-          gap: '4rem', 
-          justifyContent: 'center',
-          paddingTop: '3rem',
-          borderTop: '1px solid rgba(255,255,255,0.2)'
-        }}>
-          <div>
-            <div style={{ fontSize: '2rem', fontWeight: '700', marginBottom: '0.5rem' }}>useState</div>
-            <div style={{ fontSize: '0.875rem', opacity: 0.8 }}>React Hook</div>
-          </div>
-          <div>
-            <div style={{ fontSize: '2rem', fontWeight: '700', marginBottom: '0.5rem' }}>JSX</div>
-            <div style={{ fontSize: '0.875rem', opacity: 0.8 }}>Syntax</div>
-          </div>
-          <div>
-            <div style={{ fontSize: '2rem', fontWeight: '700', marginBottom: '0.5rem' }}>Live</div>
-            <div style={{ fontSize: '0.875rem', opacity: 0.8 }}>Preview</div>
+          
+          <div style={{ 
+            display: 'flex', 
+            gap: '4rem', 
+            justifyContent: 'center',
+            paddingTop: '3rem',
+            borderTop: '1px solid rgba(255,255,255,0.2)'
+          }}>
+            <div>
+              <div style={{ 
+                fontSize: '2rem', 
+                fontWeight: '700', 
+                marginBottom: '0.5rem',
+                background: 'linear-gradient(135deg, #ffffff 0%, #e0f2fe 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}>
+                useState
+              </div>
+              <div style={{ fontSize: '0.875rem', opacity: 0.8 }}>React Hook</div>
+            </div>
+            <div>
+              <div style={{ 
+                fontSize: '2rem', 
+                fontWeight: '700', 
+                marginBottom: '0.5rem',
+                background: 'linear-gradient(135deg, #ffffff 0%, #e0f2fe 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}>
+                JSX
+              </div>
+              <div style={{ fontSize: '0.875rem', opacity: 0.8 }}>Syntax</div>
+            </div>
+            <div>
+              <div style={{ 
+                fontSize: '2rem', 
+                fontWeight: '700', 
+                marginBottom: '0.5rem',
+                background: 'linear-gradient(135deg, #ffffff 0%, #e0f2fe 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}>
+                Live
+              </div>
+              <div style={{ fontSize: '0.875rem', opacity: 0.8 }}>Preview</div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(React.createElement(App));`;
-
+  const root = ReactDOM.createRoot(document.getElementById('root'));
+  root.render(React.createElement(App));`;
   const [code, setCode] = useState(htmlCode);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [panelWidths, setPanelWidths] = useState({
@@ -224,7 +264,7 @@ root.render(React.createElement(App));`;
   const startXRef = useRef<number>(0);
   const startWidthsRef = useRef(panelWidths);
 
-  // Update code when framework changes
+
   useEffect(() => {
     if (framework === "react") {
       setCode(reactCode);
@@ -234,7 +274,7 @@ root.render(React.createElement(App));`;
   }, [framework, htmlCode, reactCode]);
 
   const runCode = () => {
-    // Force re-render by appending empty comment
+   
     setCode(prev => prev + "");
   };
 
