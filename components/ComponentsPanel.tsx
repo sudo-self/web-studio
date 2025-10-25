@@ -1466,8 +1466,8 @@ const renderAISection = () => (
       />
     <div className="text-xs text-text-muted mt-1 px-1 flex justify-between">
   <span className="flex items-center gap-1">
-    <img src="./meta.svg" className="w-10 h-10" alt="Meta" />
-    llama-70b-instruct-fast
+    <img src="./metasvg.svg" className="w-15 h-15" alt="Meta" />
+   Meta AI instruct 70b Fast
   </span>
   {(loading || isRequesting) && <span className="text-accent-color">●</span>}
 </div>
