@@ -166,42 +166,56 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
         />
       )}
 
-    
-      <div className="panel-header flex justify-between items-center p-4 border-b border-border-primary bg-surface-secondary">
-        <div className="flex items-center gap-3">
-          <h2 className="text-lg font-semibold text-text-primary">Preview</h2>
-          <span className="text-sm text-text-tertiary bg-surface-tertiary px-2 py-1 rounded border border-border-primary">
-            {framework === "react" ? "React" : "HTML"}
-          </span>
-        </div>
-        <div className="flex gap-2">
-          <button 
-            className="btn btn-outline btn-sm" 
-            onClick={handleRefresh} 
-            disabled={isRefreshing}
-          >
-            {isRefreshing ? "Refreshing..." : "Refresh"}
-          </button>
-          <button 
-            className={`btn btn-sm ${showEmbed ? "btn-accent" : "btn-outline"}`} 
-            onClick={() => setShowEmbed(!showEmbed)}
-          >
-            {showEmbed ? "Hide Code" : "Show Code"}
-          </button>
-          <button 
-            className={`btn btn-sm ${isFullscreen ? "btn-warning" : "btn-outline"}`} 
-            onClick={handleFullscreen}
-          >
-            {isFullscreen ? "Exit Full" : "Fullscreen"}
-          </button>
-          <button 
-            className={`btn btn-sm ${showGrid ? "btn-accent" : "btn-outline"}`} 
-            onClick={() => setShowGrid(!showGrid)}
-          >
-            {showGrid ? "Hide Grid" : "Show Grid"}
-          </button>
-        </div>
-      </div>
+<div className="panel-header flex justify-between items-center p-4 border-b border-border-primary bg-surface-secondary">
+  <div className="flex items-center gap-3">
+    {framework === "react" ? (
+      <img src="./react.svg" className="w-6 h-6" alt="React" />
+    ) : (
+      <img src="./html5.svg" className="w-6 h-6" alt="HTML5" />
+    )}
+    <h2 className="text-lg font-semibold text-text-primary">Preview</h2>
+    <span className="text-sm text-text-tertiary bg-surface-tertiary px-2 py-1 rounded border border-border-primary flex items-center gap-1">
+      {framework === "react" ? (
+        <>
+          <img src="./react.svg" className="w-3 h-3" alt="React" />
+          React
+        </>
+      ) : (
+        <>
+          <img src="./html5.svg" className="w-3 h-3" alt="HTML5" />
+          HTML
+        </>
+      )}
+    </span>
+  </div>
+  <div className="flex gap-2">
+    <button 
+      className="btn btn-outline btn-sm" 
+      onClick={handleRefresh} 
+      disabled={isRefreshing}
+    >
+      {isRefreshing ? "Refreshing..." : "Refresh"}
+    </button>
+    <button 
+      className={`btn btn-sm ${showEmbed ? "btn-accent" : "btn-outline"}`} 
+      onClick={() => setShowEmbed(!showEmbed)}
+    >
+      {showEmbed ? "Hide Code" : "Show Code"}
+    </button>
+    <button 
+      className={`btn btn-sm ${isFullscreen ? "btn-warning" : "btn-outline"}`} 
+      onClick={handleFullscreen}
+    >
+      {isFullscreen ? "Exit Full" : "Fullscreen"}
+    </button>
+    <button 
+      className={`btn btn-sm ${showGrid ? "btn-accent" : "btn-outline"}`} 
+      onClick={() => setShowGrid(!showGrid)}
+    >
+      {showGrid ? "Hide Grid" : "Show Grid"}
+    </button>
+  </div>
+</div>
 
  
       {showEmbed && (
