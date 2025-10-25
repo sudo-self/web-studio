@@ -1319,11 +1319,18 @@ CRITICAL REQUIREMENTS:
     <div className="!p-2 border-b border-panel-border">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-         <img 
-  src="https://img.shields.io/badge/-web_studio-blue?style=plastic&logo=github" 
-  alt="web_studio" 
-  className="h-4"
-/>
+        <a 
+  href="https://studio.jessejesse.com" 
+  target="_blank" 
+  rel="noopener noreferrer"
+  className="inline-block hover:opacity-80 transition-opacity"
+>
+  <img 
+    src="https://img.shields.io/badge/studio.jessejesse.com-blue?style=plastic" 
+    alt="studio.jessejesse.com" 
+    className="h-4"
+  />
+</a>
         </div>
         <div className="flex items-center gap-1">
           <button
@@ -1331,14 +1338,14 @@ CRITICAL REQUIREMENTS:
             className="!p-1.5 hover:bg-component-hover rounded transition-colors"
             title="Search"
           >
-            <Search size={15} />
+            <Search size={17} />
           </button>
           <button
             onClick={onOpenSettings}
             className="!p-1.5 hover:bg-component-hover rounded transition-colors"
             title="Settings"
           >
-            <Settings size={15} />
+            <Settings size={17} />
           </button>
         </div>
       </div>
