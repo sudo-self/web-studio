@@ -10,8 +10,7 @@ import SettingsPanel from "@/components/SettingsPanel";
 export default function Home() {
   const [framework, setFramework] = useState("html");
   
-
-  const htmlCode = `<!-- Welcome to studio.jessejesse.com -->
+  const htmlCode = `<!-- HTML5 -->
 <div class="welcome-container">
   <div class="welcome-content">
     <header class="welcome-header">
@@ -35,7 +34,6 @@ export default function Home() {
       </span>
     </button>
 
- 
     <nav class="feature-nav">
       <a href="#" class="feature-link">
         <div class="feature-icon">
@@ -301,37 +299,64 @@ export default function Home() {
   </style>
 </div>`;
 
-const reactCode = `// React App
-function WelcomeApp() {
-  return React.createElement('div', { 
-    style: { 
-      display: 'flex', 
+ 
+  const reactCode = `// React App
+function App() {
+  const handleClick = () => {
+    alert('Hello from React!');
+  };
+
+  const handleMouseEnter = (e) => {
+    e.target.style.background = '#ffffff';
+    e.target.style.color = '#0891b2';
+    e.target.style.borderColor = '#0891b2';
+    e.target.style.transform = 'translateY(-2px)';
+    e.target.style.boxShadow = '0 8px 25px rgba(8, 145, 178, 0.15)';
+  };
+
+  const handleMouseLeave = (e) => {
+    e.target.style.background = 'transparent';
+    e.target.style.color = '#64748b';
+    e.target.style.borderColor = 'transparent';
+    e.target.style.transform = 'translateY(0)';
+    e.target.style.boxShadow = 'none';
+  };
+
+  return React.createElement('div', {
+    style: {
+      display: 'flex',
       flexDirection: 'column',
-      alignItems: 'center', 
-      justifyContent: 'center', 
-      minHeight: '100vh', 
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '100vh',
       padding: '3rem 2rem',
       background: '#f8fafc',
       fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif'
     }
-  }, 
-    React.createElement('div', { 
-      style: { 
-        maxWidth: '600px', 
+  }, [
+    React.createElement('div', {
+      key: 'content',
+      style: {
+        maxWidth: '600px',
         textAlign: 'center'
       }
-    },
-      React.createElement('header', { style: { marginBottom: '3rem' } },
-        React.createElement('div', { 
-          style: { 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            gap: '1rem', 
-            marginBottom: '1.5rem' 
+    }, [
+      React.createElement('header', {
+        key: 'header',
+        style: { marginBottom: '3rem' }
+      }, [
+        React.createElement('div', {
+          key: 'logo-container',
+          style: {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '1rem',
+            marginBottom: '1.5rem'
           }
-        },
+        }, [
           React.createElement('div', {
+            key: 'logo',
             style: {
               width: '48px',
               height: '48px',
@@ -343,12 +368,20 @@ function WelcomeApp() {
               color: 'white',
               boxShadow: '0 8px 20px rgba(8, 145, 178, 0.3)'
             }
-          },
-            React.createElement('svg', { width: "24", height: "24", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor" },
-              React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "2", d: "M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" })
-            )
-          ),
+          }, React.createElement('svg', {
+            width: "24",
+            height: "24",
+            viewBox: "0 0 24 24",
+            fill: "none",
+            stroke: "currentColor"
+          }, React.createElement('path', {
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            strokeWidth: "2",
+            d: "M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+          }))),
           React.createElement('h1', {
+            key: 'title',
             style: {
               fontSize: '3rem',
               fontWeight: '800',
@@ -361,8 +394,9 @@ function WelcomeApp() {
               backgroundClip: 'text'
             }
           }, 'React App')
-        ),
+        ]),
         React.createElement('p', {
+          key: 'subtitle',
           style: {
             fontSize: '1.25rem',
             color: '#64748b',
@@ -372,9 +406,10 @@ function WelcomeApp() {
             marginLeft: 'auto',
             marginRight: 'auto'
           }
-        }, 'Build React Components')
-      ),
-      React.createElement('button', { 
+        }, 'Build React Components with AI')
+      ]),
+      React.createElement('button', {
+        key: 'button',
         style: {
           background: 'linear-gradient(135deg, #0891b2, #0e7490)',
           color: 'white',
@@ -388,36 +423,174 @@ function WelcomeApp() {
           boxShadow: '0 4px 14px rgba(8, 145, 178, 0.4)',
           marginBottom: '3rem'
         },
-        onClick: () => alert('Hello from React!')
-      },
-        React.createElement('span', { style: { display: 'flex', alignItems: 'center', gap: '0.75rem' } },
-          React.createElement('svg', { width: "20", height: "20", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor" },
-            React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: "2", d: "M13 10V3L4 14h7v7l9-11h-7z" })
-          ),
-          'Start Building'
-        )
-      )
-    )
-  );
-}
+        onClick: handleClick
+      }, React.createElement('span', {
+        style: { display: 'flex', alignItems: 'center', gap: '0.75rem' }
+      }, [
+        React.createElement('svg', {
+          key: 'icon',
+          width: "20",
+          height: "20",
+          viewBox: "0 0 24 24",
+          fill: "none",
+          stroke: "currentColor"
+        }, React.createElement('path', {
+          strokeLinecap: "round",
+          strokeLinejoin: "round",
+          strokeWidth: "2",
+          d: "M13 10V3L4 14h7v7l9-11h-7z"
+        })),
+        'Start Building'
+      ])),
+      React.createElement('nav', {
+        key: 'nav',
+        style: {
+          display: 'flex',
+          gap: '2rem',
+          justifyContent: 'center',
+          marginBottom: '3rem',
+          flexWrap: 'wrap'
+        }
+      }, React.createElement('a', {
+        key: 'feature',
+        href: "#",
+        style: {
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '0.75rem',
+          padding: '1.5rem',
+          borderRadius: '12px',
+          textDecoration: 'none',
+          color: '#64748b',
+          transition: 'all 0.3s ease',
+          border: '1px solid transparent'
+        },
+        onMouseEnter: handleMouseEnter,
+        onMouseLeave: handleMouseLeave
+      }, [
+        React.createElement('div', {
+          key: 'feature-icon',
+          style: {
+            width: '48px',
+            height: '48px',
+            background: '#ffffff',
+            borderRadius: '10px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#0891b2',
+            border: '1px solid #e2e8f0'
+          }
+        }, React.createElement('svg', {
+          width: "24",
+          height: "24",
+          viewBox: "0 0 24 24",
+          fill: "none",
+          stroke: "currentColor"
+        }, React.createElement('path', {
+          strokeLinecap: "round",
+          strokeLinejoin: "round",
+          strokeWidth: "2",
+          d: "M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+        }))),
+        React.createElement('span', {
+          key: 'feature-text',
+          style: { fontWeight: '600', fontSize: '0.875rem' }
+        }, 'Components')
+      ])),
+      React.createElement('div', {
+        key: 'stats',
+        style: {
+          display: 'flex',
+          gap: '3rem',
+          justifyContent: 'center',
+          paddingTop: '2rem',
+          borderTop: '1px solid #e2e8f0'
+        }
+      }, [
+        React.createElement('div', {
+          key: 'stat1',
+          style: { textAlign: 'center' }
+        }, [
+          React.createElement('div', {
+            key: 'number1',
+            style: {
+              fontSize: '1.5rem',
+              fontWeight: '700',
+              color: '#0891b2',
+              marginBottom: '0.25rem'
+            }
+          }, 'React'),
+          React.createElement('div', {
+            key: 'label1',
+            style: {
+              fontSize: '0.875rem',
+              color: '#64748b',
+              fontWeight: '500'
+            }
+          }, 'Framework')
+        ]),
+        React.createElement('div', {
+          key: 'stat2',
+          style: { textAlign: 'center' }
+        }, [
+          React.createElement('div', {
+            key: 'number2',
+            style: {
+              fontSize: '1.5rem',
+              fontWeight: '700',
+              color: '#0891b2',
+              marginBottom: '0.25rem'
+            }
+          }, 'AI'),
+          React.createElement('div', {
+            key: 'label2',
+            style: {
+              fontSize: '0.875rem',
+              color: '#64748b',
+              fontWeight: '500'
+            }
+          }, 'Powered')
+        ]),
+        React.createElement('div', {
+          key: 'stat3',
+          style: { textAlign: 'center' }
+        }, [
+          React.createElement('div', {
+            key: 'number3',
+            style: {
+              fontSize: '1.5rem',
+              fontWeight: '700',
+              color: '#0891b2',
+              marginBottom: '0.25rem'
+            }
+          }, '100%'),
+          React.createElement('div', {
+            key: 'label3',
+            style: {
+              fontSize: '0.875rem',
+              color: '#64748b',
+              fontWeight: '500'
+            }
+          }, 'Customizable')
+        ])
+      ])
+    ])
+  ]);
+}`;
 
-// Render the app
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(React.createElement(WelcomeApp));`;
-
-  const [code, setCode] = useState(htmlCode); 
+  const [code, setCode] = useState(htmlCode);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [panelWidths, setPanelWidths] = useState({
-  components: 260,    
-  editor: 540,       
-  preview: 460,     
-});
+    components: 260,
+    editor: 540,
+    preview: 460,
+  });
   
   const [resizingPanel, setResizingPanel] = useState<string | null>(null);
-
   const startXRef = useRef<number>(0);
   const startWidthsRef = useRef(panelWidths);
-
 
   useEffect(() => {
     if (framework === "react") {

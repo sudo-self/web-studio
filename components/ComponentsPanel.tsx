@@ -1324,28 +1324,17 @@ CRITICAL REQUIREMENTS:
   target="_blank" 
   rel="noopener noreferrer"
   className="inline-block hover:opacity-80 transition-opacity"
->
-  <img 
-    src="https://img.shields.io/badge/studio.jessejesse.com-blue?style=plastic" 
-    alt="studio.jessejesse.com" 
-    className="h-4"
-  />
-</a>
+><img src="https://img.shields.io/badge/HTML-5-orange?logo=html5" alt="HTML - 5" />
+</a><img src="https://img.shields.io/badge/React-App-blue?logo=react" alt="React - 19" />
         </div>
         <div className="flex items-center gap-1">
-          <button
-            onClick={() => setSearchTerm(searchTerm ? '' : ' ')}
-            className="!p-1.5 hover:bg-component-hover rounded transition-colors"
-            title="Search"
-          >
-            <Search size={17} />
-          </button>
+      
           <button
             onClick={onOpenSettings}
             className="!p-1.5 hover:bg-component-hover rounded transition-colors"
             title="Settings"
           >
-            <Settings size={17} />
+            <Settings size={18} />
           </button>
         </div>
       </div>
@@ -1401,11 +1390,12 @@ const renderAISection = () => (
         <div className="grid grid-cols-2 gap-2 w-full">
      
           <BuildPrompts onPromptSelect={setPrompt} />
+                               
           <button
             className="btn btn-outline btn-sm flex items-center gap-2 justify-center"
             onClick={() => setShowGithubModal(true)}
           >
-            Github Repo
+                               <img src="https://img.shields.io/badge/-Github%20Repo-grey?logo=github" alt=" - GitHub Login" />
           </button>
           
       
@@ -1413,13 +1403,13 @@ const renderAISection = () => (
             className="btn btn-outline btn-sm flex items-center gap-2 justify-center"
             onClick={() => setShowPdfGenerator(true)}
           >
-            PDF Tools
+                               <img src="https://img.shields.io/badge/image%20to-PDF-success" alt="image to - PDF" />
           </button>
           <button
             className="btn btn-outline btn-sm flex items-center gap-2 justify-center"
             onClick={() => setShowBadgeBuilder(true)}
           >
-            Badge Builder
+                               <img src="https://img.shields.io/badge/BADGE-BUILDER-blue?style=flat-square" alt="BADGE - BUILDER" />
           </button>
         </div>
       </div>
