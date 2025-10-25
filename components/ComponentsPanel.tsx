@@ -1474,13 +1474,15 @@ const renderAISection = () => (
       {loading ? "Generating..." : isRequesting ? "Please wait..." : "Ask AI"}
     </button>
 
-    {response && (
-      <div>
-        <div className="response-label">AI Response</div>
-        <div className="ai-response">{response}</div>
-      </div>
-    )}
-
+   {response && (
+  <div>
+    <div className="response-label flex items-center gap-2">
+      <img src="./meta.svg" className="w-4 h-4" alt="Meta AI" />
+      Meta AI
+    </div>
+    <div className="ai-response">{response}</div>
+  </div>
+)}
     {mode === "chat" && chatHistory.length > 0 && (
       <div>
         <div className="response-label flex justify-between items-center">
