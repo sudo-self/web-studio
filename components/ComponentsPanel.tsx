@@ -876,7 +876,8 @@ const useGitHubAuth = () => {
 };
 
 
-// Utility Functions
+
+    
 const getComponentIcon = (componentKey: string): ReactElement => {
   return COMPONENT_ICONS[componentKey] || <FileText size={16} />;
 };
@@ -1318,7 +1319,11 @@ CRITICAL REQUIREMENTS:
     <div className="!p-2 border-b border-panel-border">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h3 className="m-0 text-xs text-indigo-500 font-semibold">STUDIO</h3>
+         <img 
+  src="https://img.shields.io/badge/-web_studio-blue?style=plastic&logo=github" 
+  alt="web_studio" 
+  className="h-4"
+/>
         </div>
         <div className="flex items-center gap-1">
           <button
@@ -1432,7 +1437,7 @@ const renderAISection = () => (
           onChange={() => setMode("chat")}
           disabled={loading || isRequesting}
         />
-        Chat Mode
+        Persist
       </label>
     </div>
 
