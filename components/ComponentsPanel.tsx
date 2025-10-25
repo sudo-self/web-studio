@@ -1192,7 +1192,7 @@ export default function ComponentsPanel({
         console.log("Sending AI request:", {
           prompt: prompt.substring(0, 100),
           mode,
-          framework, 
+          framework,
           timestamp: new Date().toISOString()
         });
         
@@ -1373,12 +1373,12 @@ export default function ComponentsPanel({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
         <a 
-  href="https://studio.jessejesse.com" 
-  target="_blank" 
+  href="https://nextjs.org"
+  target="_blank"
   rel="noopener noreferrer"
   className="inline-block hover:opacity-80 transition-opacity"
-><img src="https://img.shields.io/badge/HTML-5-orange?logo=html5" alt="HTML - 5" />
-</a><img src="https://img.shields.io/badge/React-App-blue?logo=react" alt="React - 19" />
+><img src="https://img.shields.io/badge/npx-create--next--app%40latest-blue" alt="npx - create--next--app@latest" />
+</a>
         </div>
         <div className="flex items-center gap-1">
       
