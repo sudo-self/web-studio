@@ -1464,10 +1464,13 @@ const renderAISection = () => (
         }}
         disabled={loading || isRequesting}
       />
-      <div className="text-xs text-text-muted mt-1 px-1 flex justify-between">
-        <span>@cf/meta/llama-3.3-70b-instruct-fp8-fast</span>
-        {(loading || isRequesting) && <span className="text-accent-color">●</span>}
-      </div>
+    <div className="text-xs text-text-muted mt-1 px-1 flex justify-between">
+  <span className="flex items-center gap-1">
+    <img src="./meta.svg" className="w-10 h-10" alt="Meta" />
+    llama-70b-instruct-fast
+  </span>
+  {(loading || isRequesting) && <span className="text-accent-color">●</span>}
+</div>
     </div>
 
     <button
@@ -1489,7 +1492,6 @@ const renderAISection = () => (
    {response && (
   <div>
     <div className="response-label flex items-center gap-2">
-      <img src="./meta.svg" className="w-4 h-4" alt="Meta AI" />
       Meta AI
     </div>
     <div className="ai-response">{response}</div>
