@@ -1442,7 +1442,7 @@ const renderAISection = () => (
       <div className="flex items-center justify-between w-full">
         <div className="grid grid-cols-2 gap-2 w-full">
      
-          <BuildPrompts onPromptSelect={setPrompt} />
+        <BuildPrompts onPromptSelect={setPrompt} framework={framework} />
                                
           <button
             className="btn btn-outline btn-sm flex items-center gap-2 justify-center"
