@@ -14,7 +14,6 @@ export default function Home() {
   const htmlCode = `<!-- Welcome to studio.jessejesse.com -->
 <div class="welcome-container">
   <div class="welcome-content">
-    <!-- Main Header -->
     <header class="welcome-header">
       <div class="logo-container">
         <div class="logo-icon">
@@ -81,7 +80,7 @@ export default function Home() {
       </div>
     </div>
   </div>
-
+  
   <style>
     .welcome-container {
       display: flex;
@@ -409,10 +408,11 @@ root.render(React.createElement(WelcomeApp));`;
   const [code, setCode] = useState(htmlCode); 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [panelWidths, setPanelWidths] = useState({
-    components: 300,
-    editor: 550,
-    preview: 400,
-  });
+  components: 280,    
+  editor: 520,       
+  preview: 450,     
+});
+  
   const [resizingPanel, setResizingPanel] = useState<string | null>(null);
 
   const startXRef = useRef<number>(0);
