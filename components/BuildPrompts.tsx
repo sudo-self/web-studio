@@ -5,9 +5,10 @@ import { X } from "lucide-react";
 
 interface BuildPromptsProps {
   onPromptSelect: (prompt: string) => void;
+  framework: string; // Add framework prop
 }
 
-const promptCategories = {
+const htmlPromptCategories = {
   "Layout & Structure": [
     "Create a responsive hero section with a call-to-action button",
     "Build a modern navigation bar with dropdown menus",
@@ -15,10 +16,6 @@ const promptCategories = {
     "Create a multi-column card layout for services",
     "Build a sidebar navigation for admin dashboards",
     "Design a full-screen landing page with smooth scrolling",
-    "Create a grid-based portfolio layout",
-    "Build a split-screen layout for comparison pages",
-    "Design a sticky header that changes on scroll",
-    "Create a masonry grid layout for image galleries",
   ],
   "UI Components": [
     "Create a modern button with hover effects",
@@ -26,79 +23,57 @@ const promptCategories = {
     "Design a modal dialog with overlay",
     "Create a progress bar with animated filling",
     "Build a toggle switch component",
-    "Design a breadcrumb navigation",
-    "Create a pagination component",
-    "Build a tooltip that appears on hover",
-    "Design a loading spinner animation",
-    "Create a notification toast component",
   ],
   "Forms & Inputs": [
     "Create a contact form with validation",
     "Build a login/signup form with social buttons",
     "Design a search bar with autocomplete",
     "Create a multi-step form wizard",
-    "Build a file upload component with drag-and-drop",
-    "Design a date picker with calendar",
-    "Create a range slider for price filtering",
-    "Build a color picker component",
-    "Design a rating stars component",
-    "Create a tags input field",
-  ],
-  "Data Display": [
-    "Create a data table with sorting and filtering",
-    "Build a chart/graph component for analytics",
-    "Design a timeline for events or history",
-    "Create a statistics dashboard with metrics",
-    "Build a comparison table for pricing plans",
-    "Design a user profile card with avatar",
-    "Create a comment section with nested replies",
-    "Build a product catalog with filters",
-    "Design a weather widget",
-    "Create a countdown timer",
-  ],
-  "Interactive Elements": [
-    "Create an image carousel/slider",
-    "Build an accordion FAQ section",
-    "Design a tabbed interface",
-    "Create a drag-and-drop sortable list",
-    "Build a zoomable image gallery",
-    "Design a video player with controls",
-    "Create a map integration with markers",
-    "Build a drawing canvas",
-    "Design a quiz/interactive assessment",
-    "Create a real-time chat interface",
-  ],
-  "E-commerce": [
-    "Create a product card with add-to-cart",
-    "Build a shopping cart sidebar",
-    "Design a product quick view modal",
-    "Create a wishlist/heart button",
-    "Build a product filter sidebar",
-    "Design a checkout process form",
-    "Create a order tracking component",
-    "Build a product review section",
-    "Design a size/color selector",
-    "Create a related products carousel",
-  ],
-  "Blog & Content": [
-    "Create a blog post card layout",
-    "Build a featured posts slider",
-    "Design a newsletter signup section",
-    "Create a author bio component",
-    "Build a related articles section",
-    "Design a table of contents sidebar",
-    "Create a code syntax highlighter",
-    "Build a social sharing buttons",
-    "Design a comment form with preview",
-    "Create a reading progress indicator",
   ],
 };
 
-export default function BuildPrompts({ onPromptSelect }: BuildPromptsProps) {
+const reactPromptCategories = {
+  "Interactive Components": [
+    "Create a counter with increment, decrement, and reset buttons",
+    "Build a todo list with add, complete, and delete functionality",
+    "Design a tabs component with 3 tabs showing different content",
+    "Create an accordion FAQ with expand/collapse animation",
+    "Build a modal that opens and closes with backdrop",
+  ],
+  "Forms & Validation": [
+    "Create a contact form with name, email, message fields and validation",
+    "Build a login form with email/password and remember me checkbox",
+    "Design a registration form with password strength indicator",
+    "Create a search input with live filtering results",
+  ],
+  "Data Display": [
+    "Create a data table with sorting by column headers",
+    "Build a card grid showing 6 products with images and prices",
+    "Design a timeline showing company milestones",
+    "Create a statistics dashboard with 4 metric cards",
+  ],
+  "Interactive Lists": [
+    "Create a shopping cart with add/remove items and total price",
+    "Build a todo list with filtering (all, active, completed)",
+    "Design a comment section with nested replies",
+    "Create a product list with quantity increment/decrement",
+  ],
+  "UI Patterns": [
+    "Create a stepper/wizard component with 3 steps",
+    "Build a image gallery with lightbox on click",
+    "Design a dropdown menu that opens on click",
+    "Create a notification toast that auto-dismisses",
+  ],
+};
+
+export default function BuildPrompts({ onPromptSelect, framework }: BuildPromptsProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [popoverPosition, setPopoverPosition] = useState<'right' | 'left'>('right');
   const popoverRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+
+  // Choose prompts based on framework
+  const promptCategories = framework === "react" ? reactPromptCategories : htmlPromptCategories;
 
   const handlePromptClick = (prompt: string) => {
     onPromptSelect(prompt);
@@ -109,7 +84,7 @@ export default function BuildPrompts({ onPromptSelect }: BuildPromptsProps) {
     const calculatePopoverPosition = () => {
       if (buttonRef.current && popoverRef.current) {
         const buttonRect = buttonRef.current.getBoundingClientRect();
-        const popoverWidth = 400; 
+        const popoverWidth = 400;
         const spaceOnRight = window.innerWidth - buttonRect.right;
         
         if (spaceOnRight < popoverWidth && buttonRect.left > popoverWidth) {
@@ -122,7 +97,7 @@ export default function BuildPrompts({ onPromptSelect }: BuildPromptsProps) {
 
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        popoverRef.current && 
+        popoverRef.current &&
         !popoverRef.current.contains(event.target as Node) &&
         buttonRef.current &&
         !buttonRef.current.contains(event.target as Node)
@@ -150,7 +125,7 @@ export default function BuildPrompts({ onPromptSelect }: BuildPromptsProps) {
         onClick={() => setIsOpen(!isOpen)}
         className="btn btn-outline btn-sm flex items-center gap-2"
       >
-        AI Prompts
+        {framework === "react" ? "React Prompts" : "HTML Prompts"}
       </button>
 
       {isOpen && (
@@ -170,11 +145,10 @@ export default function BuildPrompts({ onPromptSelect }: BuildPromptsProps) {
             transform: 'translateY(-50%)'
           }}
         >
-       
           <div className="flex items-center justify-between p-4 border-b border-border-primary bg-black rounded-t-xl">
             <div className="flex items-center gap-2">
               <h4 className="text-sm font-semibold text-text-primary">
-                AI Builder Prompts
+                {framework === "react" ? "React" : "HTML"} Builder Prompts
               </h4>
             </div>
             <button
@@ -186,7 +160,6 @@ export default function BuildPrompts({ onPromptSelect }: BuildPromptsProps) {
             </button>
           </div>
 
-      
           <div className="overflow-y-auto flex-1 p-4 space-y-4 bg-black">
             {Object.entries(promptCategories).map(([category, prompts]) => (
               <div key={category} className="space-y-2">
@@ -208,10 +181,11 @@ export default function BuildPrompts({ onPromptSelect }: BuildPromptsProps) {
             ))}
           </div>
 
-     
           <div className="p-3 border-t border-border-primary bg-black rounded-b-xl">
             <p className="text-xs text-text-muted text-center">
-              Click any prompt to insert into AI chat
+              {framework === "react"
+                ? "Click any prompt to generate React component"
+                : "Click any prompt to generate HTML"}
             </p>
           </div>
         </div>
