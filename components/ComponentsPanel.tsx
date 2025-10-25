@@ -1020,7 +1020,7 @@ export default function ComponentsPanel({
     }
   }, []);
 
-  // Memoized computed values
+ 
   const filteredComponents = useMemo(() => {
     if (!searchTerm) return componentCategories;
     
@@ -1318,7 +1318,7 @@ CRITICAL REQUIREMENTS:
     <div className="!p-2 border-b border-panel-border">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h3 className="m-0 text-xs font-semibold">studio.JesseJesse.com</h3>
+          <h3 className="m-0 text-xs text-indigo-500 font-semibold">STUDIO</h3>
         </div>
         <div className="flex items-center gap-1">
           <button
@@ -1393,7 +1393,7 @@ const renderAISection = () => (
             className="btn btn-outline btn-sm flex items-center gap-2 justify-center"
             onClick={() => setShowGithubModal(true)}
           >
-            Create Repo
+            Github Repo
           </button>
           
       
@@ -1401,7 +1401,7 @@ const renderAISection = () => (
             className="btn btn-outline btn-sm flex items-center gap-2 justify-center"
             onClick={() => setShowPdfGenerator(true)}
           >
-            Generate PDF
+            PDF Tools
           </button>
           <button
             className="btn btn-outline btn-sm flex items-center gap-2 justify-center"
