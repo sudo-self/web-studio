@@ -1473,21 +1473,21 @@ const renderAISection = () => (
 </div>
     </div>
 
-    <button
-      className="btn btn-accent"
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (!isRequesting && !loading && prompt.trim()) {
-          askAi();
-        }
-      }}
-      disabled={loading || isRequesting || !prompt.trim()}
-      style={{ opacity: (loading || isRequesting || !prompt.trim()) ? 0.5 : 1 }}
-    >
-      <Bot size={16} />
-      {loading ? "Generating..." : isRequesting ? "Please wait..." : "Ask AI"}
-    </button>
+<button
+  className="btn btn-accent flex items-center gap-2"
+  onClick={(e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isRequesting && !loading && prompt.trim()) {
+      askAi();
+    }
+  }}
+  disabled={loading || isRequesting || !prompt.trim()}
+  style={{ opacity: (loading || isRequesting || !prompt.trim()) ? 0.5 : 1 }}
+>
+  <img src="./meta.svg" className="w-5 h-5" alt="Meta AI" />
+  {loading ? "Generating..." : isRequesting ? "Please wait..." : "Ask Meta"}
+</button>
 
    {response && (
   <div>
