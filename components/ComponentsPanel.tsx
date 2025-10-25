@@ -1466,28 +1466,28 @@ const renderAISection = () => (
       />
     <div className="text-xs text-text-muted mt-1 px-1 flex justify-between">
   <span className="flex items-center gap-1">
-    <img src="./metasvg.svg" className="w-6 h-6" alt="Meta" />
-   Meta llm-70b-instruct-fast
+    <img src="./workers.svg" className="w-6 h-6" alt="Meta" />
+    llama-3.3-70b-instruct-fp8-fast
   </span>
   {(loading || isRequesting) && <span className="text-accent-color">●</span>}
 </div>
     </div>
 
-<button
-  className="btn btn-accent flex items-center gap-2"
-  onClick={(e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!isRequesting && !loading && prompt.trim()) {
-      askAi();
-    }
-  }}
-  disabled={loading || isRequesting || !prompt.trim()}
-  style={{ opacity: (loading || isRequesting || !prompt.trim()) ? 0.5 : 1 }}
->
-  <img src="./meta.svg" className="w-5 h-5" alt="Meta AI" />
-  {loading ? "Generating..." : isRequesting ? "Please wait..." : "Ask Meta"}
-</button>
+                               <button
+                                 className="btn btn-outline flex items-center gap-2"
+                                 onClick={(e) => {
+                                   e.preventDefault();
+                                   e.stopPropagation();
+                                   if (!isRequesting && !loading && prompt.trim()) {
+                                     askAi();
+                                   }
+                                 }}
+                                 disabled={loading || isRequesting || !prompt.trim()}
+                                 style={{ opacity: (loading || isRequesting || !prompt.trim()) ? 0.5 : 1 }}
+                               >
+                                 <img src="./metasvg.svg" className="w-6 h-6" alt="Meta AI" />
+                                 {loading ? "Generating..." : isRequesting ? "Please wait..." : "Meta Build"}
+                               </button>
 
    {response && (
   <div>
@@ -1595,3 +1595,4 @@ const renderAISection = () => (
   </div>
 );
         }
+
