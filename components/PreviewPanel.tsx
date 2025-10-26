@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { GridPattern } from "./GridPattern";
-import { Smartphone, Tablet, Monitor } from "lucide-react";
+import { Smartphone, Tablet, Monitor, Wand2, Image as ImageIcon, Download, Package } from "lucide-react";
 
 interface PreviewPanelProps {
   code: string;
@@ -26,12 +26,16 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [iframeKey, setIframeKey] = useState(0);
+  const [showImageGen, setShowImageGen] = useState(false);
+  const [imagePrompt, setImagePrompt] = useState("");
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [showIconPack, setShowIconPack] = useState(false);
 
   const generateHtml = (content: string, currentFramework: string) => {
     if (currentFramework === "react") {
       const reactCode = content.trim();
       
-  
       if (!reactCode) {
         return `
           <!DOCTYPE html>
@@ -52,7 +56,6 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
         `;
       }
 
- 
       return `
         <!DOCTYPE html>
         <html>
@@ -75,16 +78,13 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
             const { useState, useEffect, useRef } = React;
             
             try {
-              // Wrap user code in an IIFE to handle different export patterns
               const UserComponent = (() => {
                 ${reactCode}
                 
-                // Handle different export patterns
                 if (typeof App !== 'undefined') return App;
                 if (typeof Component !== 'undefined') return Component;
                 if (typeof Default !== 'undefined') return Default;
                 
-                // If code directly returns JSX, wrap it
                 return () => {
                   try {
                     ${reactCode.includes('return') ? '' : 'return (' + reactCode + ')'}
@@ -95,7 +95,6 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
                 };
               })();
               
-              // Render with error boundary
               const root = ReactDOM.createRoot(document.getElementById('root'));
               root.render(React.createElement(UserComponent));
               
@@ -114,7 +113,6 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
       `;
     }
 
-    // HTML mode
     const htmlContent = content.trim() || '<div style="padding: 20px;">Ready for HTML code</div>';
     return `
       <!DOCTYPE html>
@@ -166,6 +164,22 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
     }
   };
 
+  const handleCopyHTMLTags = async () => {
+    const htmlTags = `<!-- Add these tags in your <head> section -->
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/icon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/icon-16x16.png">
+<link rel="icon" type="image/svg+xml" href="/icon.svg">`;
+    
+    try {
+      await navigator.clipboard.writeText(htmlTags);
+      addToast("HTML tags copied to clipboard!");
+    } catch {
+      addToast("Failed to copy HTML tags", "error");
+    }
+  };
+
   const handleFullscreen = () => {
     if (!panelRef.current) return;
     if (!isFullscreen) {
@@ -173,6 +187,65 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
     } else {
       document.exitFullscreen?.();
     }
+  };
+
+  const generateImage = async () => {
+    if (!imagePrompt.trim()) {
+      addToast("Please enter a prompt", "error");
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const response = await fetch("https://text-to-image.jessejesse.workers.dev", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt: imagePrompt }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate image");
+      }
+
+      const blob = await response.blob();
+      const imageUrl = URL.createObjectURL(blob);
+      setGeneratedImage(imageUrl);
+      addToast("Image generated successfully!");
+    } catch (error) {
+      addToast("Failed to generate image", "error");
+      console.error("Image generation error:", error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const downloadImage = () => {
+    if (!generatedImage) return;
+    const link = document.createElement("a");
+    link.href = generatedImage;
+    link.download = `ai-image-${Date.now()}.png`;
+    link.click();
+    addToast("Image downloaded!");
+  };
+
+  const insertImageIntoCode = () => {
+    if (!generatedImage) return;
+    addToast("Image URL ready to use!", "success");
+  };
+
+  const downloadIconPack = () => {
+    if (!generatedImage) {
+      addToast("Generate an image first", "error");
+      return;
+    }
+    addToast("Icon pack download started!");
+    // In a real implementation, you would generate multiple sizes and zip them
+    const link = document.createElement("a");
+    link.href = generatedImage;
+    link.download = `icon-pack-${Date.now()}.png`;
+    link.click();
   };
 
   useEffect(() => {
@@ -198,17 +271,17 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
       )}
 
       <div className="panel-header flex justify-between items-center p-4 border-b border-border-primary bg-surface-secondary">
-          <div className="flex items-center gap-3">
-            {framework === "react" ? (
-              <img src="./react.svg" className="w-6 h-6" alt="React" />
-            ) : (
-              <img src="./html5.svg" className="w-6 h-6" alt="HTML5" />
-            )}
-            <div className="flex flex-col">
-              <h2 className="text-lg font-semibold text-text-primary">Web Studio</h2>
-              <span className="text-xs text-text-tertiary">studio.jessejesse.com</span>
-            </div>
+        <div className="flex items-center gap-3">
+          {framework === "react" ? (
+            <img src="./react.svg" className="w-6 h-6" alt="React" />
+          ) : (
+            <img src="./html5.svg" className="w-6 h-6" alt="HTML5" />
+          )}
+          <div className="flex flex-col">
+            <h2 className="text-lg font-semibold text-text-primary">Web Studio</h2>
+            <span className="text-xs text-text-tertiary">studio.jessejesse.com</span>
           </div>
+        </div>
         <div className="flex gap-2">
           <button
             className="btn btn-outline btn-sm"
@@ -216,6 +289,20 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
             disabled={isRefreshing}
           >
             {isRefreshing ? "Refreshing..." : "Refresh"}
+          </button>
+          <button
+            className={`btn btn-sm ${showImageGen ? "btn-accent" : "btn-outline"} flex items-center gap-2`}
+            onClick={() => setShowImageGen(!showImageGen)}
+          >
+            <Wand2 className="w-4 h-4" />
+            AI Image
+          </button>
+          <button
+            className={`btn btn-sm ${showIconPack ? "btn-accent" : "btn-outline"} flex items-center gap-2`}
+            onClick={() => setShowIconPack(!showIconPack)}
+          >
+            <Package className="w-4 h-4" />
+            Icon Pack
           </button>
           <button
             className={`btn btn-sm ${showEmbed ? "btn-accent" : "btn-outline"}`}
@@ -238,11 +325,134 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
         </div>
       </div>
 
+      {showImageGen && (
+        <div className="bg-surface-primary border-b border-border-primary p-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-2 mb-2">
+                <img src="./workers.svg" className="w-6 h-6" alt="Cloudflare Workers" />
+                <span className="text-xs text-text-tertiary bg-surface-tertiary px-2 py-0.5 rounded">
+                  stabilityai/stable-diffusion-xl-base-1.0
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={imagePrompt}
+                  onChange={(e) => setImagePrompt(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && generateImage()}
+                  placeholder="Describe the image you want to generate..."
+                  className="flex-1 px-4 py-2 border border-border-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-interactive-accent bg-surface-primary text-text-primary placeholder-text-tertiary"
+                />
+                <button
+                  onClick={generateImage}
+                  disabled={isGenerating}
+                  className="btn btn-accent"
+                >
+                  {isGenerating ? "Generating..." : "Generate"}
+                </button>
+              </div>
+              {generatedImage && (
+                <div className="flex gap-3 p-4 bg-surface-tertiary rounded-lg">
+                  <img
+                    src={generatedImage}
+                    alt="Generated"
+                    className="w-32 h-32 object-cover rounded-lg shadow-md border border-border-primary"
+                  />
+                  <div className="flex-1 flex flex-col justify-center gap-2">
+                    <p className="text-sm text-text-secondary">Image generated successfully!</p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={downloadImage}
+                        className="btn btn-success btn-sm"
+                      >
+                        Download
+                      </button>
+                      <button
+                        onClick={insertImageIntoCode}
+                        className="btn btn-outline btn-sm"
+                      >
+                        Use in Code
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showIconPack && generatedImage && (
+        <div className="bg-surface-primary border-b border-border-primary p-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Package className="w-5 h-5 text-interactive-accent" />
+                  <h3 className="font-semibold text-text-primary">Icon Pack Generator</h3>
+                </div>
+                <span className="text-xs text-text-tertiary bg-surface-tertiary px-2 py-0.5 rounded">
+                  Includes 10+ HQ icons & SVG
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-surface-tertiary rounded-lg">
+                {[16, 32, 64, 128].map((size) => (
+                  <div key={size} className="flex flex-col items-center">
+                    <div className="bg-white p-2 rounded border border-border-primary">
+                      <img
+                        src={generatedImage}
+                        width={size}
+                        height={size}
+                        alt={`${size}px icon`}
+                        className="object-contain"
+                      />
+                    </div>
+                    <span className="text-xs text-text-tertiary mt-1">{size}px</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="space-y-3">
+                <h4 className="text-sm font-medium text-text-primary">HTML Head Tags</h4>
+                <div className="bg-surface-tertiary p-3 rounded-lg">
+                  <pre className="text-xs font-mono text-text-primary whitespace-pre-wrap">
+{`<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/icon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/icon-16x16.png">
+<link rel="icon" type="image/svg+xml" href="/icon.svg">`}
+                  </pre>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleCopyHTMLTags}
+                    className="btn btn-success btn-sm"
+                  >
+                    Copy HTML Tags
+                  </button>
+                  <button
+                    onClick={downloadIconPack}
+                    className="btn btn-accent btn-sm flex items-center gap-2"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download Icon Pack
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showEmbed && (
         <div className="bg-surface-primary border border-border-primary rounded-lg m-4 overflow-hidden">
           <div className="flex justify-between items-center p-3 border-b border-border-primary bg-surface-secondary">
             <span className="font-semibold text-sm text-text-primary">Component Code</span>
-            <button className="btn btn-success btn-sm" onClick={handleCopy}>Copy Code</button>
+            <button className="btn btn-success btn-sm" onClick={handleCopy}>
+              Copy Code
+            </button>
           </div>
           <div className="p-4 max-h-48 overflow-auto bg-surface-tertiary">
             <pre className="text-sm font-mono text-text-primary whitespace-pre-wrap leading-6">

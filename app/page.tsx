@@ -23,7 +23,7 @@ export default function Home() {
     </div>
     
     <p style="font-size: 1.5rem; margin-bottom: 3rem; opacity: 0.95; line-height: 1.5;">
-    publish beautiful websites with ready made components and the AI-powered builder.
+    Publish your project with ready made components and the AI-powered builder.
     </p>
     
     <button onclick="alert('Start building amazing websites!')" style="background: white; color: #667eea; border: none; padding: 16px 48px; font-size: 1.125rem; font-weight: 600; border-radius: 12px; cursor: pointer; box-shadow: 0 8px 24px rgba(0,0,0,0.15); transition: transform 0.2s, box-shadow 0.2s;">
