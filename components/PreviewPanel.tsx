@@ -16,6 +16,12 @@ interface Toast {
   type: "success" | "error";
 }
 
+interface IconSize {
+  size: number;
+  name: string;
+  fileName: string;
+}
+
 export default function PreviewPanel({ code, onResizeStart, framework }: PreviewPanelProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -31,6 +37,16 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showIconPack, setShowIconPack] = useState(false);
+
+  const iconSizes: IconSize[] = [
+    { size: 16, name: "Favicon", fileName: "favicon.ico" },
+    { size: 32, name: "Small", fileName: "icon-32x32.png" },
+    { size: 64, name: "Medium", fileName: "icon-64x64.png" },
+    { size: 128, name: "Large", fileName: "icon-128x128.png" },
+    { size: 180, name: "Apple Touch", fileName: "apple-touch-icon.png" },
+    { size: 192, name: "Android", fileName: "android-chrome-192x192.png" },
+    { size: 512, name: "Large Android", fileName: "android-chrome-512x512.png" },
+  ];
 
   const generateHtml = (content: string, currentFramework: string) => {
     if (currentFramework === "react") {
@@ -235,17 +251,115 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
     addToast("Image URL ready to use!", "success");
   };
 
-  const downloadIconPack = () => {
+  const resizeImage = async (imageUrl: string, width: number, height: number): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Use high quality scaling
+        ctx!.imageSmoothingEnabled = true;
+        ctx!.imageSmoothingQuality = 'high';
+        ctx!.drawImage(img, 0, 0, width, height);
+        
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error('Failed to create blob'));
+          }
+        }, 'image/png', 1.0);
+      };
+      
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = imageUrl;
+    });
+  };
+
+  const downloadIconPack = async () => {
     if (!generatedImage) {
       addToast("Generate an image first", "error");
       return;
     }
-    addToast("Icon pack download started!");
-    // In a real implementation, you would generate multiple sizes and zip them
-    const link = document.createElement("a");
-    link.href = generatedImage;
-    link.download = `icon-pack-${Date.now()}.png`;
-    link.click();
+
+    try {
+      addToast("Creating icon pack...");
+      
+      const JSZip = (await import('jszip')).default;
+      const zip = new JSZip();
+      
+      // Create icons folder
+      const iconsFolder = zip.folder("icons");
+      
+      if (!iconsFolder) {
+        throw new Error('Failed to create icons folder');
+      }
+
+      // Generate and add all icon sizes
+      for (const iconSize of iconSizes) {
+        try {
+          const resizedBlob = await resizeImage(generatedImage, iconSize.size, iconSize.size);
+          iconsFolder.file(iconSize.fileName, resizedBlob);
+        } catch (error) {
+          console.error(`Failed to resize image to ${iconSize.size}px:`, error);
+        }
+      }
+
+      // Add SVG version (using the largest PNG as base)
+      const svgBlob = await resizeImage(generatedImage, 512, 512);
+      iconsFolder.file("icon.svg", svgBlob);
+
+      // Add HTML tags file
+      const htmlTags = `<!-- Add these tags in your <head> section -->
+<link rel="icon" href="/icons/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png">
+<link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/android-chrome-192x192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/icons/android-chrome-512x512.png">`;
+      
+      zip.file("html-tags.html", htmlTags);
+
+      // Add README
+      const readme = `# Icon Pack
+
+This pack contains all the necessary icons for your website:
+
+## Included Files:
+${iconSizes.map(icon => `- ${icon.fileName} (${icon.size}x${icon.size}px) - ${icon.name}`).join('\n')}
+- icon.svg (Scalable vector version)
+
+## Usage:
+1. Extract the zip file
+2. Place the "icons" folder in your project's public directory
+3. Copy the HTML tags from html-tags.html into your <head> section
+4. Update paths if needed
+
+Generated with Web Studio - studio.jessejesse.com`;
+      
+      zip.file("README.md", readme);
+
+      // Generate and download zip
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(zipBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `icon-pack-${Date.now()}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      addToast("Icon pack downloaded successfully!");
+    } catch (error) {
+      console.error("Icon pack generation error:", error);
+      addToast("Failed to create icon pack", "error");
+    }
   };
 
   useEffect(() => {
@@ -291,20 +405,6 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
             {isRefreshing ? "Refreshing..." : "Refresh"}
           </button>
           <button
-            className={`btn btn-sm ${showImageGen ? "btn-accent" : "btn-outline"} flex items-center gap-2`}
-            onClick={() => setShowImageGen(!showImageGen)}
-          >
-            <Wand2 className="w-4 h-4" />
-            AI Image
-          </button>
-          <button
-            className={`btn btn-sm ${showIconPack ? "btn-accent" : "btn-outline"} flex items-center gap-2`}
-            onClick={() => setShowIconPack(!showIconPack)}
-          >
-            <Package className="w-4 h-4" />
-            Icon Pack
-          </button>
-          <button
             className={`btn btn-sm ${showEmbed ? "btn-accent" : "btn-outline"}`}
             onClick={() => setShowEmbed(!showEmbed)}
           >
@@ -329,11 +429,17 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
         <div className="bg-surface-primary border-b border-border-primary p-4">
           <div className="max-w-4xl mx-auto">
             <div className="flex flex-col gap-3">
-              <div className="flex items-center gap-2 mb-2">
-                <img src="./workers.svg" className="w-6 h-6" alt="Cloudflare Workers" />
-                <span className="text-xs text-text-tertiary bg-surface-tertiary px-2 py-0.5 rounded">
-                  stabilityai/stable-diffusion-xl-base-1.0
-                </span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Wand2 className="w-5 h-5 text-interactive-accent" />
+                  <h3 className="font-semibold text-text-primary">AI Image Generator</h3>
+                </div>
+                <div className="flex items-center gap-2">
+                  <img src="./workers.svg" className="w-5 h-5" alt="Cloudflare Workers" />
+                  <span className="text-xs text-text-tertiary bg-surface-tertiary px-2 py-0.5 rounded">
+                    stabilityai/stable-diffusion-xl-base-1.0
+                  </span>
+                </div>
               </div>
               <div className="flex gap-2">
                 <input
@@ -359,21 +465,30 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
                     alt="Generated"
                     className="w-32 h-32 object-cover rounded-lg shadow-md border border-border-primary"
                   />
-                  <div className="flex-1 flex flex-col justify-center gap-2">
-                    <p className="text-sm text-text-secondary">Image generated successfully!</p>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={downloadImage}
-                        className="btn btn-success btn-sm"
-                      >
-                        Download
-                      </button>
-                      <button
-                        onClick={insertImageIntoCode}
-                        className="btn btn-outline btn-sm"
-                      >
-                        Use in Code
-                      </button>
+                  <div className="flex-1 flex flex-col justify-between">
+                    <div>
+                      <p className="text-sm text-text-secondary mb-3">Image generated successfully!</p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={downloadImage}
+                          className="btn btn-success btn-sm"
+                        >
+                          Download Image
+                        </button>
+                        <button
+                          onClick={insertImageIntoCode}
+                          className="btn btn-outline btn-sm"
+                        >
+                          Use in Code
+                        </button>
+                        <button
+                          onClick={() => setShowIconPack(true)}
+                          className="btn btn-accent btn-sm flex items-center gap-2"
+                        >
+                          <Package className="w-4 h-4" />
+                          Create Icon Pack
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -393,23 +508,24 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
                   <h3 className="font-semibold text-text-primary">Icon Pack Generator</h3>
                 </div>
                 <span className="text-xs text-text-tertiary bg-surface-tertiary px-2 py-0.5 rounded">
-                  Includes 10+ HQ icons & SVG
+                  Includes {iconSizes.length} icons + SVG & HTML tags
                 </span>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-surface-tertiary rounded-lg">
-                {[16, 32, 64, 128].map((size) => (
-                  <div key={size} className="flex flex-col items-center">
-                    <div className="bg-white p-2 rounded border border-border-primary">
+                {iconSizes.map((iconSize) => (
+                  <div key={iconSize.size} className="flex flex-col items-center">
+                    <div className="bg-white p-2 rounded border border-border-primary shadow-sm">
                       <img
                         src={generatedImage}
-                        width={size}
-                        height={size}
-                        alt={`${size}px icon`}
+                        width={Math.min(iconSize.size, 64)}
+                        height={Math.min(iconSize.size, 64)}
+                        alt={`${iconSize.size}px icon`}
                         className="object-contain"
                       />
                     </div>
-                    <span className="text-xs text-text-tertiary mt-1">{size}px</span>
+                    <span className="text-xs text-text-tertiary mt-1">{iconSize.size}px</span>
+                    <span className="text-xs text-text-secondary">{iconSize.name}</span>
                   </div>
                 ))}
               </div>
@@ -418,11 +534,13 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
                 <h4 className="text-sm font-medium text-text-primary">HTML Head Tags</h4>
                 <div className="bg-surface-tertiary p-3 rounded-lg">
                   <pre className="text-xs font-mono text-text-primary whitespace-pre-wrap">
-{`<link rel="icon" href="/favicon.ico" sizes="any">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/icon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/icon-16x16.png">
-<link rel="icon" type="image/svg+xml" href="/icon.svg">`}
+{`<link rel="icon" href="/icons/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png">
+<link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/android-chrome-192x192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/icons/android-chrome-512x512.png">`}
                   </pre>
                 </div>
                 <div className="flex gap-2">
@@ -437,7 +555,7 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
                     className="btn btn-accent btn-sm flex items-center gap-2"
                   >
                     <Download className="w-4 h-4" />
-                    Download Icon Pack
+                    Download Icon Pack (.zip)
                   </button>
                 </div>
               </div>
