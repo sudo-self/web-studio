@@ -376,6 +376,9 @@ export default function Home() {
   return (
     <>
       <div className="app-container">
+        {/* StatusBar moved to top */}
+        <StatusBar />
+
         <div className="main-content">
           {/* Components Panel */}
           <div
@@ -444,8 +447,6 @@ export default function Home() {
             />
           </div>
         </div>
-
-        <StatusBar />
       </div>
 
       <SettingsPanel
