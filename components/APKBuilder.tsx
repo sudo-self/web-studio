@@ -28,8 +28,8 @@ export default function TWAManifestBuilder({ onInsert }: TWAManifestBuilderProps
   const [isLoading, setIsLoading] = useState(false);
 
   // Change this to your Cloud Run URL after deployment
-  const API_URL = window.location.hostname === 'localhost' 
-    ? 'http://localhost:8080' 
+  const API_URL = window.location.hostname === 'localhost'
+    ? 'http://localhost:8080'
     : '';
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -89,7 +89,7 @@ export default function TWAManifestBuilder({ onInsert }: TWAManifestBuilderProps
       setStatus('success');
 
     } catch (error) {
-      setErrorMsg(error.message || 'Build failed');
+      setErrorMsg((error as Error).message || 'Build failed');
       setStatus('error');
       setProgress('');
     }
@@ -151,9 +151,9 @@ export default function TWAManifestBuilder({ onInsert }: TWAManifestBuilderProps
         }}>
           <Building style={{ width: '24px', height: '24px', color: 'var(--text-inverse)' }} />
         </div>
-        <h2 style={{ 
-          fontSize: '20px', 
-          fontWeight: 600, 
+        <h2 style={{
+          fontSize: '20px',
+          fontWeight: 600,
           color: 'var(--text-primary)',
           margin: 0
         }}>
@@ -186,7 +186,6 @@ export default function TWAManifestBuilder({ onInsert }: TWAManifestBuilderProps
             fontSize: '14px',
             color: 'var(--text-primary)',
             fontFamily: 'var(--font-sans)',
-            display: 'flex',
             alignItems: 'center',
             gap: '8px'
           }}>
@@ -480,9 +479,9 @@ export default function TWAManifestBuilder({ onInsert }: TWAManifestBuilderProps
                   border: '1px solid var(--border-warning)',
                   backgroundColor: 'var(--surface-warning)'
                 }}>
-                  <h4 style={{ 
-                    fontSize: '14px', 
-                    fontWeight: 600, 
+                  <h4 style={{
+                    fontSize: '14px',
+                    fontWeight: 600,
                     color: 'var(--text-primary)',
                     margin: '0 0 8px 0',
                     display: 'flex',
@@ -492,7 +491,7 @@ export default function TWAManifestBuilder({ onInsert }: TWAManifestBuilderProps
                     <Key style={{ width: '14px', height: '14px' }} />
                     Auto-Generated Keystore
                   </h4>
-                  <p style={{ 
+                  <p style={{
                     color: 'var(--text-secondary)',
                     fontSize: '13px',
                     lineHeight: '1.5',
@@ -536,7 +535,7 @@ export default function TWAManifestBuilder({ onInsert }: TWAManifestBuilderProps
                       Copy Password
                     </button>
                   </div>
-                  <p style={{ 
+                  <p style={{
                     color: 'var(--text-secondary)',
                     fontSize: '11px',
                     margin: '8px 0 0 0',
@@ -586,9 +585,9 @@ export default function TWAManifestBuilder({ onInsert }: TWAManifestBuilderProps
           border: '1px solid var(--border-primary)',
           backgroundColor: 'var(--surface-secondary)'
         }}>
-          <h3 style={{ 
-            fontSize: '16px', 
-            fontWeight: 600, 
+          <h3 style={{
+            fontSize: '16px',
+            fontWeight: 600,
             color: 'var(--text-primary)',
             margin: '0 0 12px 0',
             display: 'flex',
@@ -598,7 +597,7 @@ export default function TWAManifestBuilder({ onInsert }: TWAManifestBuilderProps
             <Package style={{ width: '16px', height: '16px' }} />
             Requirements
           </h3>
-          <ul style={{ 
+          <ul style={{
             color: 'var(--text-secondary)',
             fontSize: '13px',
             lineHeight: '1.6',
@@ -634,8 +633,8 @@ export default function TWAManifestBuilder({ onInsert }: TWAManifestBuilderProps
           fontWeight: 600
         }}>
           <CheckCircle style={{ width: '16px', height: '16px' }} />
-          {copiedItem === 'keystore-password' 
-            ? 'Keystore password copied!' 
+          {copiedItem === 'keystore-password'
+            ? 'Keystore password copied!'
             : 'Copied to clipboard!'}
         </div>
       )}
@@ -659,3 +658,4 @@ export default function TWAManifestBuilder({ onInsert }: TWAManifestBuilderProps
     </div>
   );
 }
+
