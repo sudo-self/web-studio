@@ -6,6 +6,8 @@ import BuildPrompts from "./BuildPrompts";
 import { GitHubModal } from "./GitHubModal";
 import PDFGenerator from './PDFGenerator';
 import BadgeBuilder from './BadgeBuilder';
+import ColorPalette from './ColorPalette';
+
 
 import {
   FileText, Sparkles, Info, Wrench, Phone, SquareStack, CreditCard,
@@ -790,6 +792,10 @@ interface GitHubFormData {
   deployPages: boolean;
 }
 
+interface ColorPaletteProps {
+  onInsert?: (code: string) => void;
+}
+
 
 const COMPONENT_ICONS: { [key: string]: ReactElement } = {
   header: <FileText size={16} />,
@@ -1033,6 +1039,7 @@ export default function ComponentsPanel({
   const [isCreatingRepo, setIsCreatingRepo] = useState(false);
   const [showPdfGenerator, setShowPdfGenerator] = useState(false);
   const [showBadgeBuilder, setShowBadgeBuilder] = useState(false);
+  const [showColorPalette, setShowColorPalette] = useState(false);
   
   const [favorites, setFavorites] = useLocalStorageState<Set<string>>('component-favorites', new Set());
   const [recentComponents, setRecentComponents] = useLocalStorageState<string[]>('recent-components', []);
@@ -1447,214 +1454,262 @@ CRITICAL REQUIREMENTS FOR HTML:
     </div>
   );
 
-  const renderAISection = () => (
-    <div className="ai-section">
-      <div className="panel-header">
-        <div className="flex items-center justify-between w-full">
-          <div className="grid grid-cols-2 gap-2 w-full max-w-full">
-            <BuildPrompts onPromptSelect={setPrompt} framework={framework} />
-                                  
-            <button
-              className="flex items-center justify-center p-0 min-w-0 max-w-full overflow-hidden"
-              onClick={() => setShowGithubModal(true)}
-            >
-              Github Login
-            </button>
-                                 <button
-                                   className="flex items-center justify-center p-0 min-w-0 max-w-full overflow-hidden"
-                                   onClick={() => setShowBadgeBuilder(true)}
-                                 >
-                                   <img
-                                     src="https://img.shields.io/badge/Badge-Builder-pink?style=plastic"
-                                     alt="Badge Builder"
-                                     className="w-full h-auto max-w-full object-contain"
-                                     style={{ maxHeight: '28px' }}
-                                   />
-                                 </button>
-            
-           
-                                 <button
-                                   className="flex items-center justify-center p-0 min-w-0 max-w-full overflow-hidden"
-                                   onClick={() => setShowPdfGenerator(true)}
-                                 >
-                                  PDF Pro
-                                 </button>
-                                 
-                                 
-                                
-          
+    const renderAISection = () => (
+      <div className="ai-section">
+        <div className="panel-header">
+          <div className="flex items-center justify-between w-full">
+            <div className="grid grid-cols-2 gap-2 w-full max-w-full">
+              <BuildPrompts onPromptSelect={setPrompt} framework={framework} />
+                                    
+                                   <button
+                                     className="flex items-center justify-center p-0 min-w-0 max-w-full overflow-hidden h-7 transition-all duration-200 hover:scale-105 hover:brightness-110 active:scale-95"
+                                     onClick={() => setShowGithubModal(true)}
+                                   >
+                                     <img
+                                       src="https://img.shields.io/badge/Create_Repo-black?style=plastic&logo=github"
+                                       alt="Github Login"
+                                       className="w-full h-full object-contain transition-all duration-200 hover:shadow-lg"
+                                     />
+                                   </button>
+              
+              <button
+                className="flex items-center justify-center p-0 min-w-0 max-w-full overflow-hidden h-7 transition-all duration-200 hover:scale-105 hover:brightness-110 active:scale-95"
+                onClick={() => setShowBadgeBuilder(true)}
+              >
+                <img
+                  src="https://img.shields.io/badge/Badge_Builder-pink?style=plastic"
+                  alt="Badge Builder"
+                  className="w-full h-full object-contain transition-all duration-200 hover:shadow-lg"
+                />
+              </button>
+              
+              <button
+                className="flex items-center justify-center p-0 min-w-0 max-w-full overflow-hidden h-7 transition-all duration-200 hover:scale-105 hover:brightness-110 active:scale-95"
+                onClick={() => setShowPdfGenerator(true)}
+              >
+                <img
+                  src="https://img.shields.io/badge/PDF_Generator-red?style=plastic"
+                  alt="PDF Generator"
+                  className="w-full h-full object-contain transition-all duration-200 hover:shadow-lg"
+                />
+              </button>
+              
+              <button
+                className="flex items-center justify-center p-0 min-w-0 max-w-full overflow-hidden h-7 transition-all duration-200 hover:scale-105 hover:brightness-110 active:scale-95"
+                onClick={() => setShowColorPalette(true)}
+              >
+                <img
+                  src="https://img.shields.io/badge/Color_Palette-9c7dd5?style=plastic"
+                  alt="Color Palette"
+                  className="w-full h-full object-contain transition-all duration-200 hover:shadow-lg"
+                />
+              </button>
+
+              <button
+                className="flex items-center justify-center p-0 min-w-0 max-w-full overflow-hidden h-7 transition-all duration-200 hover:scale-105 hover:brightness-110 active:scale-95 opacity-70 cursor-not-allowed"
+                onClick={() => {/* Will wire up later */}}
+              >
+                <img
+                  src="https://img.shields.io/badge/Not_In_Service-lightgrey?style=plastic"
+                  alt="More Tools"
+                  className="w-full h-full object-contain transition-all duration-200"
+                />
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="mode-toggle">
-        <label className="mode-option">
-          <input
-            type="radio"
-            value="response"
-            checked={mode === "response"}
-            onChange={() => setMode("response")}
-            disabled={loading || isRequesting}
-          />
-          Stateless
-        </label>
-        <label className="mode-option">
-          <input
-            type="radio"
-            value="chat"
-            checked={mode === "chat"}
-            onChange={() => setMode("chat")}
-            disabled={loading || isRequesting}
-          />
-          Persist
-        </label>
-      </div>
+        <div className="mode-toggle">
+          <label className="mode-option">
+            <input
+              type="radio"
+              value="response"
+              checked={mode === "response"}
+              onChange={() => setMode("response")}
+              disabled={loading || isRequesting}
+            />
+            Stateless
+          </label>
+          <label className="mode-option">
+            <input
+              type="radio"
+              value="chat"
+              checked={mode === "chat"}
+              onChange={() => setMode("chat")}
+              disabled={loading || isRequesting}
+            />
+            Persist
+          </label>
+        </div>
 
-      <div className="relative">
-        <textarea
-          className="prompt-textarea"
-          placeholder="describe what to create..."
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-              e.preventDefault();
-              if (!isRequesting && !loading && prompt.trim()) {
-                askAi();
+        <div className="relative">
+          <textarea
+            className="prompt-textarea"
+            placeholder="describe what to create..."
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                if (!isRequesting && !loading && prompt.trim()) {
+                  askAi();
+                }
               }
+            }}
+            disabled={loading || isRequesting}
+          />
+          <div className="text-xs text-text-muted mt-1 px-1 flex justify-between">
+            <span className="flex items-center gap-1">
+              <img src="./workers.svg" className="w-6 h-6" alt="Meta" />
+              llama-3.3-70b-instruct-fp8-fast
+            </span>
+            {(loading || isRequesting) && <span className="text-accent-color">●</span>}
+          </div>
+        </div>
+
+        <button
+          className="btn btn-outline flex items-center gap-2 w-full justify-center"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!isRequesting && !loading && prompt.trim()) {
+              askAi();
             }
           }}
-          disabled={loading || isRequesting}
-        />
-        <div className="text-xs text-text-muted mt-1 px-1 flex justify-between">
-          <span className="flex items-center gap-1">
-            <img src="./workers.svg" className="w-6 h-6" alt="Meta" />
-            llama-3.3-70b-instruct-fp8-fast
-          </span>
-          {(loading || isRequesting) && <span className="text-accent-color">●</span>}
-        </div>
-      </div>
+          disabled={loading || isRequesting || !prompt.trim()}
+          style={{ opacity: (loading || isRequesting || !prompt.trim()) ? 0.5 : 1 }}
+        >
+          <img src="./metasvg.svg" className="w-6 h-6" alt="Meta AI" />
+          {loading ? "Generating..." : isRequesting ? "Please wait..." : "Meta Build"}
+        </button>
 
-      <button
-        className="btn btn-outline flex items-center gap-2 w-full justify-center"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          if (!isRequesting && !loading && prompt.trim()) {
-            askAi();
-          }
-        }}
-        disabled={loading || isRequesting || !prompt.trim()}
-        style={{ opacity: (loading || isRequesting || !prompt.trim()) ? 0.5 : 1 }}
-      >
-        <img src="./metasvg.svg" className="w-6 h-6" alt="Meta AI" />
-        {loading ? "Generating..." : isRequesting ? "Please wait..." : "Meta Build"}
-      </button>
-
-      {response && (
-        <div>
-          <div className="response-label flex items-center gap-2">
-            Meta AI
+        {response && (
+          <div>
+            <div className="response-label flex items-center gap-2">
+              Meta AI
+            </div>
+            <div className="ai-response">{response}</div>
           </div>
-          <div className="ai-response">{response}</div>
-        </div>
-      )}
-      
-      {mode === "chat" && chatHistory.length > 0 && (
-        <div>
-          <div className="response-label flex justify-between items-center">
-            <span>Chat History</span>
-            <button onClick={() => setChatHistory([])} className="text-xs text-text-muted hover:text-foreground">
-              Clear
-            </button>
-          </div>
-          <div className="chat-history">
-            {chatHistory.map((msg, i) => (
-              <div key={i} className={`chat-message ${msg.role}`}>
-                <div className={`message-role ${msg.role}`}>
-                  {msg.role.toUpperCase()}
+        )}
+        
+        {mode === "chat" && chatHistory.length > 0 && (
+          <div>
+            <div className="response-label flex justify-between items-center">
+              <span>Chat History</span>
+              <button onClick={() => setChatHistory([])} className="text-xs text-text-muted hover:text-foreground">
+                Clear
+              </button>
+            </div>
+            <div className="chat-history">
+              {chatHistory.map((msg, i) => (
+                <div key={i} className={`chat-message ${msg.role}`}>
+                  <div className={`message-role ${msg.role}`}>
+                    {msg.role.toUpperCase()}
+                  </div>
+                  <div>{msg.content}</div>
                 </div>
-                <div>{msg.content}</div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
-    </div>
-  );
+        )}
+      </div>
+    );
 
-  return (
-    <div className="flex flex-col h-full overflow-hidden relative">
-      {onResizeStart && (
-        <div
-          className="absolute -right-2 top-0 bottom-0 w-4 cursor-col-resize z-20 hover:bg-accent-color hover:bg-opacity-50 transition-colors"
-          onMouseDown={onResizeStart}
+    return (
+      <div className="flex flex-col h-full overflow-hidden relative">
+        {onResizeStart && (
+          <div
+            className="absolute -right-2 top-0 bottom-0 w-4 cursor-col-resize z-20 hover:bg-accent-color hover:bg-opacity-50 transition-colors"
+            onMouseDown={onResizeStart}
+          />
+        )}
+
+        {renderHeader()}
+        {renderComponentsList()}
+        {renderAISection()}
+
+        <GitHubModal
+          showGithubModal={showGithubModal}
+          setShowGithubModal={setShowGithubModal}
+          githubToken={githubToken}
+          setGithubToken={setGithubToken}
+          githubUser={githubUser}
+          setGithubUser={setGithubUser}
+          githubForm={githubForm}
+          setGithubForm={setGithubForm}
+          isCreatingRepo={isCreatingRepo}
+          handleCreateRepo={handleCreateRepo}
+          fetchUserInfo={fetchUserInfo}
         />
-      )}
 
-      {renderHeader()}
-      {renderComponentsList()}
-      {renderAISection()}
-
-      <GitHubModal
-        showGithubModal={showGithubModal}
-        setShowGithubModal={setShowGithubModal}
-        githubToken={githubToken}
-        setGithubToken={setGithubToken}
-        githubUser={githubUser}
-        setGithubUser={setGithubUser}
-        githubForm={githubForm}
-        setGithubForm={setGithubForm}
-        isCreatingRepo={isCreatingRepo}
-        handleCreateRepo={handleCreateRepo}
-        fetchUserInfo={fetchUserInfo}
-      />
-
-      {showPdfGenerator && (
-        <div className="modal-overlay" onClick={() => setShowPdfGenerator(false)}>
-          <div
-            className="modal-content pdf-modal-content"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="modal-header">
-              <h2 className="modal-title">PDF Generator</h2>
-              <button
-                onClick={() => setShowPdfGenerator(false)}
-                className="modal-close-btn"
-                aria-label="Close PDF generator"
-              >
-                <X size={18} />
-              </button>
-            </div>
-            <div className="modal-body pdf-modal-body">
-              <PDFGenerator currentCode={currentCode} />
+        {showPdfGenerator && (
+          <div className="modal-overlay" onClick={() => setShowPdfGenerator(false)}>
+            <div
+              className="modal-content pdf-modal-content"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="modal-header">
+                <h2 className="modal-title">PDF Generator</h2>
+                <button
+                  onClick={() => setShowPdfGenerator(false)}
+                  className="modal-close-btn"
+                  aria-label="Close PDF generator"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="modal-body pdf-modal-body">
+                <PDFGenerator currentCode={currentCode} />
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {showBadgeBuilder && (
-        <div className="modal-overlay" onClick={() => setShowBadgeBuilder(false)}>
-          <div
-            className="modal-content badge-modal-content"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="modal-header">
-              <h2 className="modal-title">Badge Builder</h2>
-              <button
-                onClick={() => setShowBadgeBuilder(false)}
-                className="modal-close-btn"
-                aria-label="Close Badge Builder"
-              >
-                <X size={18} />
-              </button>
-            </div>
-            <div className="modal-body badge-modal-body">
-              <BadgeBuilder onInsert={onInsert} />
+        {showColorPalette && (
+          <div className="modal-overlay" onClick={() => setShowColorPalette(false)}>
+            <div
+              className="modal-content color-palette-modal-content"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="modal-header">
+                <h2 className="modal-title">Color Palette</h2>
+                <button
+                  onClick={() => setShowColorPalette(false)}
+                  className="modal-close-btn"
+                  aria-label="Close Color Palette"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="modal-body color-palette-modal-body">
+                <ColorPalette onInsert={onAiInsert} />
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
-  );
-}
+        )}
+
+        {showBadgeBuilder && (
+          <div className="modal-overlay" onClick={() => setShowBadgeBuilder(false)}>
+            <div
+              className="modal-content badge-modal-content"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="modal-header">
+                <h2 className="modal-title">Badge Builder</h2>
+                <button
+                  onClick={() => setShowBadgeBuilder(false)}
+                  className="modal-close-btn"
+                  aria-label="Close Badge Builder"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="modal-body badge-modal-body">
+                <BadgeBuilder onInsert={onInsert} />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
