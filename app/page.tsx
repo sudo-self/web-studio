@@ -11,43 +11,45 @@ export default function Home() {
   const [framework, setFramework] = useState("html");
   
   const htmlCode = `
-<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 3rem 2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-  <div style="max-width: 600px; text-align: center; color: white;">
+<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 3rem 2rem; background: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <div style="max-width: 600px; text-align: center;">
     <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 2rem;">
-      <div style="width: 64px; height: 64px; background: white; border-radius: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2">
+      <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#f3f4f6" stroke-width="2">
           <path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
         </svg>
       </div>
-      <h1 style="font-size: 3rem; font-weight: 800; margin: 0; letter-spacing: -0.02em;">Your Website</h1>
+      <h1 style="font-size: 3rem; font-weight: 800; margin: 0; letter-spacing: -0.02em; background: linear-gradient(135deg, #1f2937 0%, #374151 33%, #4b5563 66%, #6b7280 100%); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+        Your Website
+      </h1>
     </div>
     
-    <p style="font-size: 1.5rem; margin-bottom: 3rem; opacity: 0.95; line-height: 1.5;">
-    Publish your project with ready made components and the AI-powered builder.
+    <p style="font-size: 1.5rem; margin-bottom: 3rem; line-height: 1.5; background: linear-gradient(135deg, #4b5563 0%, #6b7280 33%, #9ca3af 66%, #d1d5db 100%); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+      Publish your project with ready made components and the AI-powered builder.
     </p>
     
-    <button onclick="alert('Start building amazing websites!')" style="background: white; color: #667eea; border: none; padding: 16px 48px; font-size: 1.125rem; font-weight: 600; border-radius: 12px; cursor: pointer; box-shadow: 0 8px 24px rgba(0,0,0,0.15); transition: transform 0.2s, box-shadow 0.2s;">
+    <button onclick="alert('Start building amazing websites!')" style="background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%); color: white; border: none; padding: 16px 48px; font-size: 1.125rem; font-weight: 600; border-radius: 12px; cursor: pointer; box-shadow: 0 8px 24px rgba(0,0,0,0.15); transition: transform 0.2s, box-shadow 0.2s;">
       Get Started
     </button>
     
-    <div style="display: flex; gap: 4rem; justify-content: center; margin-top: 4rem; padding-top: 3rem; border-top: 1px solid rgba(255,255,255,0.2);">
+    <div style="display: flex; gap: 4rem; justify-content: center; margin-top: 4rem; padding-top: 3rem; border-top: 1px solid #d1d5db;">
       <div>
-        <div style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">50+</div>
-        <div style="font-size: 0.875rem; opacity: 0.8;">Components</div>
+        <div style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">50+</div>
+        <div style="font-size: 0.875rem; background: linear-gradient(135deg, #6b7280 0%, #9ca3af 50%, #d1d5db 100%); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Components</div>
       </div>
       <div>
-        <div style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">AI</div>
-        <div style="font-size: 0.875rem; opacity: 0.8;">Powered</div>
+        <div style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">AI</div>
+        <div style="font-size: 0.875rem; background: linear-gradient(135deg, #6b7280 0%, #9ca3af 50%, #d1d5db 100%); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Powered</div>
       </div>
       <div>
-        <div style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">100%</div>
-        <div style="font-size: 0.875rem; opacity: 0.8;">Free</div>
+        <div style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; background: linear-gradient(135deg, #1f2937 0%, #374151 50%, #4b5563 100%); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">100%</div>
+        <div style="font-size: 0.875rem; background: linear-gradient(135deg, #6b7280 0%, #9ca3af 50%, #d1d5db 100%); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Free</div>
       </div>
     </div>
   </div>
 </div>`;
 
-    // React app gets cyan-500 with gradient blues
+    // React app with gray-100 background and cyan gradient text colors
     const reactCode = `function App() {
     const [count, setCount] = useState(0);
     
@@ -59,13 +61,12 @@ export default function Home() {
         justifyContent: 'center', 
         minHeight: '100vh', 
         padding: '3rem 2rem',
-        background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #1d4ed8 100%)',
+        background: '#f3f4f6',
         fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif'
       }}>
         <div style={{ 
           maxWidth: '600px', 
-          textAlign: 'center',
-          color: 'white'
+          textAlign: 'center'
         }}>
           <div style={{
             display: 'flex',
@@ -74,42 +75,45 @@ export default function Home() {
             gap: '1rem',
             marginBottom: '2rem'
           }}>
-            <div style={{
-              width: '64px',
-              height: '64px',
-              background: 'rgba(255,255,255,0.95)',
-              borderRadius: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
-              backdropFilter: 'blur(10px)'
-            }}>
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" strokeWidth="2">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M12 6v6l4 2"/>
-              </svg>
-            </div>
-            <h1 style={{ 
-              fontSize: '3rem', 
-              fontWeight: '800', 
-              margin: 0,
-              letterSpacing: '-0.02em',
-              background: 'linear-gradient(135deg, #ffffff 0%, #e0f2fe 100%)',
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent'
-            }}>
-              React App
-            </h1>
+       <div style={{
+         width: '64px',
+         height: '64px',
+         background: 'linear-gradient(135deg, #0e7490 0%, #0891b2 33%, #06b6d4 66%, #22d3ee 100%)',
+         borderRadius: '16px',
+         display: 'flex',
+         alignItems: 'center',
+         justifyContent: 'center',
+         boxShadow: '0 8px 32px rgba(0,0,0,0.15)'
+       }}>
+         <img 
+           src="/react.svg" 
+           alt="React" 
+           style={{ width: '32px', height: '32px' }}
+         />
+       </div>
+       <h1 style={{ 
+         fontSize: '3rem', 
+         fontWeight: '800', 
+         margin: 0,
+         letterSpacing: '-0.02em',
+         background: 'linear-gradient(135deg, #0e7490 0%, #0891b2 33%, #06b6d4 66%, #22d3ee 100%)',
+         backgroundClip: 'text',
+         WebkitBackgroundClip: 'text',
+         WebkitTextFillColor: 'transparent'
+       }}>
+         React App
+       </h1>
+
           </div>
           
           <p style={{ 
             fontSize: '1.5rem', 
             marginBottom: '3rem',
-            opacity: 0.95,
             lineHeight: 1.5,
-            textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            background: 'linear-gradient(135deg, #155e75 0%, #0e7490 33%, #0891b2 66%, #06b6d4 100%)',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent'
           }}>
             Interactive components with React hooks
           </p>
@@ -124,33 +128,35 @@ export default function Home() {
             <button 
               onClick={() => setCount(count - 1)}
               style={{
-                background: 'rgba(255,255,255,0.2)',
+                background: 'linear-gradient(135deg, #0e7490 0%, #0891b2 50%, #06b6d4 100%)',
                 color: 'white',
-                border: '2px solid rgba(255,255,255,0.5)',
+                border: 'none',
                 padding: '12px 24px',
                 fontSize: '1.5rem',
                 fontWeight: '700',
                 borderRadius: '12px',
                 cursor: 'pointer',
                 minWidth: '60px',
-                transition: 'all 0.2s',
-                backdropFilter: 'blur(10px)'
+                transition: 'all 0.2s'
               }}
             >
               −
             </button>
             
             <div style={{
-              background: 'rgba(255,255,255,0.95)',
-              color: '#06b6d4',
+              background: 'white',
+              color: '#0e7490',
               padding: '20px 40px',
               fontSize: '3rem',
               fontWeight: '800',
               borderRadius: '16px',
               minWidth: '140px',
               boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255,255,255,0.2)'
+              border: '2px solid #0e7490',
+              background: 'linear-gradient(135deg, #0e7490 0%, #0891b2 33%, #06b6d4 66%, #22d3ee 100%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
             }}>
               {count}
             </div>
@@ -158,8 +164,8 @@ export default function Home() {
             <button 
               onClick={() => setCount(count + 1)}
               style={{
-                background: 'rgba(255,255,255,0.95)',
-                color: '#06b6d4',
+                background: 'linear-gradient(135deg, #0e7490 0%, #0891b2 50%, #06b6d4 100%)',
+                color: 'white',
                 border: 'none',
                 padding: '12px 24px',
                 fontSize: '1.5rem',
@@ -168,8 +174,7 @@ export default function Home() {
                 cursor: 'pointer',
                 minWidth: '60px',
                 boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                transition: 'all 0.2s',
-                backdropFilter: 'blur(10px)'
+                transition: 'all 0.2s'
               }}
             >
               +
@@ -179,17 +184,19 @@ export default function Home() {
           <button 
             onClick={() => setCount(0)}
             style={{
-              background: 'rgba(255,255,255,0.15)',
-              color: 'white',
-              border: '1px solid rgba(255,255,255,0.3)',
+              background: 'white',
+              color: '#0e7490',
+              border: '2px solid transparent',
+              backgroundImage: 'linear-gradient(135deg, #0e7490 0%, #0891b2 33%, #06b6d4 66%, #22d3ee 100%)',
+              backgroundOrigin: 'border-box',
+              backgroundClip: 'padding-box, border-box',
               padding: '12px 32px',
               fontSize: '1rem',
               fontWeight: '600',
               borderRadius: '8px',
               cursor: 'pointer',
               marginBottom: '3rem',
-              transition: 'all 0.2s',
-              backdropFilter: 'blur(10px)'
+              transition: 'all 0.2s'
             }}
           >
             Reset Counter
@@ -200,49 +207,67 @@ export default function Home() {
             gap: '4rem', 
             justifyContent: 'center',
             paddingTop: '3rem',
-            borderTop: '1px solid rgba(255,255,255,0.2)'
+            borderTop: '1px solid #d1d5db'
           }}>
             <div>
               <div style={{ 
                 fontSize: '2rem', 
                 fontWeight: '700', 
                 marginBottom: '0.5rem',
-                background: 'linear-gradient(135deg, #ffffff 0%, #e0f2fe 100%)',
+                background: 'linear-gradient(135deg, #0e7490 0%, #0891b2 33%, #06b6d4 66%, #22d3ee 100%)',
                 backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent'
               }}>
                 useState
               </div>
-              <div style={{ fontSize: '0.875rem', opacity: 0.8 }}>React Hook</div>
+              <div style={{ 
+                fontSize: '0.875rem',
+                background: 'linear-gradient(135deg, #155e75 0%, #0e7490 50%, #0891b2 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}>React Hook</div>
             </div>
             <div>
               <div style={{ 
                 fontSize: '2rem', 
                 fontWeight: '700', 
                 marginBottom: '0.5rem',
-                background: 'linear-gradient(135deg, #ffffff 0%, #e0f2fe 100%)',
+                background: 'linear-gradient(135deg, #0e7490 0%, #0891b2 33%, #06b6d4 66%, #22d3ee 100%)',
                 backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent'
               }}>
                 JSX
               </div>
-              <div style={{ fontSize: '0.875rem', opacity: 0.8 }}>Syntax</div>
+              <div style={{ 
+                fontSize: '0.875rem',
+                background: 'linear-gradient(135deg, #155e75 0%, #0e7490 50%, #0891b2 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}>Syntax</div>
             </div>
             <div>
               <div style={{ 
                 fontSize: '2rem', 
                 fontWeight: '700', 
                 marginBottom: '0.5rem',
-                background: 'linear-gradient(135deg, #ffffff 0%, #e0f2fe 100%)',
+                background: 'linear-gradient(135deg, #0e7490 0%, #0891b2 33%, #06b6d4 66%, #22d3ee 100%)',
                 backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent'
               }}>
                 Live
               </div>
-              <div style={{ fontSize: '0.875rem', opacity: 0.8 }}>Preview</div>
+              <div style={{ 
+                fontSize: '0.875rem',
+                background: 'linear-gradient(135deg, #155e75 0%, #0e7490 50%, #0891b2 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}>Preview</div>
             </div>
           </div>
         </div>

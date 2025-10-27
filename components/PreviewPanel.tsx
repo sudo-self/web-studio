@@ -261,7 +261,7 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
         canvas.width = width;
         canvas.height = height;
         
-        // Use high quality scaling
+     
         ctx!.imageSmoothingEnabled = true;
         ctx!.imageSmoothingQuality = 'high';
         ctx!.drawImage(img, 0, 0, width, height);
@@ -292,14 +292,14 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
       const JSZip = (await import('jszip')).default;
       const zip = new JSZip();
       
-      // Create icons folder
+    
       const iconsFolder = zip.folder("icons");
       
       if (!iconsFolder) {
         throw new Error('Failed to create icons folder');
       }
 
-      // Generate and add all icon sizes
+  
       for (const iconSize of iconSizes) {
         try {
           const resizedBlob = await resizeImage(generatedImage, iconSize.size, iconSize.size);
@@ -309,11 +309,11 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
         }
       }
 
-      // Add SVG version (using the largest PNG as base)
+    
       const svgBlob = await resizeImage(generatedImage, 512, 512);
       iconsFolder.file("icon.svg", svgBlob);
 
-      // Add HTML tags file
+    
       const htmlTags = `<!-- Add these tags in your <head> section -->
 <link rel="icon" href="/icons/favicon.ico" sizes="any">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
@@ -325,8 +325,8 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
       
       zip.file("html-tags.html", htmlTags);
 
-      // Add README
-      const readme = `# Icon Pack
+      // README
+      const readme = `# How to Use
 
 This pack contains all the necessary icons for your website:
 
@@ -344,7 +344,7 @@ Generated with Web Studio - studio.jessejesse.com`;
       
       zip.file("README.md", readme);
 
-      // Generate and download zip
+    
       const zipBlob = await zip.generateAsync({ type: "blob" });
       const url = URL.createObjectURL(zipBlob);
       const link = document.createElement("a");
@@ -368,11 +368,11 @@ Generated with Web Studio - studio.jessejesse.com`;
     return () => document.removeEventListener("fullscreenchange", handleFSChange);
   }, []);
 
-  const deviceSizes = {
-    mobile: { width: "375px", height: "667px" },
-    tablet: { width: "768px", height: "1024px" },
-    desktop: { width: "100%", height: "100%" },
-  };
+    const deviceSizes = {
+      mobile: { width: "min(375px, 95vw)", height: "min(667px, 90vh)" },
+      tablet: { width: "min(768px, 95vw)", height: "min(1024px, 95vh)" },
+      desktop: { width: "100%", height: "100%" },
+    };
   const deviceIcons = { mobile: Smartphone, tablet: Tablet, desktop: Monitor };
 
   return (
@@ -396,119 +396,152 @@ Generated with Web Studio - studio.jessejesse.com`;
             <span className="text-xs text-text-tertiary">studio.jessejesse.com</span>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2">
+          {/* First row of buttons */}
+          <div className="flex gap-2 justify-end">
+            <button
+              className="btn btn-outline btn-sm px-4 py-2"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+            >
+              {isRefreshing ? "Refreshing..." : "Refresh"}
+            </button>
+            <button
+              className={`btn btn-sm px-4 py-2 ${showEmbed ? "btn-accent" : "btn-outline"}`}
+              onClick={() => setShowEmbed(!showEmbed)}
+            >
+              {showEmbed ? "Hide Code" : "Show Code"}
+            </button>
+            <button
+              className={`btn btn-sm px-4 py-2 ${isFullscreen ? "btn-warning" : "btn-outline"}`}
+              onClick={handleFullscreen}
+            >
+              {isFullscreen ? "Exit Full" : "Fullscreen"}
+            </button>
+          </div>
+          {/* Second row of buttons */}
+          <div className="flex gap-2 justify-end">
+            <button
+              className={`btn btn-sm px-4 py-2 ${showGrid ? "btn-accent" : "btn-outline"}`}
+              onClick={() => setShowGrid(!showGrid)}
+            >
+              {showGrid ? "Hide Grid" : "Show Grid"}
+            </button>
           <button
-            className="btn btn-outline btn-sm"
-            onClick={handleRefresh}
-            disabled={isRefreshing}
+            className={`btn btn-sm px-4 py-2 flex items-center gap-2 ${
+              showImageGen
+                ? framework === "react"
+                  ? "bg-cyan-500 text-white hover:bg-cyan-600"
+                  : "bg-orange-500 text-white hover:bg-orange-600"
+                : "btn-outline"
+            }`}
+            onClick={() => setShowImageGen(!showImageGen)}
           >
-            {isRefreshing ? "Refreshing..." : "Refresh"}
+            {framework === "react" ? (
+              <img src="./react.svg" className="w-4 h-4" alt="React" />
+            ) : (
+              <img src="./html5.svg" className="w-4 h-4" alt="HTML5" />
+            )}
+            {showImageGen ? "Hide AI" : "AI Image"}
           </button>
-          <button
-            className={`btn btn-sm ${showEmbed ? "btn-accent" : "btn-outline"}`}
-            onClick={() => setShowEmbed(!showEmbed)}
-          >
-            {showEmbed ? "Hide Code" : "Show Code"}
-          </button>
-          <button
-            className={`btn btn-sm ${isFullscreen ? "btn-warning" : "btn-outline"}`}
-            onClick={handleFullscreen}
-          >
-            {isFullscreen ? "Exit Full" : "Fullscreen"}
-          </button>
-          <button
-            className={`btn btn-sm ${showGrid ? "btn-accent" : "btn-outline"}`}
-            onClick={() => setShowGrid(!showGrid)}
-          >
-            {showGrid ? "Hide Grid" : "Show Grid"}
-          </button>
+
+            <button
+              className={`btn btn-sm px-4 py-2 ${showIconPack ? "btn-accent" : "btn-outline"}`}
+              onClick={() => setShowIconPack(!showIconPack)}
+            >
+              Icons
+            </button>
+          </div>
         </div>
       </div>
 
-      {showImageGen && (
-        <div className="bg-surface-primary border-b border-border-primary p-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Wand2 className="w-5 h-5 text-interactive-accent" />
-                  <h3 className="font-semibold text-text-primary">AI Image Generator</h3>
-                </div>
-                <div className="flex items-center gap-2">
-                  <img src="./workers.svg" className="w-5 h-5" alt="Cloudflare Workers" />
-                  <span className="text-xs text-text-tertiary bg-surface-tertiary px-2 py-0.5 rounded">
-                    stabilityai/stable-diffusion-xl-base-1.0
-                  </span>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={imagePrompt}
-                  onChange={(e) => setImagePrompt(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && generateImage()}
-                  placeholder="Describe the image you want to generate..."
-                  className="flex-1 px-4 py-2 border border-border-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-interactive-accent bg-surface-primary text-text-primary placeholder-text-tertiary"
-                />
-                <button
-                  onClick={generateImage}
-                  disabled={isGenerating}
-                  className="btn btn-accent"
-                >
-                  {isGenerating ? "Generating..." : "Generate"}
-                </button>
-              </div>
-              {generatedImage && (
-                <div className="flex gap-3 p-4 bg-surface-tertiary rounded-lg">
-                  <img
-                    src={generatedImage}
-                    alt="Generated"
-                    className="w-32 h-32 object-cover rounded-lg shadow-md border border-border-primary"
-                  />
-                  <div className="flex-1 flex flex-col justify-between">
-                    <div>
-                      <p className="text-sm text-text-secondary mb-3">Image generated successfully!</p>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={downloadImage}
-                          className="btn btn-success btn-sm"
-                        >
-                          Download Image
-                        </button>
-                        <button
-                          onClick={insertImageIntoCode}
-                          className="btn btn-outline btn-sm"
-                        >
-                          Use in Code
-                        </button>
-                        <button
-                          onClick={() => setShowIconPack(true)}
-                          className="btn btn-accent btn-sm flex items-center gap-2"
-                        >
-                          <Package className="w-4 h-4" />
-                          Create Icon Pack
-                        </button>
-                      </div>
+          {showImageGen && (
+            <div className="bg-surface-primary border-b border-border-primary p-4">
+              <div className="max-w-4xl mx-auto">
+                <div className="flex flex-col gap-3">
+                  {/* Header row */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <img src="./workers.svg" className="w-5 h-5" alt="Cloudflare Workers" />
+                      <span className="text-xs text-text-tertiary bg-surface-tertiary px-2 py-0.5 rounded">
+                        stabilityai/stable-diffusion-xl-base-1.0
+                      </span>
                     </div>
                   </div>
+
+                  {/* Prompt input */}
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={imagePrompt}
+                      onChange={(e) => setImagePrompt(e.target.value)}
+                      onKeyPress={(e) => e.key === "Enter" && generateImage()}
+                      placeholder="Describe the image you want to generate..."
+                      className="flex-1 px-4 py-2 border border-border-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-interactive-accent bg-surface-primary text-text-primary placeholder-text-tertiary"
+                    />
+                    <button
+                      onClick={generateImage}
+                      disabled={isGenerating}
+                      className="btn btn-accent px-4 py-2"
+                    >
+                      {isGenerating ? "Generating..." : "Generate"}
+                    </button>
+                  </div>
+
+                  {/* Generated image display */}
+                  {generatedImage && (
+                    <div className="flex gap-3 p-4 bg-surface-tertiary rounded-lg">
+                      <img
+                        src={generatedImage}
+                        alt="Generated"
+                        className="w-32 h-32 object-cover rounded-lg shadow-md border border-border-primary"
+                      />
+                      <div className="flex-1 flex flex-col justify-between">
+                        <div>
+                          <p className="text-sm text-text-secondary mb-3">
+                            Image generated successfully!
+                          </p>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={downloadImage}
+                              className="btn btn-success btn-sm px-3 py-1.5"
+                            >
+                              Download Image
+                            </button>
+                            <button
+                              onClick={insertImageIntoCode}
+                              className="btn btn-outline btn-sm px-3 py-1.5"
+                            >
+                              Use in Code
+                            </button>
+                            <button
+                              onClick={() => setShowIconPack(true)}
+                              className="btn btn-accent btn-sm px-3 py-1.5"
+                            >
+                              Create Icon Pack
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          )}
+
 
       {showIconPack && generatedImage && (
-        <div className="bg-surface-primary border-b border-border-primary p-4">
+        <div className="bg-surface-primary border-b border-border-primary p-4 overflow-auto max-h-64">
           <div className="max-w-4xl mx-auto">
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Package className="w-5 h-5 text-interactive-accent" />
-                  <h3 className="font-semibold text-text-primary">Icon Pack Generator</h3>
+                  <h3 className="font-semibold text-text-primary">Icon Pack</h3>
                 </div>
                 <span className="text-xs text-text-tertiary bg-surface-tertiary px-2 py-0.5 rounded">
-                  Includes {iconSizes.length} icons + SVG & HTML tags
+                  7 icons + Scalable Vector Graphic
                 </span>
               </div>
 
@@ -532,7 +565,7 @@ Generated with Web Studio - studio.jessejesse.com`;
 
               <div className="space-y-3">
                 <h4 className="text-sm font-medium text-text-primary">HTML Head Tags</h4>
-                <div className="bg-surface-tertiary p-3 rounded-lg">
+                <div className="bg-surface-tertiary p-3 rounded-lg overflow-auto">
                   <pre className="text-xs font-mono text-text-primary whitespace-pre-wrap">
 {`<link rel="icon" href="/icons/favicon.ico" sizes="any">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
@@ -546,15 +579,14 @@ Generated with Web Studio - studio.jessejesse.com`;
                 <div className="flex gap-2">
                   <button
                     onClick={handleCopyHTMLTags}
-                    className="btn btn-success btn-sm"
+                    className="btn btn-success btn-sm px-3 py-1.5"
                   >
                     Copy HTML Tags
                   </button>
                   <button
                     onClick={downloadIconPack}
-                    className="btn btn-accent btn-sm flex items-center gap-2"
+                    className="btn btn-accent btn-sm px-3 py-1.5"
                   >
-                    <Download className="w-4 h-4" />
                     Download Icon Pack (.zip)
                   </button>
                 </div>
@@ -568,7 +600,7 @@ Generated with Web Studio - studio.jessejesse.com`;
         <div className="bg-surface-primary border border-border-primary rounded-lg m-4 overflow-hidden">
           <div className="flex justify-between items-center p-3 border-b border-border-primary bg-surface-secondary">
             <span className="font-semibold text-sm text-text-primary">Component Code</span>
-            <button className="btn btn-success btn-sm" onClick={handleCopy}>
+            <button className="btn btn-success btn-sm px-3 py-1.5" onClick={handleCopy}>
               Copy Code
             </button>
           </div>
@@ -580,14 +612,16 @@ Generated with Web Studio - studio.jessejesse.com`;
         </div>
       )}
 
-      <div className="flex-1 relative flex justify-center items-start p-4 bg-surface-secondary overflow-auto">
-        <div
-          className="shadow-xl transition-all duration-500 bg-white rounded-xl overflow-hidden border border-border-primary relative"
-          style={{
-            width: deviceSizes[deviceView].width,
-            height: deviceSizes[deviceView].height,
-          }}
-        >
+      <div className="flex-1 relative flex justify-center items-center p-4 bg-surface-secondary overflow-auto">
+          <div
+            className="shadow-xl transition-all duration-500 bg-white rounded-xl overflow-hidden border border-border-primary relative"
+            style={{
+              width: deviceSizes[deviceView].width,
+              height: deviceSizes[deviceView].height,
+              maxWidth: deviceView === "desktop" ? "100%" : "none",
+              maxHeight: deviceView === "desktop" ? "100%" : "none",
+            }}
+          >
           {showGrid && (
             <div className="absolute inset-0 z-10 pointer-events-none">
               <GridPattern
@@ -658,5 +692,3 @@ Generated with Web Studio - studio.jessejesse.com`;
     </div>
   );
 }
-
-
