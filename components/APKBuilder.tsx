@@ -27,10 +27,10 @@ export default function TWAManifestBuilder({ onInsert }: TWAManifestBuilderProps
   const [copiedItem, setCopiedItem] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Change this to your Cloud Run URL after deployment
-  const API_URL = window.location.hostname === 'localhost'
-    ? 'http://localhost:8080'
-    : '';
+ const API_URL = window.location.hostname === 'localhost'
+  ? 'http://localhost:8080'
+  : 'https://twa-backend-359911049668.us-central1.run.app';
+
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
