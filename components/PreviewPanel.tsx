@@ -94,22 +94,45 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
             const { useState, useEffect, useRef } = React;
             
             try {
-              const UserComponent = (() => {
-                ${reactCode}
-                
-                if (typeof App !== 'undefined') return App;
-                if (typeof Component !== 'undefined') return Component;
-                if (typeof Default !== 'undefined') return Default;
-                
-                return () => {
+              // Try to extract the component from the provided code
+              let UserComponent;
+              
+              // Check for different export patterns
+              if (${JSON.stringify(reactCode)}.includes('function App') || ${JSON.stringify(reactCode)}.includes('function Example') || ${JSON.stringify(reactCode)}.includes('const App =') || ${JSON.stringify(reactCode)}.includes('const Example =')) {
+                // If it's a component definition, wrap it in a function
+                UserComponent = () => {
+                  ${reactCode}
+                  
+                  // Try to find the component
+                  if (typeof App !== 'undefined') return React.createElement(App);
+                  if (typeof Example !== 'undefined') return React.createElement(Example);
+                  if (typeof Component !== 'undefined') return React.createElement(Component);
+                  
+                  // If no named component found, try to render the last expression
                   try {
-                    ${reactCode.includes('return') ? '' : 'return (' + reactCode + ')'}
+                    const codeLines = ${JSON.stringify(reactCode)}.split('\\n');
+                    const lastLine = codeLines[codeLines.length - 1].trim();
+                    if (lastLine.startsWith('return') || lastLine.includes('React.createElement') || lastLine.includes('<')) {
+                      return eval(${JSON.stringify(reactCode)});
+                    }
+                  } catch (e) {
+                    // Fall through to error display
+                  }
+                  
+                  return React.createElement('div', {style: {color: 'red', padding: '20px'}}, 
+                    'Could not find a React component. Make sure your code exports a component.');
+                };
+              } else {
+                // Assume it's JSX or a return statement
+                UserComponent = () => {
+                  try {
+                    ${reactCode}
                   } catch (e) {
                     return React.createElement('div', {style: {color: 'red', padding: '20px'}}, 
                       'Error rendering component: ' + e.message);
                   }
                 };
-              })();
+              }
               
               const root = ReactDOM.createRoot(document.getElementById('root'));
               root.render(React.createElement(UserComponent));
@@ -129,6 +152,7 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
       `;
     }
 
+    // HTML version - fix the onclick to work in iframe
     const htmlContent = content.trim() || '<div style="padding: 20px;">Ready for HTML code</div>';
     return `
       <!DOCTYPE html>
@@ -137,8 +161,28 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <style>
-          body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; }
+          body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; background: #f3f4f6; }
+          * { box-sizing: border-box; }
         </style>
+        <script>
+          // Add alert function for HTML buttons
+          function showAlert(message) {
+            alert(message);
+          }
+          
+          // Replace onclick handlers when page loads
+          document.addEventListener('DOMContentLoaded', function() {
+            const buttons = document.querySelectorAll('button[onclick]');
+            buttons.forEach(button => {
+              const onclick = button.getAttribute('onclick');
+              if (onclick && onclick.includes('showAlert')) {
+                button.onclick = function() {
+                  eval(onclick);
+                };
+              }
+            });
+          });
+        </script>
       </head>
       <body>${htmlContent}</body>
       </html>
@@ -205,240 +249,244 @@ export default function PreviewPanel({ code, onResizeStart, framework }: Preview
     }
   };
 
-    const generateImage = async (promptOverride?: string) => {
-      const finalPrompt = promptOverride || imagePrompt;
-      
-      if (!finalPrompt.trim()) {
-        addToast("Please enter a prompt", "error");
-        return;
-      }
+  const generateImage = async (promptOverride?: string) => {
+    const finalPrompt = promptOverride || imagePrompt;
+    
+    if (!finalPrompt.trim()) {
+      addToast("Please enter a prompt", "error");
+      return;
+    }
 
-      setIsGenerating(true);
-      try {
-        const response = await fetch("https://text-to-image.jessejesse.workers.dev", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ prompt: finalPrompt }),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to generate image");
-        }
-
-        const blob = await response.blob();
-        const imageUrl = URL.createObjectURL(blob);
-        setGeneratedImage(imageUrl);
-        addToast("Image generated successfully!");
-      } catch (error) {
-        addToast("Failed to generate image", "error");
-        console.error("Image generation error:", error);
-      } finally {
-        setIsGenerating(false);
-      }
-    };
-
-    const downloadImage = () => {
-      if (!generatedImage) return;
-      const link = document.createElement("a");
-      link.href = generatedImage;
-      link.download = `web-studio-${Date.now()}.png`;
-      link.click();
-      addToast("Image downloaded!");
-    };
-
-    const insertImageIntoCode = () => {
-      if (!generatedImage) return;
-      addToast("Image URL ready to use!", "success");
-    };
-
-    const resizeImage = async (imageUrl: string, width: number, height: number): Promise<Blob> => {
-      return new Promise((resolve, reject) => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const img = new Image();
-        
-        img.onload = () => {
-          canvas.width = width;
-          canvas.height = height;
-          
-          ctx!.imageSmoothingEnabled = true;
-          ctx!.imageSmoothingQuality = 'high';
-          ctx!.drawImage(img, 0, 0, width, height);
-          
-          canvas.toBlob((blob) => {
-            if (blob) {
-              resolve(blob);
-            } else {
-              reject(new Error('Failed to create blob'));
-            }
-          }, 'image/png', 1.0);
-        };
-        
-        img.onerror = () => reject(new Error('Failed to load image'));
-        img.src = imageUrl;
+    setIsGenerating(true);
+    try {
+      const response = await fetch("https://text-to-image.jessejesse.workers.dev", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt: finalPrompt }),
       });
-    };
 
-    const downloadIconPack = async () => {
-      if (!generatedImage) {
-        addToast("Generate an image first", "error");
-        return;
+      if (!response.ok) {
+        throw new Error("Failed to generate image");
       }
 
+      const blob = await response.blob();
+      const imageUrl = URL.createObjectURL(blob);
+      setGeneratedImage(imageUrl);
+      addToast("Image generated successfully!");
+    } catch (error) {
+      addToast("Failed to generate image", "error");
+      console.error("Image generation error:", error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const downloadImage = () => {
+    if (!generatedImage) return;
+    const link = document.createElement("a");
+    link.href = generatedImage;
+    link.download = `ai-image-${Date.now()}.png`;
+    link.click();
+    addToast("Image downloaded!");
+  };
+
+  const insertImageIntoCode = () => {
+    if (!generatedImage) return;
+    addToast("Image URL ready to use!", "success");
+  };
+
+  const resizeImage = async (imageUrl: string, width: number, height: number): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        canvas.width = width;
+        canvas.height = height;
+        
+        ctx!.imageSmoothingEnabled = true;
+        ctx!.imageSmoothingQuality = 'high';
+        ctx!.drawImage(img, 0, 0, width, height);
+        
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error('Failed to create blob'));
+          }
+        }, 'image/png', 1.0);
+      };
+      
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = imageUrl;
+    });
+  };
+
+  const downloadIconPack = async () => {
+    if (!generatedImage) {
+      addToast("Generate an image first", "error");
+      return;
+    }
+
+    try {
+      addToast("Creating icon pack...");
+      
+      const JSZip = (await import('jszip')).default;
+      const zip = new JSZip();
+      
+
+      const iconsFolder = zip.folder("icons");
+      
+      if (!iconsFolder) {
+        throw new Error('Failed to create icons folder');
+      }
+
+      // Generate PNG icons
+      for (const iconSize of iconSizes) {
+        try {
+          const resizedBlob = await resizeImage(generatedImage, iconSize.size, iconSize.size);
+          iconsFolder.file(iconSize.fileName, resizedBlob);
+        } catch (error) {
+          console.error(`Failed to resize image to ${iconSize.size}px:`, error);
+        }
+      }
+
+      // Create a proper SVG with base64 embedded image
+      const createSvgBlob = async (): Promise<Blob> => {
+        return new Promise(async (resolve, reject) => {
+          try {
+            // Convert the generated image to base64 for SVG embedding
+            const response = await fetch(generatedImage);
+            const blob = await response.blob();
+            const reader = new FileReader();
+            
+            reader.onload = () => {
+              const base64data = reader.result as string;
+              
+              // Create SVG with embedded image
+              const svgContent = `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <clipPath id="circleClip">
+      <circle cx="256" cy="256" r="256"/>
+    </clipPath>
+  </defs>
+  <image x="0" y="0" width="512" height="512" xlink:href="${base64data}" clip-path="url(#circleClip)"/>
+</svg>`;
+              
+              const svgBlob = new Blob([svgContent], { type: 'image/svg+xml' });
+              resolve(svgBlob);
+            };
+            
+            reader.onerror = () => reject(new Error('Failed to read image for SVG'));
+            reader.readAsDataURL(blob);
+          } catch (error) {
+            reject(error);
+          }
+        });
+      };
+
+      // Add SVG
       try {
-        addToast("Creating icon pack...");
-        
-        const JSZip = (await import('jszip')).default;
-        const zip = new JSZip();
-        
-
-        const iconsFolder = zip.folder("icons");
-        
-        if (!iconsFolder) {
-          throw new Error('Failed to create icons folder');
-        }
-
-     
-        for (const iconSize of iconSizes) {
-          try {
-            const resizedBlob = await resizeImage(generatedImage, iconSize.size, iconSize.size);
-            iconsFolder.file(iconSize.fileName, resizedBlob);
-          } catch (error) {
-            console.error(`Failed to resize image to ${iconSize.size}px:`, error);
-          }
-        }
-
-   
-        const createSvgBlob = async (): Promise<Blob> => {
-          return new Promise(async (resolve, reject) => {
-            try {
-         
-              const response = await fetch(generatedImage);
-              const blob = await response.blob();
-              const reader = new FileReader();
-              
-              reader.onload = () => {
-                const base64data = reader.result as string;
-                
-              
-                const svgContent = `<?xml version="1.0" encoding="UTF-8"?>
-    <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-      <defs>
-        <clipPath id="circleClip">
-          <circle cx="256" cy="256" r="256"/>
-        </clipPath>
-      </defs>
-      <image x="0" y="0" width="512" height="512" xlink:href="${base64data}" clip-path="url(#circleClip)"/>
-    </svg>`;
-                
-                const svgBlob = new Blob([svgContent], { type: 'image/svg+xml' });
-                resolve(svgBlob);
-              };
-              
-              reader.onerror = () => reject(new Error('Failed to read image for SVG'));
-              reader.readAsDataURL(blob);
-            } catch (error) {
-              reject(error);
-            }
-          });
-        };
-
-        // SVG
-        try {
-          const svgBlob = await createSvgBlob();
-          iconsFolder.file("icon.svg", svgBlob);
-        } catch (error) {
-          console.error("Failed to create SVG:", error);
-        
-          const fallbackSvg = `<?xml version="1.0" encoding="UTF-8"?>
-    <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-      <rect width="512" height="512" fill="#4f46e5"/>
-      <circle cx="256" cy="256" r="128" fill="#ffffff" opacity="0.9"/>
-      <text x="256" y="256" text-anchor="middle" dy="0.3em" font-family="Arial, sans-serif" font-size="48" fill="#4f46e5" font-weight="bold">Icon</text>
-    </svg>`;
-          iconsFolder.file("icon.svg", fallbackSvg);
-        }
-
-      
-        const createIcoFile = async (): Promise<Blob> => {
-          try {
-        
-            const faviconBlob = await resizeImage(generatedImage, 32, 32);
-            return faviconBlob;
-          } catch (error) {
-            console.error("Failed to create ICO, using PNG fallback:", error);
-          
-            return await resizeImage(generatedImage, 32, 32);
-          }
-        };
-
-        // ico
-        try {
-          const icoBlob = await createIcoFile();
-          iconsFolder.file("favicon.ico", icoBlob);
-        } catch (error) {
-          console.error("Failed to create ICO file:", error);
-        }
-
-        // tags
-        const htmlTags = `<!-- Add these tags in your <head> section -->
-    <link rel="icon" href="/icons/favicon.ico" sizes="any">
-    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png">
-    <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icons/android-chrome-192x192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="/icons/android-chrome-512x512.png">
-    <meta name="theme-color" content="#ffffff">`;
-        
-        zip.file("html-tags.html", htmlTags);
-
-        // README
-        const readme = `# Web Studio Icon Pack
-
-    This pack contains all the necessary icons for your website:
-
-    ## Included Files:
-    ${iconSizes.map(icon => `- ${icon.fileName} (${icon.size}x${icon.size}px) - ${icon.name}`).join('\n')}
-    - icon.svg (Scalable vector version with embedded image)
-
-    ## Usage:
-    1. Extract the zip file
-    2. Place the "icons" folder in your project's public directory
-    3. Copy the HTML tags from html-tags.html into your <head> section
-    4. Update paths if needed
-
-  
-    Generated with Web Studio - studio.jessejesse.com`;
-        
-        zip.file("README.md", readme);
-
-      
-        const zipBlob = await zip.generateAsync({ type: "blob" });
-        const url = URL.createObjectURL(zipBlob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `icon-pack-${Date.now()}.zip`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-
-        addToast("Icon pack downloaded successfully!");
+        const svgBlob = await createSvgBlob();
+        iconsFolder.file("icon.svg", svgBlob);
       } catch (error) {
-        console.error("Icon pack generation error:", error);
-        addToast("Failed to create icon pack", "error");
+        console.error("Failed to create SVG:", error);
+        // Fallback: create a simple SVG if the image embedding fails
+        const fallbackSvg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" fill="#4f46e5"/>
+  <circle cx="256" cy="256" r="128" fill="#ffffff" opacity="0.9"/>
+  <text x="256" y="256" text-anchor="middle" dy="0.3em" font-family="Arial, sans-serif" font-size="48" fill="#4f46e5" font-weight="bold">Icon</text>
+</svg>`;
+        iconsFolder.file("icon.svg", fallbackSvg);
       }
-    };
 
-   
-    const generateWithStyle = (style: string) => {
-      const basePrompt = imagePrompt.trim();
-      const fullPrompt = basePrompt ? `${basePrompt}, ${style}` : style;
-      generateImage(fullPrompt);
-    };
+      // Create ICO file (favicon) - use 32x32 PNG as favicon
+      const createIcoFile = async (): Promise<Blob> => {
+        try {
+          // For simplicity, we'll use the 32x32 PNG as favicon
+          const faviconBlob = await resizeImage(generatedImage, 32, 32);
+          return faviconBlob;
+        } catch (error) {
+          console.error("Failed to create ICO, using PNG fallback:", error);
+          // Fallback to PNG if ICO creation fails
+          return await resizeImage(generatedImage, 32, 32);
+        }
+      };
+
+      // Add ICO file
+      try {
+        const icoBlob = await createIcoFile();
+        iconsFolder.file("favicon.ico", icoBlob);
+      } catch (error) {
+        console.error("Failed to create ICO file:", error);
+      }
+
+      // HTML tags
+      const htmlTags = `<!-- Add these tags in your <head> section -->
+<link rel="icon" href="/icons/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png">
+<link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/android-chrome-192x192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/icons/android-chrome-512x512.png">
+<meta name="theme-color" content="#ffffff">`;
+      
+      zip.file("html-tags.html", htmlTags);
+
+      // README
+      const readme = `# Icon Pack
+
+This pack contains all the necessary icons for your website:
+
+## Included Files:
+${iconSizes.map(icon => `- ${icon.fileName} (${icon.size}x${icon.size}px) - ${icon.name}`).join('\n')}
+- icon.svg (Scalable vector version with embedded image)
+
+## Usage:
+1. Extract the zip file
+2. Place the "icons" folder in your project's public directory
+3. Copy the HTML tags from html-tags.html into your <head> section
+4. Update paths if needed
+
+## Notes:
+- The SVG file contains your generated image embedded as base64
+- For best results with AI-generated images, PNG files are recommended
+- The favicon.ico is a 32x32 PNG in ICO format
+
+Generated with Web Studio - studio.jessejesse.com`;
+      
+      zip.file("README.md", readme);
+
+      // Generate and download zip
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(zipBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `icon-pack-${Date.now()}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      addToast("Icon pack downloaded successfully!");
+    } catch (error) {
+      console.error("Icon pack generation error:", error);
+      addToast("Failed to create icon pack", "error");
+    }
+  };
+
+  // Function to generate image with style prompt
+  const generateWithStyle = (style: string) => {
+    const basePrompt = imagePrompt.trim();
+    const fullPrompt = basePrompt ? `${basePrompt}, ${style}` : style;
+    generateImage(fullPrompt);
+  };
 
   useEffect(() => {
     const handleFSChange = () => setIsFullscreen(!!document.fullscreenElement);
