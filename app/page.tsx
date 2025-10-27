@@ -455,6 +455,30 @@ export default function Home() {
       />
 
       <style jsx global>{`
+        html, body {
+          margin: 0;
+          padding: 0;
+          height: 100%;
+          overflow: hidden;
+        }
+
+        .app-container {
+          display: flex;
+          flex-direction: column;
+          height: 100vh;
+          overflow: hidden;
+        }
+
+        .main-content {
+          display: flex;
+          flex: 1;
+          overflow: hidden;
+        }
+
+        .panel {
+          overflow: auto;
+        }
+
         .resize-handle {
           width: 8px;
           cursor: col-resize;
