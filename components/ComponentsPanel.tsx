@@ -7,6 +7,7 @@ import { GitHubModal } from "./GitHubModal";
 import PDFGenerator from './PDFGenerator';
 import BadgeBuilder from './BadgeBuilder';
 import ColorPalette from './ColorPalette';
+import APKBuilder from './APKBuilder';
 
 
 import {
@@ -1025,92 +1026,93 @@ export default function ComponentsPanel({
   currentCode = "",
   framework
 }: ComponentsPanelProps) {
-  const { settings } = useSettings();
-  
-  const [prompt, setPrompt] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [response, setResponse] = useState("");
-  const [mode, setMode] = useState<AiMode>("response");
-  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [previewComponent, setPreviewComponent] = useState<string | null>(null);
-  const [isRequesting, setIsRequesting] = useState(false);
-  const [showGithubModal, setShowGithubModal] = useState(false);
-  const [isCreatingRepo, setIsCreatingRepo] = useState(false);
-  const [showPdfGenerator, setShowPdfGenerator] = useState(false);
-  const [showBadgeBuilder, setShowBadgeBuilder] = useState(false);
-  const [showColorPalette, setShowColorPalette] = useState(false);
-  
-  const [favorites, setFavorites] = useLocalStorageState<Set<string>>('component-favorites', new Set());
-  const [recentComponents, setRecentComponents] = useLocalStorageState<string[]>('recent-components', []);
-  const [githubForm, setGithubForm] = useState<GitHubFormData>({
-    name: 'web-studio',
-    description: 'Project created with AI Web Studio',
-    isPublic: true,
-    deployPages: true
-  });
-
-  const { githubToken, setGithubToken, githubUser, setGithubUser, fetchUserInfo } = useGitHubAuth();
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
+    const { settings } = useSettings();
     
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("github_token");
+    const [prompt, setPrompt] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [response, setResponse] = useState("");
+    const [mode, setMode] = useState<AiMode>("response");
+    const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [previewComponent, setPreviewComponent] = useState<string | null>(null);
+    const [isRequesting, setIsRequesting] = useState(false);
+    const [showGithubModal, setShowGithubModal] = useState(false);
+    const [isCreatingRepo, setIsCreatingRepo] = useState(false);
+    const [showPdfGenerator, setShowPdfGenerator] = useState(false);
+    const [showBadgeBuilder, setShowBadgeBuilder] = useState(false);
+    const [showColorPalette, setShowColorPalette] = useState(false);
+    const [showApkBuilder, setShowApkBuilder] = useState(false);
     
-    if (token) {
-      setShowGithubModal(true);
-    }
-  }, []);
-
-  const filteredComponents = useMemo(() => {
-    if (!searchTerm) return componentCategories;
-    
-    const filtered: ComponentCategories = {};
-    Object.entries(componentCategories).forEach(([category, comps]) => {
-      const filteredComps = comps.filter(compKey => {
-        const comp = components[compKey];
-        return (
-          compKey.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          comp.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          comp.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-        );
-      });
-      if (filteredComps.length > 0) {
-        filtered[category] = filteredComps;
-      }
-    });
-    return filtered;
-  }, [searchTerm]);
-
-  const toggleFavorite = (componentKey: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setFavorites(prev => {
-      const newFavorites = new Set(prev);
-      if (newFavorites.has(componentKey)) {
-        newFavorites.delete(componentKey);
-      } else {
-        newFavorites.add(componentKey);
-      }
-      return newFavorites;
-    });
-  };
-
-  const handleInsert = (componentKey: string) => {
-    const component = components[componentKey];
-    if (!component) return;
-    
-    setRecentComponents(prev => {
-      const filtered = prev.filter(key => key !== componentKey);
-      const updated = [componentKey, ...filtered].slice(0, 10);
-      return updated;
+    const [favorites, setFavorites] = useLocalStorageState<Set<string>>('component-favorites', new Set());
+    const [recentComponents, setRecentComponents] = useLocalStorageState<string[]>('recent-components', []);
+    const [githubForm, setGithubForm] = useState<GitHubFormData>({
+        name: 'web-studio',
+        description: 'Project created with AI Web Studio',
+        isPublic: true,
+        deployPages: true
     });
     
-    onInsert(component.code);
-  };
-
-  const getCurrentProjectData = () => {
-    const htmlContent = currentCode || `<!DOCTYPE html>
+    const { githubToken, setGithubToken, githubUser, setGithubUser, fetchUserInfo } = useGitHubAuth();
+    
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get("github_token");
+        
+        if (token) {
+            setShowGithubModal(true);
+        }
+    }, []);
+    
+    const filteredComponents = useMemo(() => {
+        if (!searchTerm) return componentCategories;
+        
+        const filtered: ComponentCategories = {};
+        Object.entries(componentCategories).forEach(([category, comps]) => {
+            const filteredComps = comps.filter(compKey => {
+                const comp = components[compKey];
+                return (
+                        compKey.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        comp.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        comp.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+                        );
+            });
+            if (filteredComps.length > 0) {
+                filtered[category] = filteredComps;
+            }
+        });
+        return filtered;
+    }, [searchTerm]);
+    
+    const toggleFavorite = (componentKey: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        setFavorites(prev => {
+            const newFavorites = new Set(prev);
+            if (newFavorites.has(componentKey)) {
+                newFavorites.delete(componentKey);
+            } else {
+                newFavorites.add(componentKey);
+            }
+            return newFavorites;
+        });
+    };
+    
+    const handleInsert = (componentKey: string) => {
+        const component = components[componentKey];
+        if (!component) return;
+        
+        setRecentComponents(prev => {
+            const filtered = prev.filter(key => key !== componentKey);
+            const updated = [componentKey, ...filtered].slice(0, 10);
+            return updated;
+        });
+        
+        onInsert(component.code);
+    };
+    
+    const getCurrentProjectData = () => {
+        const htmlContent = currentCode || `<!DOCTYPE html>
 <html>
 <head>
     <title>${githubForm.name}</title>
@@ -1153,91 +1155,91 @@ export default function ComponentsPanel({
     </div>
 </body>
 </html>`;
-
-    return { html: htmlContent };
-  };
-
-  const handleCreateRepo = async () => {
-    if (!githubToken) {
-      alert('Please connect to GitHub first');
-      return;
-    }
-
-    setIsCreatingRepo(true);
-    const newWindow = window.open('', '_blank', 'width=400,height=200');
-    if (newWindow) {
-      newWindow.document.write('<p style="font-family:sans-serif; padding: 20px;">Creating repository…</p>');
-      newWindow.document.close();
-    }
-
-    try {
-      const projectData = getCurrentProjectData();
-      const files = createProjectFiles(projectData, githubForm.deployPages, githubUser, githubForm);
-
-      const response = await fetch('/api/github/create-repo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: githubForm.name,
-          description: githubForm.description,
-          isPublic: githubForm.isPublic,
-          deployPages: githubForm.deployPages,
-          files: files,
-          accessToken: githubToken
-        }),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        const html = `
-          <div style="font-family:sans-serif; padding: 20px;">
+        
+        return { html: htmlContent };
+    };
+    
+    const handleCreateRepo = async () => {
+        if (!githubToken) {
+            alert('Please connect to GitHub first');
+            return;
+        }
+        
+        setIsCreatingRepo(true);
+        const newWindow = window.open('', '_blank', 'width=400,height=200');
+        if (newWindow) {
+            newWindow.document.write('<p style="font-family:sans-serif; padding: 20px;">Creating repository…</p>');
+            newWindow.document.close();
+        }
+        
+        try {
+            const projectData = getCurrentProjectData();
+            const files = createProjectFiles(projectData, githubForm.deployPages, githubUser, githubForm);
+            
+            const response = await fetch('/api/github/create-repo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: githubForm.name,
+                    description: githubForm.description,
+                    isPublic: githubForm.isPublic,
+                    deployPages: githubForm.deployPages,
+                    files: files,
+                    accessToken: githubToken
+                }),
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                const html = `
+            <div style="font-family:sans-serif; padding: 20px;">
             <p>Repository created successfully!</p>
             <p>URL: <a href="${result.html_url}" target="_blank" style="color:blue">${result.html_url}</a></p>
             ${result.pages_url ? `<p>Pages: <a href="${result.pages_url}" target="_blank" style="color:blue">${result.pages_url}</a></p>` : ''}
           </div>
         `;
-        if (newWindow) {
-          newWindow.document.open();
-          newWindow.document.write(html);
-          newWindow.document.close();
+                if (newWindow) {
+                    newWindow.document.open();
+                    newWindow.document.write(html);
+                    newWindow.document.close();
+                }
+                setShowGithubModal(false);
+            } else {
+                throw new Error(result.error || 'Failed to create repository');
+            }
+        } catch (error: any) {
+            console.error('GitHub repo creation failed:', error);
+            if (newWindow) newWindow.close();
+            alert(`Failed to create repository: ${error.message}`);
+        } finally {
+            setIsCreatingRepo(false);
         }
-        setShowGithubModal(false);
-      } else {
-        throw new Error(result.error || 'Failed to create repository');
-      }
-    } catch (error: any) {
-      console.error('GitHub repo creation failed:', error);
-      if (newWindow) newWindow.close();
-      alert(`Failed to create repository: ${error.message}`);
-    } finally {
-      setIsCreatingRepo(false);
-    }
-  };
-
-  const askAi = async () => {
-    if (!prompt.trim()) {
-      setResponse("Please enter a prompt");
-      return;
-    }
-    if (isRequesting || loading) {
-      console.log("Request already in progress, ignoring...");
-      return;
-    }
-    setIsRequesting(true);
-    setLoading(true);
-    setResponse("");
+    };
     
-    try {
-      console.log("Sending AI request:", {
-        prompt: prompt.substring(0, 100),
-        mode,
-        framework,
-        timestamp: new Date().toISOString()
-      });
-      
-      const systemPrompt = framework === "react"
-        ? `You are an expert React developer. Create a React component for: "${prompt}"
+    const askAi = async () => {
+        if (!prompt.trim()) {
+            setResponse("Please enter a prompt");
+            return;
+        }
+        if (isRequesting || loading) {
+            console.log("Request already in progress, ignoring...");
+            return;
+        }
+        setIsRequesting(true);
+        setLoading(true);
+        setResponse("");
+        
+        try {
+            console.log("Sending AI request:", {
+                prompt: prompt.substring(0, 100),
+                mode,
+                framework,
+                timestamp: new Date().toISOString()
+            });
+            
+            const systemPrompt = framework === "react"
+            ? `You are an expert React developer. Create a React component for: "${prompt}"
 
 CRITICAL REQUIREMENTS FOR REACT:
 - Return ONLY the React component code
@@ -1264,7 +1266,7 @@ function App() {
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(React.createElement(App));`
-        : `You are an expert web developer. Create responsive HTML with inline CSS for: "${prompt}"
+            : `You are an expert web developer. Create responsive HTML with inline CSS for: "${prompt}"
 
 CRITICAL REQUIREMENTS FOR HTML:
 - Return ONLY the HTML code with inline styles
@@ -1274,442 +1276,467 @@ CRITICAL REQUIREMENTS FOR HTML:
 - Include proper hover/focus states
 - Ensure good color contrast
 - Make it work on all screen sizes`;
-
-      const messages = [
-        {
-          role: "user" as const,
-          content: systemPrompt
-        }
-      ];
-
-      const response = await fetch('https://llm.jessejesse.workers.dev/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ messages }),
-      });
-
-      console.log("Worker response status:", response.status);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Worker API error: ${response.status} - ${errorText}`);
-      }
-
-      const reader = response.body?.getReader();
-      if (!reader) {
-        throw new Error("No response body received");
-      }
-
-      let fullContent = '';
-      const decoder = new TextDecoder();
-
-      try {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          const chunk = decoder.decode(value);
-          const lines = chunk.split('\n');
-
-          for (const line of lines) {
-            if (line.startsWith('data: ') && line !== 'data: [DONE]') {
-              try {
-                const data = JSON.parse(line.slice(6));
-                if (data.response) {
-                  fullContent += data.response;
-                  setResponse(fullContent);
-                }
-              } catch (e) {
-                // Skip parsing errors
-              }
+            
+            const messages = [
+                              {
+                                  role: "user" as const,
+                                  content: systemPrompt
+                              }
+                              ];
+            
+            const response = await fetch('https://llm.jessejesse.workers.dev/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ messages }),
+            });
+            
+            console.log("Worker response status:", response.status);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Worker API error: ${response.status} - ${errorText}`);
             }
-          }
-        }
-      } finally {
-        reader.releaseLock();
-      }
-
-      console.log("Raw worker response:", fullContent);
-
-      if (!fullContent.trim()) {
-        throw new Error("Worker returned empty response");
-      }
-
-      let cleaned = fullContent
-        .replace(/```(html|css|js|jsx|javascript|react)?/gi, '')
+            
+            const reader = response.body?.getReader();
+            if (!reader) {
+                throw new Error("No response body received");
+            }
+            
+            let fullContent = '';
+            const decoder = new TextDecoder();
+            
+            try {
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+                    
+                    for (const line of lines) {
+                        if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+                                if (data.response) {
+                                    fullContent += data.response;
+                                    setResponse(fullContent);
+                                }
+                            } catch (e) {
+                                // Skip parsing errors
+                            }
+                        }
+                    }
+                }
+            } finally {
+                reader.releaseLock();
+            }
+            
+            console.log("Raw worker response:", fullContent);
+            
+            if (!fullContent.trim()) {
+                throw new Error("Worker returned empty response");
+            }
+            
+            let cleaned = fullContent
+            .replace(/```(html|css|js|jsx|javascript|react)?/gi, '')
         .replace(/```/g, '')
-        .replace(/^`|`$/g, '')
-        .trim();
-
-      if (framework === "react") {
-        if (!cleaned.includes('ReactDOM.createRoot') && !cleaned.includes('root.render')) {
-          cleaned += `\n\nconst root = ReactDOM.createRoot(document.getElementById('root'));\nroot.render(React.createElement(App));`;
-        }
-        
-        if (!cleaned.includes('function App') && !cleaned.includes('const App')) {
-          cleaned = `function App() {\n  return (\n${cleaned}\n  );\n}\n\nconst root = ReactDOM.createRoot(document.getElementById('root'));\nroot.render(React.createElement(App));`;
-        }
-      }
-
-      setResponse(cleaned);
-
-      const timestamp = new Date().toLocaleTimeString();
-      const comment = framework === "react"
-        ? `\n// AI Generated React Component (${timestamp}): ${prompt.substring(0, 50)}...\n`
-        : `\n<!-- AI Generated (${timestamp}): ${prompt.substring(0, 50)}... -->\n`;
-      
-      onAiInsert(`${comment}${cleaned}\n`);
-
-      if (mode === "chat") {
-        setChatHistory(prev => [
-          ...prev,
-          { role: "user", content: prompt },
-          { role: "assistant", content: cleaned }
-        ]);
-      }
-      
-      setPrompt("");
-
-    } catch (err) {
-      console.error("AI request failed:", err);
-      let userMessage = "An error occurred";
-      
-      if (err instanceof Error) {
-        if (err.message.includes('Failed to fetch')) {
-          userMessage = "Network error. Check your connection and API endpoint.";
-        } else if (err.message.includes('403')) {
-          userMessage = "Access denied. Check your worker configuration.";
-        } else if (err.message.includes('429')) {
-          userMessage = "Rate limit exceeded. Wait a moment before trying again.";
-        } else if (err.message.includes('404')) {
-          userMessage = "API endpoint not found. Check your worker URL.";
-        } else {
-          userMessage = err.message;
-        }
-      }
-      
-      setResponse(`Error: ${userMessage}`);
-      
-    } finally {
-      setLoading(false);
-      setTimeout(() => {
-        setIsRequesting(false);
-      }, 1000);
-    }
-  };
-  
-  // Render methods
-  const renderHeader = () => (
-    <div className="!p-2 border-b border-panel-border">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <a
-            href="https://nextjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block hover:opacity-80 transition-opacity"
-          >
-            <img src="https://img.shields.io/badge/npx-create--next--app%40latest-inactive?logo=npm" alt="npx - create--next--app@latest" />
-          </a>
-        </div>
-      </div>
-      {searchTerm !== '' && (
-        <div className="mt-2 relative">
-          <input
-            type="text"
-            placeholder="Type to search components..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-2 pr-6 py-1 bg-component-bg border border-panel-border rounded text-xs focus:outline-none focus:border-accent-color text-foreground"
-            autoFocus
-          />
-        </div>
-      )}
-    </div>
-  );
-
-  const renderComponentsList = () => (
-    <div className="flex-1 overflow-auto min-h-0">
-      <div className="components-list">
-        {Object.entries(filteredComponents).map(([category, keys]) => (
-          <div key={category} className="component-category">
-            <div className="category-title"></div>
-            {keys.map((key) => (
-              <div
-                key={key}
-                className="component-item group"
-                onClick={() => handleInsert(key)}
-              >
-                <div className="component-icon">{getComponentIcon(key)}</div>
-                <span className="component-name flex-1">
-                  {formatComponentName(key)}
-                </span>
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-    const renderAISection = () => (
-      <div className="ai-section">
-        <div className="panel-header">
-          <div className="flex items-center justify-between w-full">
-            <div className="grid grid-cols-2 gap-2 w-full max-w-full">
-              <BuildPrompts onPromptSelect={setPrompt} framework={framework} />
-                                    
-                                   <button
-                                     className="flex items-center justify-center p-0 min-w-0 max-w-full overflow-hidden h-7 transition-all duration-200 hover:scale-105 hover:brightness-110 active:scale-95"
-                                     onClick={() => setShowGithubModal(true)}
-                                   >
-                                     <img
-                                       src="https://img.shields.io/badge/Create_Repo-black?style=plastic&logo=github"
-                                       alt="Github Login"
-                                       className="w-full h-full object-contain transition-all duration-200 hover:shadow-lg"
-                                     />
-                                   </button>
-              
-              <button
-                className="flex items-center justify-center p-0 min-w-0 max-w-full overflow-hidden h-7 transition-all duration-200 hover:scale-105 hover:brightness-110 active:scale-95"
-                onClick={() => setShowBadgeBuilder(true)}
-              >
-                <img
-                  src="https://img.shields.io/badge/Badge_Builder-pink?style=plastic"
-                  alt="Badge Builder"
-                  className="w-full h-full object-contain transition-all duration-200 hover:shadow-lg"
-                />
-              </button>
-              
-              <button
-                className="flex items-center justify-center p-0 min-w-0 max-w-full overflow-hidden h-7 transition-all duration-200 hover:scale-105 hover:brightness-110 active:scale-95"
-                onClick={() => setShowPdfGenerator(true)}
-              >
-                <img
-                  src="https://img.shields.io/badge/PDF_Generator-red?style=plastic"
-                  alt="PDF Generator"
-                  className="w-full h-full object-contain transition-all duration-200 hover:shadow-lg"
-                />
-              </button>
-              
-              <button
-                className="flex items-center justify-center p-0 min-w-0 max-w-full overflow-hidden h-7 transition-all duration-200 hover:scale-105 hover:brightness-110 active:scale-95"
-                onClick={() => setShowColorPalette(true)}
-              >
-                <img
-                  src="https://img.shields.io/badge/Color_Palette-9c7dd5?style=plastic"
-                  alt="Color Palette"
-                  className="w-full h-full object-contain transition-all duration-200 hover:shadow-lg"
-                />
-              </button>
-
-              <button
-                className="flex items-center justify-center p-0 min-w-0 max-w-full overflow-hidden h-7 transition-all duration-200 hover:scale-105 hover:brightness-110 active:scale-95 opacity-70 cursor-not-allowed"
-                onClick={() => {/* Will wire up later */}}
-              >
-                <img
-                  src="https://img.shields.io/badge/Not_In_Service-lightgrey?style=plastic"
-                  alt="More Tools"
-                  className="w-full h-full object-contain transition-all duration-200"
-                />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="mode-toggle">
-          <label className="mode-option">
-            <input
-              type="radio"
-              value="response"
-              checked={mode === "response"}
-              onChange={() => setMode("response")}
-              disabled={loading || isRequesting}
-            />
-            Stateless
-          </label>
-          <label className="mode-option">
-            <input
-              type="radio"
-              value="chat"
-              checked={mode === "chat"}
-              onChange={() => setMode("chat")}
-              disabled={loading || isRequesting}
-            />
-            Persist
-          </label>
-        </div>
-
-        <div className="relative">
-          <textarea
-            className="prompt-textarea"
-            placeholder="describe what to create..."
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-                e.preventDefault();
-                if (!isRequesting && !loading && prompt.trim()) {
-                  askAi();
+            .replace(/^`|`$/g, '')
+            .trim();
+            
+            if (framework === "react") {
+                if (!cleaned.includes('ReactDOM.createRoot') && !cleaned.includes('root.render')) {
+                    cleaned += `\n\nconst root = ReactDOM.createRoot(document.getElementById('root'));\nroot.render(React.createElement(App));`;
                 }
-              }
-            }}
-            disabled={loading || isRequesting}
-          />
-          <div className="text-xs text-text-muted mt-1 px-1 flex justify-between">
-            <span className="flex items-center gap-1">
-              <img src="./workers.svg" className="w-6 h-6" alt="Meta" />
-              llama-3.3-70b-instruct-fp8-fast
-            </span>
-            {(loading || isRequesting) && <span className="text-accent-color">●</span>}
-          </div>
-        </div>
-
-        <button
-          className="btn btn-outline flex items-center gap-2 w-full justify-center"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (!isRequesting && !loading && prompt.trim()) {
-              askAi();
+                
+                if (!cleaned.includes('function App') && !cleaned.includes('const App')) {
+                    cleaned = `function App() {\n  return (\n${cleaned}\n  );\n}\n\nconst root = ReactDOM.createRoot(document.getElementById('root'));\nroot.render(React.createElement(App));`;
+                }
             }
-          }}
-          disabled={loading || isRequesting || !prompt.trim()}
-          style={{ opacity: (loading || isRequesting || !prompt.trim()) ? 0.5 : 1 }}
-        >
-          <img src="./metasvg.svg" className="w-6 h-6" alt="Meta AI" />
-          {loading ? "Generating..." : isRequesting ? "Please wait..." : "Meta Build"}
-        </button>
-
-        {response && (
-          <div>
-            <div className="response-label flex items-center gap-2">
-              Meta AI
-            </div>
-            <div className="ai-response">{response}</div>
-          </div>
-        )}
-        
-        {mode === "chat" && chatHistory.length > 0 && (
-          <div>
-            <div className="response-label flex justify-between items-center">
-              <span>Chat History</span>
-              <button onClick={() => setChatHistory([])} className="text-xs text-text-muted hover:text-foreground">
-                Clear
-              </button>
-            </div>
-            <div className="chat-history">
-              {chatHistory.map((msg, i) => (
-                <div key={i} className={`chat-message ${msg.role}`}>
-                  <div className={`message-role ${msg.role}`}>
-                    {msg.role.toUpperCase()}
-                  </div>
-                  <div>{msg.content}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    );
-
+            
+            setResponse(cleaned);
+            
+            const timestamp = new Date().toLocaleTimeString();
+            const comment = framework === "react"
+            ? `\n// AI Generated React Component (${timestamp}): ${prompt.substring(0, 50)}...\n`
+            : `\n<!-- AI Generated (${timestamp}): ${prompt.substring(0, 50)}... -->\n`;
+            
+            onAiInsert(`${comment}${cleaned}\n`);
+            
+            if (mode === "chat") {
+                setChatHistory(prev => [
+                    ...prev,
+                       { role: "user", content: prompt },
+                       { role: "assistant", content: cleaned }
+                ]);
+            }
+            
+            setPrompt("");
+            
+        } catch (err) {
+            console.error("AI request failed:", err);
+            let userMessage = "An error occurred";
+            
+            if (err instanceof Error) {
+                if (err.message.includes('Failed to fetch')) {
+                    userMessage = "Network error. Check your connection and API endpoint.";
+                } else if (err.message.includes('403')) {
+                    userMessage = "Access denied. Check your worker configuration.";
+                } else if (err.message.includes('429')) {
+                    userMessage = "Rate limit exceeded. Wait a moment before trying again.";
+                } else if (err.message.includes('404')) {
+                    userMessage = "API endpoint not found. Check your worker URL.";
+                } else {
+                    userMessage = err.message;
+                }
+            }
+            
+            setResponse(`Error: ${userMessage}`);
+            
+        } finally {
+            setLoading(false);
+            setTimeout(() => {
+                setIsRequesting(false);
+            }, 1000);
+        }
+    };
+    
+    // Render methods
+    const renderHeader = () => (
+                                <div className="!p-2 border-b border-panel-border">
+                                <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                <a
+                                href="https://nextjs.org"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-block hover:opacity-80 transition-opacity"
+                                >
+                                <img src="https://img.shields.io/badge/npx-create--next--app%40latest-inactive?logo=npm" alt="npx - create--next--app@latest" />
+                                </a>
+                                </div>
+                                </div>
+                                {searchTerm !== '' && (
+                                                       <div className="mt-2 relative">
+                                                       <input
+                                                       type="text"
+                                                       placeholder="Type to search components..."
+                                                       value={searchTerm}
+                                                       onChange={(e) => setSearchTerm(e.target.value)}
+                                                       className="w-full pl-2 pr-6 py-1 bg-component-bg border border-panel-border rounded text-xs focus:outline-none focus:border-accent-color text-foreground"
+                                                       autoFocus
+                                                       />
+                                                       </div>
+                                                       )}
+                                </div>
+                                );
+    
+    const renderComponentsList = () => (
+                                        <div className="flex-1 overflow-auto min-h-0">
+                                        <div className="components-list">
+                                        {Object.entries(filteredComponents).map(([category, keys]) => (
+                                                                                                       <div key={category} className="component-category">
+                                                                                                       <div className="category-title"></div>
+                                                                                                       {keys.map((key) => (
+                                                                                                                           <div
+                                                                                                                           key={key}
+                                                                                                                           className="component-item group"
+                                                                                                                           onClick={() => handleInsert(key)}
+                                                                                                                           >
+                                                                                                                           <div className="component-icon">{getComponentIcon(key)}</div>
+                                                                                                                           <span className="component-name flex-1">
+                                                                                                                           {formatComponentName(key)}
+                                                                                                                           </span>
+                                                                                                                           </div>
+                                                                                                                           ))}
+                                                                                                       </div>
+                                                                                                       ))}
+                                        </div>
+                                        </div>
+                                        );
+    
+    const renderAISection = () => (
+                                   <div className="ai-section">
+                                   <div className="panel-header">
+                                   <div className="flex items-center justify-between w-full">
+                                   <div className="grid grid-cols-2 gap-2 w-full max-w-full">
+                                   <BuildPrompts onPromptSelect={setPrompt} framework={framework} />
+                                   
+                                   <button
+                                   className="flex items-center justify-center p-0 min-w-0 max-w-full overflow-hidden h-7 transition-all duration-200 hover:scale-105 hover:brightness-110 active:scale-95"
+                                   onClick={() => setShowGithubModal(true)}
+                                   >
+                                   <img
+                                   src="https://img.shields.io/badge/Create_Repo-black?style=plastic&logo=github"
+                                   alt="Github Login"
+                                   className="w-full h-full object-contain transition-all duration-200 hover:shadow-lg"
+                                   />
+                                   </button>
+                                   
+                                   <button
+                                   className="flex items-center justify-center p-0 min-w-0 max-w-full overflow-hidden h-7 transition-all duration-200 hover:scale-105 hover:brightness-110 active:scale-95"
+                                   onClick={() => setShowBadgeBuilder(true)}
+                                   >
+                                   <img
+                                   src="https://img.shields.io/badge/Badge_Builder-pink?style=plastic"
+                                   alt="Badge Builder"
+                                   className="w-full h-full object-contain transition-all duration-200 hover:shadow-lg"
+                                   />
+                                   </button>
+                                   
+                                   <button
+                                   className="flex items-center justify-center p-0 min-w-0 max-w-full overflow-hidden h-7 transition-all duration-200 hover:scale-105 hover:brightness-110 active:scale-95"
+                                   onClick={() => setShowPdfGenerator(true)}
+                                   >
+                                   <img
+                                   src="https://img.shields.io/badge/PDF_Generator-red?style=plastic"
+                                   alt="PDF Generator"
+                                   className="w-full h-full object-contain transition-all duration-200 hover:shadow-lg"
+                                   />
+                                   </button>
+                                   
+                                   <button
+                                   className="flex items-center justify-center p-0 min-w-0 max-w-full overflow-hidden h-7 transition-all duration-200 hover:scale-105 hover:brightness-110 active:scale-95"
+                                   onClick={() => setShowColorPalette(true)}
+                                   >
+                                   <img
+                                   src="https://img.shields.io/badge/Color_Palette-9c7dd5?style=plastic"
+                                   alt="Color Palette"
+                                   className="w-full h-full object-contain transition-all duration-200 hover:shadow-lg"
+                                   />
+                                   </button>
+                                   
+                                   {/* APK Builder Button - Working Green Button */}
+                                            <button
+                                              className="flex items-center justify-center p-0 min-w-0 max-w-full overflow-hidden h-7 transition-all duration-200 hover:scale-105 hover:brightness-110 active:scale-95"
+                                              onClick={() => setShowApkBuilder(true)}
+                                            >
+                                              <img
+                                                src="https://img.shields.io/badge/APK_Builder-green?style=plastic"
+                                                alt="APK Builder"
+                                                className="w-full h-full object-contain transition-all duration-200 hover:shadow-lg"
+                                              />
+                                            </button>
+                                   </div>
+                                   </div>
+                                   </div>
+                                   
+                                   <div className="mode-toggle">
+                                   <label className="mode-option">
+                                   <input
+                                   type="radio"
+                                   value="response"
+                                   checked={mode === "response"}
+                                   onChange={() => setMode("response")}
+                                   disabled={loading || isRequesting}
+                                   />
+                                   Stateless
+                                   </label>
+                                   <label className="mode-option">
+                                   <input
+                                   type="radio"
+                                   value="chat"
+                                   checked={mode === "chat"}
+                                   onChange={() => setMode("chat")}
+                                   disabled={loading || isRequesting}
+                                   />
+                                   Persist
+                                   </label>
+                                   </div>
+                                   
+                                   <div className="relative">
+                                   <textarea
+                                   className="prompt-textarea"
+                                   placeholder="describe what to create..."
+                                   value={prompt}
+                                   onChange={(e) => setPrompt(e.target.value)}
+                                   onKeyDown={(e) => {
+                                       if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                                           e.preventDefault();
+                                           if (!isRequesting && !loading && prompt.trim()) {
+                                               askAi();
+                                           }
+                                       }
+                                   }}
+                                   disabled={loading || isRequesting}
+                                   />
+                                   <div className="text-xs text-text-muted mt-1 px-1 flex justify-between">
+                                   <span className="flex items-center gap-1">
+                                   <img src="./workers.svg" className="w-6 h-6" alt="Meta" />
+                                   llama-3.3-70b-instruct-fp8-fast
+                                   </span>
+                                   {(loading || isRequesting) && <span className="text-accent-color">●</span>}
+                                   </div>
+                                   </div>
+                                   
+                                   <button
+                                   className="btn btn-outline flex items-center gap-2 w-full justify-center"
+                                   onClick={(e) => {
+                                       e.preventDefault();
+                                       e.stopPropagation();
+                                       if (!isRequesting && !loading && prompt.trim()) {
+                                           askAi();
+                                       }
+                                   }}
+                                   disabled={loading || isRequesting || !prompt.trim()}
+                                   style={{ opacity: (loading || isRequesting || !prompt.trim()) ? 0.5 : 1 }}
+                                   >
+                                   <img src="./metasvg.svg" className="w-6 h-6" alt="Meta AI" />
+                                   {loading ? "Generating..." : isRequesting ? "Please wait..." : "Meta Build"}
+                                   </button>
+                                   
+                                   {response && (
+                                                 <div>
+                                                 <div className="response-label flex items-center gap-2">
+                                                 Meta AI
+                                                 </div>
+                                                 <div className="ai-response">{response}</div>
+                                                 </div>
+                                                 )}
+                                   
+                                   {mode === "chat" && chatHistory.length > 0 && (
+                                                                                  <div>
+                                                                                  <div className="response-label flex justify-between items-center">
+                                                                                  <span>Chat History</span>
+                                                                                  <button onClick={() => setChatHistory([])} className="text-xs text-text-muted hover:text-foreground">
+                                                                                  Clear
+                                                                                  </button>
+                                                                                  </div>
+                                                                                  <div className="chat-history">
+                                                                                  {chatHistory.map((msg, i) => (
+                                                                                                                <div key={i} className={`chat-message ${msg.role}`}>
+                                                                                                                <div className={`message-role ${msg.role}`}>
+                                                                                                                {msg.role.toUpperCase()}
+                                                                                                                </div>
+                                                                                                                <div>{msg.content}</div>
+                                                                                                                </div>
+                                                                                                                ))}
+                                                                                  </div>
+                                                                                  </div>
+                                                                                  )}
+                                   </div>
+                                   );
     return (
-      <div className="flex flex-col h-full overflow-hidden relative">
-        {onResizeStart && (
-          <div
-            className="absolute -right-2 top-0 bottom-0 w-4 cursor-col-resize z-20 hover:bg-accent-color hover:bg-opacity-50 transition-colors"
-            onMouseDown={onResizeStart}
-          />
-        )}
-
-        {renderHeader()}
-        {renderComponentsList()}
-        {renderAISection()}
-
-        <GitHubModal
-          showGithubModal={showGithubModal}
-          setShowGithubModal={setShowGithubModal}
-          githubToken={githubToken}
-          setGithubToken={setGithubToken}
-          githubUser={githubUser}
-          setGithubUser={setGithubUser}
-          githubForm={githubForm}
-          setGithubForm={setGithubForm}
-          isCreatingRepo={isCreatingRepo}
-          handleCreateRepo={handleCreateRepo}
-          fetchUserInfo={fetchUserInfo}
-        />
-
-        {showPdfGenerator && (
-          <div className="modal-overlay" onClick={() => setShowPdfGenerator(false)}>
-            <div
-              className="modal-content pdf-modal-content"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="modal-header">
-                <h2 className="modal-title">PDF Generator</h2>
-                <button
-                  onClick={() => setShowPdfGenerator(false)}
-                  className="modal-close-btn"
-                  aria-label="Close PDF generator"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-              <div className="modal-body pdf-modal-body">
-                <PDFGenerator currentCode={currentCode} />
-              </div>
+            <div className="flex flex-col h-full overflow-hidden relative">
+            {onResizeStart && (
+                               <div
+                               className="absolute -right-2 top-0 bottom-0 w-4 cursor-col-resize z-20 hover:bg-accent-color hover:bg-opacity-50 transition-colors"
+                               onMouseDown={onResizeStart}
+                               />
+                               )}
+            
+            {renderHeader()}
+            {renderComponentsList()}
+            {renderAISection()}
+            
+            <GitHubModal
+            showGithubModal={showGithubModal}
+            setShowGithubModal={setShowGithubModal}
+            githubToken={githubToken}
+            setGithubToken={setGithubToken}
+            githubUser={githubUser}
+            setGithubUser={setGithubUser}
+            githubForm={githubForm}
+            setGithubForm={setGithubForm}
+            isCreatingRepo={isCreatingRepo}
+            handleCreateRepo={handleCreateRepo}
+            fetchUserInfo={fetchUserInfo}
+            />
+            
+            {showPdfGenerator && (
+                                  <div className="modal-overlay" onClick={() => setShowPdfGenerator(false)}>
+                                  <div
+                                  className="modal-content pdf-modal-content"
+                                  onClick={(e) => e.stopPropagation()}
+                                  >
+                                  <div className="modal-header">
+                                  <h2 className="modal-title">PDF Generator</h2>
+                                  <button
+                                  onClick={() => setShowPdfGenerator(false)}
+                                  className="modal-close-btn"
+                                  aria-label="Close PDF generator"
+                                  >
+                                  <X size={18} />
+                                  </button>
+                                  </div>
+                                  <div className="modal-body pdf-modal-body">
+                                  <PDFGenerator currentCode={currentCode} />
+                                  </div>
+                                  </div>
+                                  </div>
+                                  )}
+            
+            {showColorPalette && (
+                                  <div className="modal-overlay" onClick={() => setShowColorPalette(false)}>
+                                  <div
+                                  className="modal-content color-palette-modal-content"
+                                  onClick={(e) => e.stopPropagation()}
+                                  >
+                                  <div className="modal-header">
+                                  <h2 className="modal-title">Color Palette</h2>
+                                  <button
+                                  onClick={() => setShowColorPalette(false)}
+                                  className="modal-close-btn"
+                                  aria-label="Close Color Palette"
+                                  >
+                                  <X size={18} />
+                                  </button>
+                                  </div>
+                                  <div className="modal-body color-palette-modal-body">
+                                  <ColorPalette onInsert={onAiInsert} />
+                                  </div>
+                                  </div>
+                                  </div>
+                                  )}
+            
+            {showBadgeBuilder && (
+                                  <div className="modal-overlay" onClick={() => setShowBadgeBuilder(false)}>
+                                  <div
+                                  className="modal-content badge-modal-content"
+                                  onClick={(e) => e.stopPropagation()}
+                                  >
+                                  <div className="modal-header">
+                                  <h2 className="modal-title">Badge Builder</h2>
+                                  <button
+                                  onClick={() => setShowBadgeBuilder(false)}
+                                  className="modal-close-btn"
+                                  aria-label="Close Badge Builder"
+                                  >
+                                  <X size={18} />
+                                  </button>
+                                  </div>
+                                  <div className="modal-body badge-modal-body">
+                                  <BadgeBuilder onInsert={onInsert} />
+                                  </div>
+                                  </div>
+                                  </div>
+                                  )}
+            
+            {/* APK Builder Modal */}
+            {showApkBuilder && (
+                                <div className="modal-overlay" onClick={() => setShowApkBuilder(false)}>
+                                <div
+                                className="modal-content apk-builder-modal-content"
+                                onClick={(e) => e.stopPropagation()}
+                                >
+                                <div className="modal-header">
+                                <h2 className="modal-title">APK Builder</h2>
+                                <button
+                                onClick={() => setShowApkBuilder(false)}
+                                className="modal-close-btn"
+                                aria-label="Close APK Builder"
+                                >
+                                <X size={18} />
+                                </button>
+                                </div>
+                                <div className="modal-body apk-builder-modal-body">
+                                <APKBuilder onInsert={onAiInsert} />
+                                </div>
+                                </div>
+                                </div>
+                                )}
             </div>
-          </div>
-        )}
+            );
+}
 
-        {showColorPalette && (
-          <div className="modal-overlay" onClick={() => setShowColorPalette(false)}>
-            <div
-              className="modal-content color-palette-modal-content"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="modal-header">
-                <h2 className="modal-title">Color Palette</h2>
-                <button
-                  onClick={() => setShowColorPalette(false)}
-                  className="modal-close-btn"
-                  aria-label="Close Color Palette"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-              <div className="modal-body color-palette-modal-body">
-                <ColorPalette onInsert={onAiInsert} />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {showBadgeBuilder && (
-          <div className="modal-overlay" onClick={() => setShowBadgeBuilder(false)}>
-            <div
-              className="modal-content badge-modal-content"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="modal-header">
-                <h2 className="modal-title">Badge Builder</h2>
-                <button
-                  onClick={() => setShowBadgeBuilder(false)}
-                  className="modal-close-btn"
-                  aria-label="Close Badge Builder"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-              <div className="modal-body badge-modal-body">
-                <BadgeBuilder onInsert={onInsert} />
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }
