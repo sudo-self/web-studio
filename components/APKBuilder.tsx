@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from 'react';
-import { Download, Globe, Package, CheckCircle, AlertCircle, Upload, Key, Loader, Zap, FileJson, Building, Palette, Image, Copy } from 'lucide-react';
+import { Download, Globe, Package, CheckCircle, AlertCircle, Upload, Key, Loader, Zap, FileJson, Building, Palette, Image, Copy, Cpu } from 'lucide-react';
 
 interface MakeManifestProps {
   onInsert?: (code: string) => void;
@@ -60,11 +60,15 @@ export default function MakeManifest({ onInsert }: MakeManifestProps) {
     background_color: '#090202',
     theme_color: '#08ea82',
     selectedIcon: defaultIcons[0].src,
-    customIcon: null as File | null
+    customIcon: null as File | null,
+    includeServiceWorker: false,
+    serviceWorkerUrl: '/sw.js',
+    serviceWorkerScope: '/'
   });
 
   const [manifestUrl, setManifestUrl] = useState('');
   const [manifestContent, setManifestContent] = useState('');
+  const [serviceWorkerContent, setServiceWorkerContent] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<'idle' | 'building' | 'success' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
@@ -72,10 +76,10 @@ export default function MakeManifest({ onInsert }: MakeManifestProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     }));
   };
 
@@ -124,7 +128,7 @@ export default function MakeManifest({ onInsert }: MakeManifestProps) {
   const generateManifest = (): ManifestData => {
     const iconSrc = getIconSrc();
     
-    return {
+    const manifest: ManifestData = {
       background_color: formData.background_color,
       dir: 'ltr',
       display: 'standalone',
@@ -148,7 +152,6 @@ export default function MakeManifest({ onInsert }: MakeManifestProps) {
           is256x256: false,
           is192x192: false
         },
-        // Add larger icon sizes for PWA compatibility
         {
           src: iconSrc,
           type: 'image/png',
@@ -177,12 +180,133 @@ export default function MakeManifest({ onInsert }: MakeManifestProps) {
         }
       ]
     };
+
+    return manifest;
+  };
+
+  const generateServiceWorker = (): string => {
+    return `// Service Worker for ${formData.name || 'PWA App'}
+const CACHE_NAME = '${formData.short_name.toLowerCase()}-v1.0.0';
+const urlsToCache = [
+  '/',
+  '${formData.start_url}',
+  '/manifest.json',
+  // Add other assets you want to cache
+];
+
+self.addEventListener('install', (event) => {
+  console.log('Service Worker installing...');
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => {
+        console.log('Opened cache');
+        return cache.addAll(urlsToCache);
+      })
+      .then(() => self.skipWaiting())
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  console.log('Service Worker activating...');
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    }).then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  if (event.request.url.startsWith(self.location.origin)) {
+    event.respondWith(
+      caches.match(event.request)
+        .then((response) => {
+          // Return cached version or fetch from network
+          return response || fetch(event.request);
+        })
+    );
+  }
+});
+
+// Handle push notifications
+self.addEventListener('push', (event) => {
+  if (!event.data) return;
+  
+  const data = event.data.json();
+  const options = {
+    body: data.body || 'New notification',
+    icon: '/icon-192.png',
+    badge: '/badge-72.png',
+    tag: data.tag || 'general',
+    data: data.url || '/',
+    actions: [
+      {
+        action: 'open',
+        title: 'Open App'
+      },
+      {
+        action: 'close',
+        title: 'Close'
+      }
+    ]
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'Notification', options)
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  
+  if (event.action === 'open') {
+    event.waitUntil(
+      clients.openWindow(event.notification.data)
+    );
+  }
+});`;
+  };
+
+  const saveToTurso = async (manifestData: ManifestData): Promise<string> => {
+    const uuid = crypto.randomUUID();
+    const fileName = `${uuid}-manifest.json`;
+    
+    try {
+      const response = await fetch('/api/save-manifest', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: uuid,
+          filename: fileName,
+          manifest_data: manifestData,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to save manifest: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data.url || `${baseUrl}/api/manifests/${fileName}`;
+      
+    } catch (error) {
+      console.error('Error saving to Turso:', error);
+      const blob = new Blob([JSON.stringify(manifestData, null, 2)], { type: 'application/json' });
+      return URL.createObjectURL(blob);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Basic validation
     if (!formData.name.trim()) {
       setErrorMsg('Please enter an app name');
       setStatus('error');
@@ -204,7 +328,14 @@ export default function MakeManifest({ onInsert }: MakeManifestProps) {
       const manifestString = JSON.stringify(manifestData, null, 2);
       setManifestContent(manifestString);
       
-      // Create and download manifest file
+      if (formData.includeServiceWorker) {
+        const swContent = generateServiceWorker();
+        setServiceWorkerContent(swContent);
+      }
+      
+      const url = await saveToTurso(manifestData);
+      setManifestUrl(url);
+      
       const blob = new Blob([manifestString], { type: 'application/json' });
       const urlBlob = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -215,8 +346,6 @@ export default function MakeManifest({ onInsert }: MakeManifestProps) {
       document.body.removeChild(a);
       URL.revokeObjectURL(urlBlob);
       
-      // For Bubblewrap, we need to provide a way to access the manifest content directly
-      // Since we can't host it dynamically, we'll provide the content for local file usage
       setStatus('success');
       
     } catch (error) {
@@ -265,6 +394,18 @@ export default function MakeManifest({ onInsert }: MakeManifestProps) {
     URL.revokeObjectURL(urlBlob);
   };
 
+  const downloadServiceWorkerFile = () => {
+    const blob = new Blob([serviceWorkerContent], { type: 'application/javascript' });
+    const urlBlob = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = urlBlob;
+    a.download = 'sw.js';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(urlBlob);
+  };
+
   return (
     <div style={{
       backgroundColor: 'var(--surface-card)',
@@ -273,7 +414,6 @@ export default function MakeManifest({ onInsert }: MakeManifestProps) {
       padding: '24px',
       fontFamily: 'var(--font-sans)'
     }}>
-      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
         <div style={{
           padding: '12px',
@@ -306,7 +446,6 @@ export default function MakeManifest({ onInsert }: MakeManifestProps) {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        {/* Form Section */}
         <div style={{
           padding: '20px',
           borderRadius: 'var(--radius-lg)',
@@ -314,7 +453,6 @@ export default function MakeManifest({ onInsert }: MakeManifestProps) {
           backgroundColor: 'var(--surface-secondary)'
         }}>
           <form onSubmit={handleSubmit}>
-            {/* Name Input */}
             <div style={{ marginBottom: '16px' }}>
               <label style={{
                 display: 'flex',
@@ -353,7 +491,6 @@ export default function MakeManifest({ onInsert }: MakeManifestProps) {
               />
             </div>
 
-            {/* Short Name Input */}
             <div style={{ marginBottom: '16px' }}>
               <label style={{
                 display: 'flex',
@@ -392,7 +529,6 @@ export default function MakeManifest({ onInsert }: MakeManifestProps) {
               />
             </div>
 
-            {/* Start URL Input */}
             <div style={{ marginBottom: '16px' }}>
               <label style={{
                 display: 'flex',
@@ -430,7 +566,6 @@ export default function MakeManifest({ onInsert }: MakeManifestProps) {
               />
             </div>
 
-            {/* Color Pickers */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
               <div>
                 <label style={{
@@ -492,7 +627,6 @@ export default function MakeManifest({ onInsert }: MakeManifestProps) {
               </div>
             </div>
 
-            {/* Icon Selection */}
             <div style={{ marginBottom: '20px' }}>
               <label style={{
                 display: 'flex',
@@ -507,7 +641,6 @@ export default function MakeManifest({ onInsert }: MakeManifestProps) {
                 Select Icon
               </label>
               
-              {/* Default Icons - Now with actual images */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>
                 {defaultIcons.map((icon) => (
                   <div
@@ -535,7 +668,6 @@ export default function MakeManifest({ onInsert }: MakeManifestProps) {
                         borderRadius: '8px'
                       }}
                       onError={(e) => {
-                        // Fallback if icon fails to load
                         (e.target as HTMLImageElement).src = fallbackIcon;
                       }}
                     />
@@ -544,7 +676,6 @@ export default function MakeManifest({ onInsert }: MakeManifestProps) {
                 ))}
               </div>
 
-              {/* Custom Icon Upload */}
               <div>
                 <label style={{
                   display: 'block',
@@ -581,7 +712,117 @@ export default function MakeManifest({ onInsert }: MakeManifestProps) {
               </div>
             </div>
 
-            {/* Generate Button */}
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                color: 'var(--text-primary)',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: 500
+              }}>
+                <input
+                  type="checkbox"
+                  name="includeServiceWorker"
+                  checked={formData.includeServiceWorker}
+                  onChange={handleInputChange}
+                  disabled={isLoading}
+                  style={{
+                    width: '16px',
+                    height: '16px',
+                    borderRadius: '4px',
+                    opacity: isLoading ? 0.6 : 1
+                  }}
+                />
+                <Cpu style={{ width: '16px', height: '16px' }} />
+                Include Service Worker (Offline Support)
+              </label>
+              <p style={{
+                color: 'var(--text-muted)',
+                fontSize: '12px',
+                marginTop: '4px',
+                marginLeft: '24px'
+              }}>
+                Adds offline caching and push notification support
+              </p>
+            </div>
+
+            {formData.includeServiceWorker && (
+              <div style={{
+                padding: '16px',
+                borderRadius: 'var(--radius-lg)',
+                border: '1px solid var(--border-primary)',
+                backgroundColor: 'var(--surface-primary)',
+                marginBottom: '16px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px'
+              }}>
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '8px',
+                    fontWeight: 600,
+                    fontSize: '14px',
+                    color: 'var(--text-primary)'
+                  }}>
+                    Service Worker URL
+                  </label>
+                  <input
+                    type="text"
+                    name="serviceWorkerUrl"
+                    value={formData.serviceWorkerUrl}
+                    onChange={handleInputChange}
+                    placeholder="/sw.js"
+                    disabled={isLoading}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      border: '1.5px solid var(--border-primary)',
+                      borderRadius: 'var(--radius-lg)',
+                      backgroundColor: 'var(--surface-secondary)',
+                      color: 'var(--text-primary)',
+                      fontFamily: 'var(--font-sans)',
+                      fontSize: '14px',
+                      opacity: isLoading ? 0.6 : 1
+                    }}
+                  />
+                </div>
+                
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '8px',
+                    fontWeight: 600,
+                    fontSize: '14px',
+                    color: 'var(--text-primary)'
+                  }}>
+                    Service Worker Scope
+                  </label>
+                  <input
+                    type="text"
+                    name="serviceWorkerScope"
+                    value={formData.serviceWorkerScope}
+                    onChange={handleInputChange}
+                    placeholder="/"
+                    disabled={isLoading}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      border: '1.5px solid var(--border-primary)',
+                      borderRadius: 'var(--radius-lg)',
+                      backgroundColor: 'var(--surface-secondary)',
+                      color: 'var(--text-primary)',
+                      fontFamily: 'var(--font-sans)',
+                      fontSize: '14px',
+                      opacity: isLoading ? 0.6 : 1
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
             <button
               type="submit"
               disabled={isLoading}
@@ -618,7 +859,6 @@ export default function MakeManifest({ onInsert }: MakeManifestProps) {
             </button>
           </form>
 
-          {/* Error State */}
           {status === 'error' && (
             <div style={{
               marginTop: '16px',
@@ -639,8 +879,7 @@ export default function MakeManifest({ onInsert }: MakeManifestProps) {
             </div>
           )}
 
-          {/* Success State */}
-          {status === 'success' && manifestContent && (
+          {status === 'success' && manifestUrl && (
             <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{
                 display: 'flex',
@@ -656,12 +895,11 @@ export default function MakeManifest({ onInsert }: MakeManifestProps) {
                 <span style={{ fontSize: '14px', fontWeight: '600' }}>Manifest generated successfully!</span>
               </div>
 
-              {/* Bubblewrap Instructions */}
               <div style={{
                 padding: '16px',
                 borderRadius: 'var(--radius-lg)',
-                border: '1px solid var(--border-warning)',
-                backgroundColor: 'var(--surface-warning)'
+                border: '1px solid var(--border-primary)',
+                backgroundColor: 'var(--surface-primary)'
               }}>
                 <h4 style={{
                   fontSize: '14px',
@@ -672,19 +910,11 @@ export default function MakeManifest({ onInsert }: MakeManifestProps) {
                   alignItems: 'center',
                   gap: '6px'
                 }}>
-                  <Package style={{ width: '14px', height: '14px' }} />
-                  For Bubblewrap Usage
+                  <Globe style={{ width: '14px', height: '14px' }} />
+                  Your Hosted Manifest URL
                 </h4>
-                <p style={{
-                  color: 'var(--text-secondary)',
-                  fontSize: '13px',
-                  lineHeight: '1.5',
-                  margin: '0 0 12px 0'
-                }}>
-                  Save the downloaded <code style={{ background: 'var(--surface-tertiary)', padding: '2px 6px', borderRadius: '4px', fontSize: '12px' }}>manifest.json</code> file and use it locally:
-                </p>
                 <div style={{
-                  backgroundColor: 'var(--surface-primary)',
+                  backgroundColor: 'var(--surface-secondary)',
                   padding: '12px',
                   borderRadius: 'var(--radius-md)',
                   fontFamily: 'monospace',
@@ -694,9 +924,30 @@ export default function MakeManifest({ onInsert }: MakeManifestProps) {
                   marginBottom: '8px',
                   border: '1px solid var(--border-primary)'
                 }}>
-                  bubblewrap init --manifest ./manifest.json
+                  {manifestUrl}
                 </div>
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <button
+                    onClick={() => copyToClipboard(manifestUrl, 'manifest-url')}
+                    style={{
+                      padding: '8px 12px',
+                      borderRadius: 'var(--radius-md)',
+                      fontWeight: 600,
+                      fontSize: '12px',
+                      border: '1px solid var(--border-primary)',
+                      backgroundColor: 'transparent',
+                      color: 'var(--text-primary)',
+                      cursor: 'pointer',
+                      fontFamily: 'inherit',
+                      transition: 'all var(--transition-normal)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    <Copy style={{ width: '12px', height: '12px' }} />
+                    Copy URL
+                  </button>
                   <button
                     onClick={downloadManifestFile}
                     style={{
@@ -716,10 +967,40 @@ export default function MakeManifest({ onInsert }: MakeManifestProps) {
                     }}
                   >
                     <Download style={{ width: '12px', height: '12px' }} />
-                    Download Again
+                    Download File
                   </button>
+                </div>
+              </div>
+
+              {formData.includeServiceWorker && serviceWorkerContent && (
+                <div style={{
+                  padding: '16px',
+                  borderRadius: 'var(--radius-lg)',
+                  border: '1px solid var(--border-warning)',
+                  backgroundColor: 'var(--surface-warning)'
+                }}>
+                  <h4 style={{
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    color: 'var(--text-primary)',
+                    margin: '0 0 8px 0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}>
+                    <Cpu style={{ width: '14px', height: '14px' }} />
+                    Service Worker Generated
+                  </h4>
+                  <p style={{
+                    color: 'var(--text-secondary)',
+                    fontSize: '13px',
+                    lineHeight: '1.5',
+                    margin: '0 0 12px 0'
+                  }}>
+                    Download the service worker file and place it in your app's root directory.
+                  </p>
                   <button
-                    onClick={() => copyToClipboard(manifestContent, 'manifest-content')}
+                    onClick={downloadServiceWorkerFile}
                     style={{
                       padding: '8px 12px',
                       borderRadius: 'var(--radius-md)',
@@ -736,13 +1017,53 @@ export default function MakeManifest({ onInsert }: MakeManifestProps) {
                       gap: '4px'
                     }}
                   >
-                    <Copy style={{ width: '12px', height: '12px' }} />
-                    Copy Manifest JSON
+                    <Download style={{ width: '12px', height: '12px' }} />
+                    Download Service Worker
                   </button>
+                </div>
+              )}
+
+              <div style={{
+                padding: '16px',
+                borderRadius: 'var(--radius-lg)',
+                border: '1px solid var(--border-info)',
+                backgroundColor: 'var(--surface-info)'
+              }}>
+                <h4 style={{
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  color: 'var(--text-primary)',
+                  margin: '0 0 8px 0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}>
+                  <Package style={{ width: '14px', height: '14px' }} />
+                  For Bubblewrap Usage
+                </h4>
+                <p style={{
+                  color: 'var(--text-secondary)',
+                  fontSize: '13px',
+                  lineHeight: '1.5',
+                  margin: '0 0 12px 0'
+                }}>
+                  Use the hosted URL with Bubblewrap:
+                </p>
+                <div style={{
+                  backgroundColor: 'var(--surface-primary)',
+                  padding: '12px',
+                  borderRadius: 'var(--radius-md)',
+                  fontFamily: 'monospace',
+                  color: 'var(--text-primary)',
+                  fontSize: '13px',
+                  wordBreak: 'break-all',
+                  marginBottom: '8px',
+                  border: '1px solid var(--border-primary)'
+                }}>
+                  bubblewrap init --manifest {manifestUrl}
                 </div>
               </div>
 
-              {/* Insert Manifest Option */}
               {onInsert && (
                 <button
                   onClick={insertManifest}
@@ -774,7 +1095,6 @@ export default function MakeManifest({ onInsert }: MakeManifestProps) {
           )}
         </div>
 
-        {/* Features Section */}
         <div style={{
           padding: '20px',
           borderRadius: 'var(--radius-lg)',
@@ -801,7 +1121,7 @@ export default function MakeManifest({ onInsert }: MakeManifestProps) {
             paddingLeft: '20px'
           }}>
             <li>npm i @bubblewrap/core</li>
-            <li>bubblewrap init --manifest ./manifest.json</li>
+            <li>bubblewrap init --manifest YOUR_MANIFEST_URL</li>
             <li>bubblewrap build</li>
             <li>SHA-256</li>
             <li>keytool -list -v -keystore android.keystore</li>
@@ -809,7 +1129,6 @@ export default function MakeManifest({ onInsert }: MakeManifestProps) {
         </div>
       </div>
 
-      {/* Toast Notification */}
       {copiedItem && (
         <div style={{
           position: 'fixed',
@@ -830,8 +1149,8 @@ export default function MakeManifest({ onInsert }: MakeManifestProps) {
           fontWeight: 600
         }}>
           <CheckCircle style={{ width: '16px', height: '16px' }} />
-          {copiedItem === 'manifest-content'
-            ? 'Manifest JSON copied!'
+          {copiedItem === 'manifest-url'
+            ? 'Manifest URL copied!'
             : 'Copied to clipboard!'}
         </div>
       )}
