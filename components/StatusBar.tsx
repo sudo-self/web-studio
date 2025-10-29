@@ -1,4 +1,6 @@
 // /components/StatusBar.tsx
+
+// /components/StatusBar.tsx
 export default function StatusBar() {
   return (
     <div className="status-bar">
@@ -11,12 +13,17 @@ export default function StatusBar() {
       >
         <div className="relative">
           <div className="w-2 h-2 bg-accent-color rounded-full animate-ping absolute -top-0.5 -right-0.5" />
-          <div className="w-10 h-10 rounded-full overflow-hidden shadow-lg border-2 border-white">
-            <img
-              src="https://studio.jessejesse.com/icon-512.png"
-              alt="Studio Logo"
-              className="w-full h-full object-cover"
-            />
+          <div className="w-10 h-10 rounded-full overflow-hidden shadow-lg border-2 border-white flex items-center justify-center">
+            {/* Inline Bimi SVG */}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 100 100"
+              className="w-8 h-8"
+              fill="currentColor"
+            >
+              <path d="M50 0C22.386 0 0 22.386 0 50s22.386 50 50 50 50-22.386 50-50S77.614 0 50 0zm0 95C25.147 95 5 74.853 5 50S25.147 5 50 5s45 20.147 45 45-20.147 45-45 45z" />
+              <path d="M50 25a25 25 0 1 0 25 25A25.028 25.028 0 0 0 50 25zm0 45a20 20 0 1 1 20-20 20.023 20.023 0 0 1-20 20z" />
+            </svg>
           </div>
         </div>
         <div className="flex flex-col">
