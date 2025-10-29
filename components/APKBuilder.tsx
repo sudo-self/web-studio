@@ -1,103 +1,230 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Download, Globe, Package, CheckCircle, AlertCircle, Upload, Key, Loader, Zap, FileJson, Building } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Download, Globe, Package, CheckCircle, AlertCircle, Upload, Key, Loader, Zap, FileJson, Building, Palette, Image, Copy } from 'lucide-react';
 
-interface TWAManifestBuilderProps {
+interface MakeManifestProps {
   onInsert?: (code: string) => void;
 }
 
-interface BuildResult {
-  downloadUrl: string;
-  keystoreGenerated?: boolean;
-  keystorePassword?: string;
-  manifest?: any;
+interface IconOption {
+  src: string;
+  name: string;
 }
 
-export default function TWAManifestBuilder({ onInsert }: TWAManifestBuilderProps) {
-  const [url, setUrl] = useState('');
-  const [keystoreFile, setKeystoreFile] = useState<File | null>(null);
-  const [keystorePassword, setKeystorePassword] = useState('');
-  const [keystoreAlias, setKeystoreAlias] = useState('android');
-  const [useCustomKeystore, setUseCustomKeystore] = useState(false);
-  const [status, setStatus] = useState('idle'); // idle, building, success, error
-  const [errorMsg, setErrorMsg] = useState('');
-  const [buildResult, setBuildResult] = useState<BuildResult | null>(null);
-  const [progress, setProgress] = useState('');
-  const [copiedItem, setCopiedItem] = useState<string | null>(null);
+interface ManifestData {
+  background_color: string;
+  dir: string;
+  display: string;
+  name: string;
+  orientation: string;
+  scope: string;
+  short_name: string;
+  start_url: string;
+  theme_color: string;
+  icons: Array<{
+    src: string;
+    type: string;
+    sizes: string;
+    isSquare: boolean;
+    isPng: boolean;
+    isWebp: boolean;
+    isJpg: boolean;
+    width: number;
+    is512x512: boolean;
+    is256x256: boolean;
+    is192x192: boolean;
+  }>;
+}
+
+export default function MakeManifest({ onInsert }: MakeManifestProps) {
+  // Use absolute paths for icons that will work in both local and production
+  const baseUrl = typeof window !== 'undefined'
+    ? window.location.origin
+    : 'https://studio.jessejesse.com';
+
+  const defaultIcons: IconOption[] = [
+    { src: `${baseUrl}/android_512.png`, name: 'Android' },
+    { src: `${baseUrl}/bunny_512.png`, name: 'Bunny' },
+    { src: `${baseUrl}/castle_512.png`, name: 'Castle' },
+    { src: `${baseUrl}/cloud_512.png`, name: 'Cloud' },
+    { src: `${baseUrl}/phone_512.png`, name: 'Phone' }
+  ];
+
+  const fallbackIcon = 'https://bimi-svg.netlify.app/icon-192.png';
+
+  const [formData, setFormData] = useState({
+    name: '',
+    short_name: '',
+    start_url: '/',
+    background_color: '#090202',
+    theme_color: '#08ea82',
+    selectedIcon: defaultIcons[0].src,
+    customIcon: null as File | null
+  });
+
+  const [manifestUrl, setManifestUrl] = useState('');
+  const [manifestContent, setManifestContent] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [status, setStatus] = useState<'idle' | 'building' | 'success' | 'error'>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [copiedItem, setCopiedItem] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
- const API_URL = window.location.hostname === 'localhost'
-  ? 'http://localhost:8080'
-  : 'https://twa-backend-359911049668.us-central1.run.app';
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
+  const handleIconSelect = (iconSrc: string) => {
+    setFormData(prev => ({
+      ...prev,
+      selectedIcon: iconSrc,
+      customIcon: null
+    }));
+  };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        setErrorMsg('Keystore file must be less than 5MB');
+      // Basic file validation
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        setErrorMsg('File size too large. Please choose a file smaller than 5MB.');
+        setStatus('error');
         return;
       }
-      setKeystoreFile(file);
+      
+      const validTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
+      if (!validTypes.includes(file.type)) {
+        setErrorMsg('Please upload a valid image file (PNG, JPEG, WebP, or SVG).');
+        setStatus('error');
+        return;
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        customIcon: file,
+        selectedIcon: ''
+      }));
+      setErrorMsg('');
+      setStatus('idle');
     }
   };
 
-  const handleBuild = async () => {
-    if (!url.trim()) {
-      setErrorMsg('Please enter a URL');
+  const getIconSrc = (): string => {
+    if (formData.customIcon) {
+      return URL.createObjectURL(formData.customIcon);
+    }
+    return formData.selectedIcon || fallbackIcon;
+  };
+
+  const generateManifest = (): ManifestData => {
+    const iconSrc = getIconSrc();
+    
+    return {
+      background_color: formData.background_color,
+      dir: 'ltr',
+      display: 'standalone',
+      name: formData.name || 'manifest.json',
+      orientation: 'any',
+      scope: '/',
+      short_name: formData.short_name || 'JSON',
+      start_url: formData.start_url,
+      theme_color: formData.theme_color,
+      icons: [
+        {
+          src: iconSrc,
+          type: 'image/x-icon',
+          sizes: '32x32',
+          isSquare: true,
+          isPng: iconSrc.toLowerCase().includes('.png'),
+          isWebp: iconSrc.toLowerCase().includes('.webp'),
+          isJpg: iconSrc.toLowerCase().includes('.jpg') || iconSrc.toLowerCase().includes('.jpeg'),
+          width: 32,
+          is512x512: false,
+          is256x256: false,
+          is192x192: false
+        },
+        // Add larger icon sizes for PWA compatibility
+        {
+          src: iconSrc,
+          type: 'image/png',
+          sizes: '192x192',
+          isSquare: true,
+          isPng: true,
+          isWebp: false,
+          isJpg: false,
+          width: 192,
+          is512x512: false,
+          is256x256: false,
+          is192x192: true
+        },
+        {
+          src: iconSrc,
+          type: 'image/png',
+          sizes: '512x512',
+          isSquare: true,
+          isPng: true,
+          isWebp: false,
+          isJpg: false,
+          width: 512,
+          is512x512: true,
+          is256x256: false,
+          is192x192: false
+        }
+      ]
+    };
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Basic validation
+    if (!formData.name.trim()) {
+      setErrorMsg('Please enter an app name');
+      setStatus('error');
+      return;
+    }
+    
+    if (!formData.short_name.trim()) {
+      setErrorMsg('Please enter a short name');
       setStatus('error');
       return;
     }
 
-    if (useCustomKeystore && (!keystoreFile || !keystorePassword || !keystoreAlias)) {
-      setErrorMsg('Please provide keystore file, password, and alias');
-      setStatus('error');
-      return;
-    }
-
+    setIsLoading(true);
     setStatus('building');
     setErrorMsg('');
-    setBuildResult(null);
-    setProgress('Preparing build...');
 
     try {
-      const formData = new FormData();
-      formData.append('url', url);
+      const manifestData = generateManifest();
+      const manifestString = JSON.stringify(manifestData, null, 2);
+      setManifestContent(manifestString);
       
-      if (useCustomKeystore && keystoreFile) {
-        formData.append('keystore', keystoreFile);
-        formData.append('keystorePassword', keystorePassword);
-        formData.append('keystoreAlias', keystoreAlias);
-      }
-
-      setProgress('Building APK... This may take 2-3 minutes');
-
-      const response = await fetch(`${API_URL}/api/build`, {
-        method: 'POST',
-        body: formData
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.details || data.error || 'Build failed');
-      }
-
-      setProgress('Build complete!');
-      setBuildResult(data);
+      // Create and download manifest file
+      const blob = new Blob([manifestString], { type: 'application/json' });
+      const urlBlob = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = urlBlob;
+      a.download = 'manifest.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(urlBlob);
+      
+      // For Bubblewrap, we need to provide a way to access the manifest content directly
+      // Since we can't host it dynamically, we'll provide the content for local file usage
       setStatus('success');
-
+      
     } catch (error) {
-      setErrorMsg((error as Error).message || 'Build failed');
+      console.error('Error generating manifest:', error);
+      setErrorMsg('Error generating manifest. Please try again.');
       setStatus('error');
-      setProgress('');
-    }
-  };
-
-  const downloadAPK = () => {
-    if (buildResult?.downloadUrl) {
-      window.location.href = `${API_URL}${buildResult.downloadUrl}`;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -112,11 +239,12 @@ export default function TWAManifestBuilder({ onInsert }: TWAManifestBuilderProps
   };
 
   const insertManifest = async () => {
-    if (!onInsert || !buildResult?.manifest) return;
+    if (!onInsert) return;
     
     setIsLoading(true);
     try {
-      const manifestString = JSON.stringify(buildResult.manifest, null, 2);
+      const manifestData = generateManifest();
+      const manifestString = JSON.stringify(manifestData, null, 2);
       onInsert(manifestString);
       
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -125,10 +253,16 @@ export default function TWAManifestBuilder({ onInsert }: TWAManifestBuilderProps
     }
   };
 
-  const copyKeystorePassword = () => {
-    if (buildResult?.keystorePassword) {
-      copyToClipboard(buildResult.keystorePassword, 'keystore-password');
-    }
+  const downloadManifestFile = () => {
+    const blob = new Blob([manifestContent], { type: 'application/json' });
+    const urlBlob = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = urlBlob;
+    a.download = 'manifest.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(urlBlob);
   };
 
   return (
@@ -139,7 +273,7 @@ export default function TWAManifestBuilder({ onInsert }: TWAManifestBuilderProps
       padding: '24px',
       fontFamily: 'var(--font-sans)'
     }}>
-      {/* Header - Matches your component layout */}
+      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
         <div style={{
           padding: '12px',
@@ -149,7 +283,7 @@ export default function TWAManifestBuilder({ onInsert }: TWAManifestBuilderProps
           alignItems: 'center',
           justifyContent: 'center'
         }}>
-          <Building style={{ width: '24px', height: '24px', color: 'var(--text-inverse)' }} />
+          <FileJson style={{ width: '24px', height: '24px', color: 'var(--text-inverse)' }} />
         </div>
         <h2 style={{
           fontSize: '20px',
@@ -157,7 +291,7 @@ export default function TWAManifestBuilder({ onInsert }: TWAManifestBuilderProps
           color: 'var(--text-primary)',
           margin: 0
         }}>
-          TWA APK Builder
+          Manifest Generator
         </h2>
         <span style={{
           fontSize: '12px',
@@ -167,102 +301,250 @@ export default function TWAManifestBuilder({ onInsert }: TWAManifestBuilderProps
           borderRadius: 'var(--radius-md)',
           border: '1px solid var(--border-primary)'
         }}>
-          Android
+          PWA
         </span>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        {/* URL Input Section */}
+        {/* Form Section */}
         <div style={{
           padding: '20px',
           borderRadius: 'var(--radius-lg)',
           border: '1px solid var(--border-primary)',
           backgroundColor: 'var(--surface-secondary)'
         }}>
-          <label style={{
-            display: 'block',
-            marginBottom: '12px',
-            fontWeight: 600,
-            fontSize: '14px',
-            color: 'var(--text-primary)',
-            fontFamily: 'var(--font-sans)',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            <Globe style={{ width: '16px', height: '16px' }} />
-            Website URL
-          </label>
-          
-          <input
-            type="text"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://your-website.com"
-            disabled={status === 'building'}
-            style={{
-              width: '100%',
-              padding: '12px 16px',
-              border: '1.5px solid var(--border-primary)',
-              borderRadius: 'var(--radius-lg)',
-              backgroundColor: 'var(--surface-primary)',
-              color: 'var(--text-primary)',
-              fontFamily: 'var(--font-sans)',
-              fontSize: '14px',
-              transition: 'all var(--transition-normal)',
-              outline: 'none',
-              marginBottom: '16px',
-              opacity: status === 'building' ? 0.6 : 1
-            }}
-          />
-
-          {/* Custom Keystore Toggle */}
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              color: 'var(--text-primary)',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: 500
-            }}>
+          <form onSubmit={handleSubmit}>
+            {/* Name Input */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{
+                display: 'flex',
+                marginBottom: '8px',
+                fontWeight: 600,
+                fontSize: '14px',
+                color: 'var(--text-primary)',
+                fontFamily: 'var(--font-sans)',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <FileJson style={{ width: '16px', height: '16px' }} />
+                App Name *
+              </label>
               <input
-                type="checkbox"
-                checked={useCustomKeystore}
-                onChange={(e) => setUseCustomKeystore(e.target.checked)}
-                disabled={status === 'building'}
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                placeholder="Enter app name"
+                disabled={isLoading}
+                required
                 style={{
-                  width: '16px',
-                  height: '16px',
-                  borderRadius: '4px',
-                  opacity: status === 'building' ? 0.6 : 1
+                  width: '100%',
+                  padding: '12px 16px',
+                  border: '1.5px solid var(--border-primary)',
+                  borderRadius: 'var(--radius-lg)',
+                  backgroundColor: 'var(--surface-primary)',
+                  color: 'var(--text-primary)',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '14px',
+                  transition: 'all var(--transition-normal)',
+                  outline: 'none',
+                  opacity: isLoading ? 0.6 : 1
                 }}
               />
-              <Key style={{ width: '16px', height: '16px' }} />
-              Use custom keystore (optional)
-            </label>
-            <p style={{
-              color: 'var(--text-muted)',
-              fontSize: '12px',
-              marginTop: '4px',
-              marginLeft: '24px'
-            }}>
-              Leave unchecked to auto-generate a keystore
-            </p>
-          </div>
+            </div>
 
-          {/* Custom Keystore Fields */}
-          {useCustomKeystore && (
-            <div style={{
-              padding: '16px',
-              borderRadius: 'var(--radius-lg)',
-              border: '1px solid var(--border-primary)',
-              backgroundColor: 'var(--surface-primary)',
-              marginBottom: '16px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '12px'
-            }}>
+            {/* Short Name Input */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{
+                display: 'flex',
+                marginBottom: '8px',
+                fontWeight: 600,
+                fontSize: '14px',
+                color: 'var(--text-primary)',
+                fontFamily: 'var(--font-sans)',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <FileJson style={{ width: '16px', height: '16px' }} />
+                Short Name (displayed on homescreen) *
+              </label>
+              <input
+                type="text"
+                name="short_name"
+                value={formData.short_name}
+                onChange={handleInputChange}
+                placeholder="Enter short name"
+                disabled={isLoading}
+                required
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  border: '1.5px solid var(--border-primary)',
+                  borderRadius: 'var(--radius-lg)',
+                  backgroundColor: 'var(--surface-primary)',
+                  color: 'var(--text-primary)',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '14px',
+                  transition: 'all var(--transition-normal)',
+                  outline: 'none',
+                  opacity: isLoading ? 0.6 : 1
+                }}
+              />
+            </div>
+
+            {/* Start URL Input */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{
+                display: 'flex',
+                marginBottom: '8px',
+                fontWeight: 600,
+                fontSize: '14px',
+                color: 'var(--text-primary)',
+                fontFamily: 'var(--font-sans)',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <Globe style={{ width: '16px', height: '16px' }} />
+                Start URL (optional)
+              </label>
+              <input
+                type="text"
+                name="start_url"
+                value={formData.start_url}
+                onChange={handleInputChange}
+                placeholder="/"
+                disabled={isLoading}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  border: '1.5px solid var(--border-primary)',
+                  borderRadius: 'var(--radius-lg)',
+                  backgroundColor: 'var(--surface-primary)',
+                  color: 'var(--text-primary)',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '14px',
+                  transition: 'all var(--transition-normal)',
+                  outline: 'none',
+                  opacity: isLoading ? 0.6 : 1
+                }}
+              />
+            </div>
+
+            {/* Color Pickers */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+              <div>
+                <label style={{
+                  display: 'flex',
+                  marginBottom: '8px',
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  color: 'var(--text-primary)',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <Palette style={{ width: '16px', height: '16px' }} />
+                  Background Color
+                </label>
+                <input
+                  type="color"
+                  name="background_color"
+                  value={formData.background_color}
+                  onChange={handleInputChange}
+                  disabled={isLoading}
+                  style={{
+                    width: '100%',
+                    height: '44px',
+                    border: '1.5px solid var(--border-primary)',
+                    borderRadius: 'var(--radius-lg)',
+                    cursor: isLoading ? 'not-allowed' : 'pointer',
+                    opacity: isLoading ? 0.6 : 1
+                  }}
+                />
+              </div>
+              <div>
+                <label style={{
+                  display: 'flex',
+                  marginBottom: '8px',
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  color: 'var(--text-primary)',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <Palette style={{ width: '16px', height: '16px' }} />
+                  Theme Color
+                </label>
+                <input
+                  type="color"
+                  name="theme_color"
+                  value={formData.theme_color}
+                  onChange={handleInputChange}
+                  disabled={isLoading}
+                  style={{
+                    width: '100%',
+                    height: '44px',
+                    border: '1.5px solid var(--border-primary)',
+                    borderRadius: 'var(--radius-lg)',
+                    cursor: isLoading ? 'not-allowed' : 'pointer',
+                    opacity: isLoading ? 0.6 : 1
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Icon Selection */}
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{
+                display: 'flex',
+                marginBottom: '12px',
+                fontWeight: 600,
+                fontSize: '14px',
+                color: 'var(--text-primary)',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <Image style={{ width: '16px', height: '16px' }} />
+                Select Icon
+              </label>
+              
+              {/* Default Icons - Now with actual images */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>
+                {defaultIcons.map((icon) => (
+                  <div
+                    key={icon.src}
+                    onClick={() => !isLoading && handleIconSelect(icon.src)}
+                    style={{
+                      padding: '12px',
+                      border: formData.selectedIcon === icon.src && !formData.customIcon ? '2px solid var(--interactive-accent)' : '1px solid var(--border-primary)',
+                      borderRadius: 'var(--radius-lg)',
+                      backgroundColor: formData.selectedIcon === icon.src && !formData.customIcon ? 'var(--surface-accent)' : 'var(--surface-primary)',
+                      cursor: isLoading ? 'not-allowed' : 'pointer',
+                      textAlign: 'center',
+                      transition: 'all var(--transition-normal)',
+                      opacity: isLoading ? 0.6 : 1
+                    }}
+                  >
+                    <img
+                      src={icon.src}
+                      alt={icon.name}
+                      style={{
+                        width: '48px',
+                        height: '48px',
+                        objectFit: 'contain',
+                        marginBottom: '6px',
+                        borderRadius: '8px'
+                      }}
+                      onError={(e) => {
+                        // Fallback if icon fails to load
+                        (e.target as HTMLImageElement).src = fallbackIcon;
+                      }}
+                    />
+                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{icon.name}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Custom Icon Upload */}
               <div>
                 <label style={{
                   display: 'block',
@@ -271,43 +553,14 @@ export default function TWAManifestBuilder({ onInsert }: TWAManifestBuilderProps
                   fontSize: '14px',
                   color: 'var(--text-primary)'
                 }}>
-                  Keystore File (.keystore, .jks)
+                  Or Upload Custom Icon:
                 </label>
                 <input
                   type="file"
-                  accept=".keystore,.jks"
-                  onChange={handleFileChange}
-                  disabled={status === 'building'}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    border: '1.5px solid var(--border-primary)',
-                    borderRadius: 'var(--radius-lg)',
-                    backgroundColor: 'var(--surface-secondary)',
-                    color: 'var(--text-primary)',
-                    fontFamily: 'var(--font-sans)',
-                    fontSize: '14px',
-                    opacity: status === 'building' ? 0.6 : 1
-                  }}
-                />
-              </div>
-              
-              <div>
-                <label style={{
-                  display: 'block',
-                  marginBottom: '8px',
-                  fontWeight: 600,
-                  fontSize: '14px',
-                  color: 'var(--text-primary)'
-                }}>
-                  Keystore Password
-                </label>
-                <input
-                  type="password"
-                  value={keystorePassword}
-                  onChange={(e) => setKeystorePassword(e.target.value)}
-                  placeholder="Enter keystore password"
-                  disabled={status === 'building'}
+                  ref={fileInputRef}
+                  onChange={handleFileUpload}
+                  accept="image/png, image/jpeg, image/webp, image/svg+xml"
+                  disabled={isLoading}
                   style={{
                     width: '100%',
                     padding: '12px 16px',
@@ -317,96 +570,53 @@ export default function TWAManifestBuilder({ onInsert }: TWAManifestBuilderProps
                     color: 'var(--text-primary)',
                     fontFamily: 'var(--font-sans)',
                     fontSize: '14px',
-                    opacity: status === 'building' ? 0.6 : 1
+                    opacity: isLoading ? 0.6 : 1
                   }}
                 />
-              </div>
-              
-              <div>
-                <label style={{
-                  display: 'block',
-                  marginBottom: '8px',
-                  fontWeight: 600,
-                  fontSize: '14px',
-                  color: 'var(--text-primary)'
-                }}>
-                  Key Alias
-                </label>
-                <input
-                  type="text"
-                  value={keystoreAlias}
-                  onChange={(e) => setKeystoreAlias(e.target.value)}
-                  placeholder="android"
-                  disabled={status === 'building'}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    border: '1.5px solid var(--border-primary)',
-                    borderRadius: 'var(--radius-lg)',
-                    backgroundColor: 'var(--surface-primary)',
-                    color: 'var(--text-primary)',
-                    fontFamily: 'var(--font-sans)',
-                    fontSize: '14px',
-                    opacity: status === 'building' ? 0.6 : 1
-                  }}
-                />
+                {formData.customIcon && (
+                  <div style={{ marginTop: '8px', fontSize: '14px', color: 'var(--text-muted)' }}>
+                    Selected: {formData.customIcon.name}
+                  </div>
+                )}
               </div>
             </div>
-          )}
 
-          {/* Build Button */}
-          <button
-            onClick={handleBuild}
-            disabled={status === 'building'}
-            style={{
-              width: '100%',
-              padding: '14px 20px',
-              background: 'linear-gradient(135deg, var(--interactive-accent), var(--interactive-accent-hover))',
-              color: 'var(--text-inverse)',
-              border: 'none',
-              borderRadius: 'var(--radius-lg)',
-              fontWeight: 600,
-              fontSize: '15px',
-              cursor: status === 'building' ? 'not-allowed' : 'pointer',
-              opacity: status === 'building' ? 0.7 : 1,
-              transition: 'all var(--transition-normal)',
-              fontFamily: 'inherit',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px'
-            }}
-          >
-            {status === 'building' ? (
-              <>
-                <Loader style={{ width: '18px', height: '18px', animation: 'spin 1s linear infinite' }} />
-                Building...
-              </>
-            ) : (
-              <>
-                <Package style={{ width: '18px', height: '18px' }} />
-                Build APK
-              </>
-            )}
-          </button>
-
-          {/* Progress Indicator */}
-          {progress && status === 'building' && (
-            <div style={{
-              marginTop: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              color: 'var(--interactive-info)',
-              backgroundColor: 'var(--surface-info)',
-              padding: '12px 16px',
-              borderRadius: 'var(--radius-lg)',
-              border: '1px solid var(--border-info)'
-            }}>
-              <Loader style={{ width: '16px', height: '16px', animation: 'spin 1s linear infinite' }} />
-              <span style={{ fontSize: '14px' }}>{progress}</span>
-            </div>
-          )}
+            {/* Generate Button */}
+            <button
+              type="submit"
+              disabled={isLoading}
+              style={{
+                width: '100%',
+                padding: '14px 20px',
+                background: 'linear-gradient(135deg, var(--interactive-accent), var(--interactive-accent-hover))',
+                color: 'var(--text-inverse)',
+                border: 'none',
+                borderRadius: 'var(--radius-lg)',
+                fontWeight: 600,
+                fontSize: '15px',
+                cursor: isLoading ? 'not-allowed' : 'pointer',
+                opacity: isLoading ? 0.7 : 1,
+                transition: 'all var(--transition-normal)',
+                fontFamily: 'inherit',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
+            >
+              {isLoading ? (
+                <>
+                  <Loader style={{ width: '18px', height: '18px', animation: 'spin 1s linear infinite' }} />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Download style={{ width: '18px', height: '18px' }} />
+                  Generate & Download Manifest
+                </>
+              )}
+            </button>
+          </form>
 
           {/* Error State */}
           {status === 'error' && (
@@ -423,14 +633,14 @@ export default function TWAManifestBuilder({ onInsert }: TWAManifestBuilderProps
             }}>
               <AlertCircle style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '2px' }} />
               <div>
-                <div style={{ fontSize: '14px', fontWeight: 600, marginBottom: '4px' }}>Build Failed</div>
+                <div style={{ fontSize: '14px', fontWeight: 600, marginBottom: '4px' }}>Generation Failed</div>
                 <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{errorMsg}</div>
               </div>
             </div>
           )}
 
           {/* Success State */}
-          {status === 'success' && buildResult && (
+          {status === 'success' && manifestContent && (
             <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{
                 display: 'flex',
@@ -443,111 +653,97 @@ export default function TWAManifestBuilder({ onInsert }: TWAManifestBuilderProps
                 border: '1px solid var(--border-success)'
               }}>
                 <CheckCircle style={{ width: '16px', height: '16px' }} />
-                <span style={{ fontSize: '14px', fontWeight: 600 }}>APK built successfully!</span>
+                <span style={{ fontSize: '14px', fontWeight: '600' }}>Manifest generated successfully!</span>
               </div>
 
-              {/* Download Button */}
-              <button
-                onClick={downloadAPK}
-                style={{
-                  width: '100%',
-                  padding: '14px 20px',
-                  background: 'linear-gradient(135deg, var(--interactive-success), var(--interactive-success-hover))',
-                  color: 'var(--text-inverse)',
-                  border: 'none',
-                  borderRadius: 'var(--radius-lg)',
+              {/* Bubblewrap Instructions */}
+              <div style={{
+                padding: '16px',
+                borderRadius: 'var(--radius-lg)',
+                border: '1px solid var(--border-warning)',
+                backgroundColor: 'var(--surface-warning)'
+              }}>
+                <h4 style={{
+                  fontSize: '14px',
                   fontWeight: 600,
-                  fontSize: '15px',
-                  cursor: 'pointer',
-                  transition: 'all var(--transition-normal)',
-                  fontFamily: 'inherit',
+                  color: 'var(--text-primary)',
+                  margin: '0 0 8px 0',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px'
-                }}
-              >
-                <Download style={{ width: '18px', height: '18px' }} />
-                Download APK
-              </button>
-
-              {/* Auto-generated Keystore Info */}
-              {buildResult.keystoreGenerated && (
-                <div style={{
-                  padding: '16px',
-                  borderRadius: 'var(--radius-lg)',
-                  border: '1px solid var(--border-warning)',
-                  backgroundColor: 'var(--surface-warning)'
+                  gap: '6px'
                 }}>
-                  <h4 style={{
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    color: 'var(--text-primary)',
-                    margin: '0 0 8px 0',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}>
-                    <Key style={{ width: '14px', height: '14px' }} />
-                    Auto-Generated Keystore
-                  </h4>
-                  <p style={{
-                    color: 'var(--text-secondary)',
-                    fontSize: '13px',
-                    lineHeight: '1.5',
-                    margin: '0 0 12px 0'
-                  }}>
-                    A keystore was automatically generated. Save this password for future updates:
-                  </p>
-                  <div style={{
-                    backgroundColor: 'var(--surface-primary)',
-                    padding: '12px',
-                    borderRadius: 'var(--radius-md)',
-                    fontFamily: 'monospace',
-                    color: 'var(--text-primary)',
-                    fontSize: '13px',
-                    wordBreak: 'break-all',
-                    marginBottom: '8px',
-                    border: '1px solid var(--border-primary)'
-                  }}>
-                    {buildResult.keystorePassword}
-                  </div>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button
-                      onClick={copyKeystorePassword}
-                      style={{
-                        padding: '8px 12px',
-                        borderRadius: 'var(--radius-md)',
-                        fontWeight: 600,
-                        fontSize: '12px',
-                        border: '1px solid var(--border-primary)',
-                        backgroundColor: 'transparent',
-                        color: 'var(--text-primary)',
-                        cursor: 'pointer',
-                        fontFamily: 'inherit',
-                        transition: 'all var(--transition-normal)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}
-                    >
-                      <FileJson style={{ width: '12px', height: '12px' }} />
-                      Copy Password
-                    </button>
-                  </div>
-                  <p style={{
-                    color: 'var(--text-secondary)',
-                    fontSize: '11px',
-                    margin: '8px 0 0 0',
-                    fontStyle: 'italic'
-                  }}>
-                    ⚠️ You'll need this password to update your app in the future!
-                  </p>
+                  <Package style={{ width: '14px', height: '14px' }} />
+                  For Bubblewrap Usage
+                </h4>
+                <p style={{
+                  color: 'var(--text-secondary)',
+                  fontSize: '13px',
+                  lineHeight: '1.5',
+                  margin: '0 0 12px 0'
+                }}>
+                  Save the downloaded <code style={{ background: 'var(--surface-tertiary)', padding: '2px 6px', borderRadius: '4px', fontSize: '12px' }}>manifest.json</code> file and use it locally:
+                </p>
+                <div style={{
+                  backgroundColor: 'var(--surface-primary)',
+                  padding: '12px',
+                  borderRadius: 'var(--radius-md)',
+                  fontFamily: 'monospace',
+                  color: 'var(--text-primary)',
+                  fontSize: '13px',
+                  wordBreak: 'break-all',
+                  marginBottom: '8px',
+                  border: '1px solid var(--border-primary)'
+                }}>
+                  bubblewrap init --manifest ./manifest.json
                 </div>
-              )}
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <button
+                    onClick={downloadManifestFile}
+                    style={{
+                      padding: '8px 12px',
+                      borderRadius: 'var(--radius-md)',
+                      fontWeight: 600,
+                      fontSize: '12px',
+                      border: '1px solid var(--border-primary)',
+                      backgroundColor: 'transparent',
+                      color: 'var(--text-primary)',
+                      cursor: 'pointer',
+                      fontFamily: 'inherit',
+                      transition: 'all var(--transition-normal)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    <Download style={{ width: '12px', height: '12px' }} />
+                    Download Again
+                  </button>
+                  <button
+                    onClick={() => copyToClipboard(manifestContent, 'manifest-content')}
+                    style={{
+                      padding: '8px 12px',
+                      borderRadius: 'var(--radius-md)',
+                      fontWeight: 600,
+                      fontSize: '12px',
+                      border: '1px solid var(--border-primary)',
+                      backgroundColor: 'transparent',
+                      color: 'var(--text-primary)',
+                      cursor: 'pointer',
+                      fontFamily: 'inherit',
+                      transition: 'all var(--transition-normal)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    <Copy style={{ width: '12px', height: '12px' }} />
+                    Copy Manifest JSON
+                  </button>
+                </div>
+              </div>
 
               {/* Insert Manifest Option */}
-              {onInsert && buildResult.manifest && (
+              {onInsert && (
                 <button
                   onClick={insertManifest}
                   disabled={isLoading}
@@ -578,7 +774,7 @@ export default function TWAManifestBuilder({ onInsert }: TWAManifestBuilderProps
           )}
         </div>
 
-        {/* Requirements Section */}
+        {/* Features Section */}
         <div style={{
           padding: '20px',
           borderRadius: 'var(--radius-lg)',
@@ -594,8 +790,8 @@ export default function TWAManifestBuilder({ onInsert }: TWAManifestBuilderProps
             alignItems: 'center',
             gap: '8px'
           }}>
-            <Package style={{ width: '16px', height: '16px' }} />
-            Requirements
+            <FileJson style={{ width: '16px', height: '16px' }} />
+            Command Line
           </h3>
           <ul style={{
             color: 'var(--text-secondary)',
@@ -604,10 +800,11 @@ export default function TWAManifestBuilder({ onInsert }: TWAManifestBuilderProps
             margin: 0,
             paddingLeft: '20px'
           }}>
-            <li>Your website must have a valid <code style={{ background: 'var(--surface-tertiary)', padding: '2px 6px', borderRadius: '4px', fontSize: '12px' }}>/manifest.json</code></li>
-            <li>Icon file must exist at <code style={{ background: 'var(--surface-tertiary)', padding: '2px 6px', borderRadius: '4px', fontSize: '12px' }}>/icon512.png</code> (512x512px)</li>
-            <li>Website must be accessible over HTTPS</li>
-            <li>Build takes 2-3 minutes on first run</li>
+            <li>npm i @bubblewrap/core</li>
+            <li>bubblewrap init --manifest ./manifest.json</li>
+            <li>bubblewrap build</li>
+            <li>SHA-256</li>
+            <li>keytool -list -v -keystore android.keystore</li>
           </ul>
         </div>
       </div>
@@ -633,8 +830,8 @@ export default function TWAManifestBuilder({ onInsert }: TWAManifestBuilderProps
           fontWeight: 600
         }}>
           <CheckCircle style={{ width: '16px', height: '16px' }} />
-          {copiedItem === 'keystore-password'
-            ? 'Keystore password copied!'
+          {copiedItem === 'manifest-content'
+            ? 'Manifest JSON copied!'
             : 'Copied to clipboard!'}
         </div>
       )}
@@ -658,4 +855,3 @@ export default function TWAManifestBuilder({ onInsert }: TWAManifestBuilderProps
     </div>
   );
 }
-
