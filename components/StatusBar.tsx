@@ -13,7 +13,7 @@ export default function StatusBar() {
           <div className="w-2 h-2 bg-accent-color rounded-full animate-ping absolute -top-0.5 -right-0.5" />
           <div className="w-10 h-10 rounded-full overflow-hidden shadow-lg border-2 border-white">
             <img
-              src="./icon-512.png"
+              src="https://studio.jessejesse.com/icon-512.png"
               alt="Studio Logo"
               className="w-full h-full object-cover"
             />
