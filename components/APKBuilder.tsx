@@ -1,1176 +1,939 @@
-"use client";
+"use client"
 
-import React, { useState, useRef } from 'react';
-import { Download, Globe, Package, CheckCircle, AlertCircle, Upload, Key, Loader, Zap, FileJson, Building, Palette, Image, Copy, Cpu } from 'lucide-react';
+import type React from "react"
+import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Globe, Moon, Sun, Download, RefreshCw, Github, Copy, Key, Palette, AlertCircle, Image } from "lucide-react"
 
-interface MakeManifestProps {
+const GITHUB_OWNER = 'sudo-self'
+const GITHUB_REPO = 'apk-builder-actions'
+
+interface BuildData {
+  buildId: string
+  hostName: string
+  launchUrl: string
+  name: string
+  launcherName: string
+  themeColor: string
+  themeColorDark: string
+  backgroundColor: string
+  iconChoice: string
+}
+
+interface BuildStatus {
+  status: 'pending' | 'success' | 'failed' | 'unknown'
+  artifactUrl?: string
+  artifactId?: string
+}
+
+const ICON_CHOICES = [
+  {
+    value: "phone",
+    label: "Phone Icon",
+    url: "https://apk.jessejesse.com/phone-512.png"
+  },
+  {
+    value: "castle",
+    label: "Castle Icon", 
+    url: "https://apk.jessejesse.com/castle-512.png"
+  },
+  {
+    value: "smile",
+    label: "Smile Icon",
+    url: "https://apk.jessejesse.com/smile-512.png"
+  }
+]
+
+interface APKBuilderProps {
   onInsert?: (code: string) => void;
 }
 
-interface IconOption {
-  src: string;
-  name: string;
-}
+export default function APKBuilder({ onInsert }: APKBuilderProps) {
+  const [url, setUrl] = useState("")
+  const [appName, setAppName] = useState("")
+  const [hostName, setHostName] = useState("")
+  const [themeColor, setThemeColor] = useState("#3b82f6")
+  const [themeColorDark, setThemeColorDark] = useState("#1e40af")
+  const [backgroundColor, setBackgroundColor] = useState("#ffffff")
+  const [iconChoice, setIconChoice] = useState("phone")
+  const [isComplete, setIsComplete] = useState(false)
+  const [isBuilding, setIsBuilding] = useState(false)
+  const [terminalLogs, setTerminalLogs] = useState<string[]>([])
+  const [currentTime, setCurrentTime] = useState(new Date())
+  const [isDarkMode, setIsDarkMode] = useState(true)
+  const [showBootScreen, setShowBootScreen] = useState(true)
+  const [buildId, setBuildId] = useState<string | null>(null)
+  const [githubRunId, setGithubRunId] = useState<string | null>(null)
+  const [artifactUrl, setArtifactUrl] = useState<string | null>(null)
+  const [artifactId, setArtifactId] = useState<string | null>(null)
+  const [buildStartTime, setBuildStartTime] = useState<number>(0)
+  const [showAppKey, setShowAppKey] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const [showAdvanced, setShowAdvanced] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-interface ManifestData {
-  background_color: string;
-  dir: string;
-  display: string;
-  name: string;
-  orientation: string;
-  scope: string;
-  short_name: string;
-  start_url: string;
-  theme_color: string;
-  icons: Array<{
-    src: string;
-    type: string;
-    sizes: string;
-    isSquare: boolean;
-    isPng: boolean;
-    isWebp: boolean;
-    isJpg: boolean;
-    width: number;
-    is512x512: boolean;
-    is256x256: boolean;
-    is192x192: boolean;
-  }>;
-}
+  // Get selected icon URL
+  const selectedIcon = ICON_CHOICES.find(icon => icon.value === iconChoice) || ICON_CHOICES[0]
 
-export default function MakeManifest({ onInsert }: MakeManifestProps) {
-  // Use absolute paths for icons that will work in both local and production
-  const baseUrl = typeof window !== 'undefined'
-    ? window.location.origin
-    : 'https://studio.jessejesse.com';
-
-  const defaultIcons: IconOption[] = [
-    { src: `${baseUrl}/android_512.png`, name: 'Android' },
-    { src: `${baseUrl}/bunny_512.png`, name: 'Bunny' },
-    { src: `${baseUrl}/castle_512.png`, name: 'Castle' },
-    { src: `${baseUrl}/cloud_512.png`, name: 'Cloud' },
-    { src: `${baseUrl}/phone_512.png`, name: 'Phone' }
-  ];
-
-  const fallbackIcon = 'https://bimi-svg.netlify.app/icon-192.png';
-
-  const [formData, setFormData] = useState({
-    name: '',
-    short_name: '',
-    start_url: '/',
-    background_color: '#090202',
-    theme_color: '#08ea82',
-    selectedIcon: defaultIcons[0].src,
-    customIcon: null as File | null,
-    includeServiceWorker: false,
-    serviceWorkerUrl: '/sw.js',
-    serviceWorkerScope: '/'
-  });
-
-  const [manifestUrl, setManifestUrl] = useState('');
-  const [manifestContent, setManifestContent] = useState('');
-  const [serviceWorkerContent, setServiceWorkerContent] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [status, setStatus] = useState<'idle' | 'building' | 'success' | 'error'>('idle');
-  const [errorMsg, setErrorMsg] = useState('');
-  const [copiedItem, setCopiedItem] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-  };
-
-  const handleIconSelect = (iconSrc: string) => {
-    setFormData(prev => ({
-      ...prev,
-      selectedIcon: iconSrc,
-      customIcon: null
-    }));
-  };
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Basic file validation
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        setErrorMsg('File size too large. Please choose a file smaller than 5MB.');
-        setStatus('error');
-        return;
-      }
-      
-      const validTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
-      if (!validTypes.includes(file.type)) {
-        setErrorMsg('Please upload a valid image file (PNG, JPEG, WebP, or SVG).');
-        setStatus('error');
-        return;
-      }
-
-      setFormData(prev => ({
-        ...prev,
-        customIcon: file,
-        selectedIcon: ''
-      }));
-      setErrorMsg('');
-      setStatus('idle');
-    }
-  };
-
-  const getIconSrc = (): string => {
-    if (formData.customIcon) {
-      return URL.createObjectURL(formData.customIcon);
-    }
-    return formData.selectedIcon || fallbackIcon;
-  };
-
-  const generateManifest = (): ManifestData => {
-    const iconSrc = getIconSrc();
+  const getGitHubToken = (): string | null => {
+    if (typeof window === 'undefined') return null
     
-    const manifest: ManifestData = {
-      background_color: formData.background_color,
-      dir: 'ltr',
-      display: 'standalone',
-      name: formData.name || 'manifest.json',
-      orientation: 'any',
-      scope: '/',
-      short_name: formData.short_name || 'JSON',
-      start_url: formData.start_url,
-      theme_color: formData.theme_color,
-      icons: [
-        {
-          src: iconSrc,
-          type: 'image/x-icon',
-          sizes: '32x32',
-          isSquare: true,
-          isPng: iconSrc.toLowerCase().includes('.png'),
-          isWebp: iconSrc.toLowerCase().includes('.webp'),
-          isJpg: iconSrc.toLowerCase().includes('.jpg') || iconSrc.toLowerCase().includes('.jpeg'),
-          width: 32,
-          is512x512: false,
-          is256x256: false,
-          is192x192: false
-        },
-        {
-          src: iconSrc,
-          type: 'image/png',
-          sizes: '192x192',
-          isSquare: true,
-          isPng: true,
-          isWebp: false,
-          isJpg: false,
-          width: 192,
-          is512x512: false,
-          is256x256: false,
-          is192x192: true
-        },
-        {
-          src: iconSrc,
-          type: 'image/png',
-          sizes: '512x512',
-          isSquare: true,
-          isPng: true,
-          isWebp: false,
-          isJpg: false,
-          width: 512,
-          is512x512: true,
-          is256x256: false,
-          is192x192: false
+    const token = 
+      process.env.NEXT_PUBLIC_GITHUB_TOKEN ||
+      (window as any).ENV?.NEXT_PUBLIC_GITHUB_TOKEN ||
+      localStorage.getItem('github_token')
+    
+    return token || null
+  }
+
+  const hasGitHubToken = !!getGitHubToken()
+
+  useEffect(() => {
+    if (url) {
+      try {
+        const urlObj = new URL(url)
+        const extractedHost = urlObj.hostname
+        setHostName(extractedHost)
+        if (!appName) {
+          const defaultName = extractedHost.replace(/^www\./, '').split('.')[0]
+          setAppName(defaultName.charAt(0).toUpperCase() + defaultName.slice(1))
         }
-      ]
-    };
-
-    return manifest;
-  };
-
-  const generateServiceWorker = (): string => {
-    return `// Service Worker for ${formData.name || 'PWA App'}
-const CACHE_NAME = '${formData.short_name.toLowerCase()}-v1.0.0';
-const urlsToCache = [
-  '/',
-  '${formData.start_url}',
-  '/manifest.json',
-  // Add other assets you want to cache
-];
-
-self.addEventListener('install', (event) => {
-  console.log('Service Worker installing...');
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
-      })
-      .then(() => self.skipWaiting())
-  );
-});
-
-self.addEventListener('activate', (event) => {
-  console.log('Service Worker activating...');
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    }).then(() => self.clients.claim())
-  );
-});
-
-self.addEventListener('fetch', (event) => {
-  if (event.request.url.startsWith(self.location.origin)) {
-    event.respondWith(
-      caches.match(event.request)
-        .then((response) => {
-          // Return cached version or fetch from network
-          return response || fetch(event.request);
-        })
-    );
-  }
-});
-
-// Handle push notifications
-self.addEventListener('push', (event) => {
-  if (!event.data) return;
-  
-  const data = event.data.json();
-  const options = {
-    body: data.body || 'New notification',
-    icon: '/icon-192.png',
-    badge: '/badge-72.png',
-    tag: data.tag || 'general',
-    data: data.url || '/',
-    actions: [
-      {
-        action: 'open',
-        title: 'Open App'
-      },
-      {
-        action: 'close',
-        title: 'Close'
+        setError(null)
+      } catch (e) {
+        setHostName("")
+        if (url) {
+          setError("Please enter a valid URL with http:// or https://")
+        }
       }
-    ]
-  };
+    } else {
+      setHostName("")
+      setError(null)
+    }
+  }, [url, appName])
 
-  event.waitUntil(
-    self.registration.showNotification(data.title || 'Notification', options)
-  );
-});
+  useEffect(() => {
+    const bootTimer = setTimeout(() => {
+      setShowBootScreen(false)
+    }, 3000)
+    return () => clearTimeout(bootTimer)
+  }, [])
 
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-  
-  if (event.action === 'open') {
-    event.waitUntil(
-      clients.openWindow(event.notification.data)
-    );
-  }
-});`;
-  };
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date())
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [])
 
-  const saveToTurso = async (manifestData: ManifestData): Promise<string> => {
-    const uuid = crypto.randomUUID();
-    const fileName = `${uuid}-manifest.json`;
+  useEffect(() => {
+    if (!isBuilding || !githubRunId) return
+
+    let pollCount = 0
+    const maxPolls = 120
+
+    const pollBuildStatus = async () => {
+      if (pollCount >= maxPolls) {
+        setTerminalLogs(prev => [...prev, "Build timeout - check GitHub Actions for status"])
+        setIsBuilding(false)
+        return
+      }
+
+      pollCount++
+
+      try {
+        const result = await checkBuildStatus(githubRunId)
+        
+        if (result.status === 'success') {
+          setTerminalLogs(prev => [...prev, "Build completed", "APK is ready"])
+          setIsBuilding(false)
+          setIsComplete(true)
+          
+          if (result.artifactUrl) {
+            setArtifactUrl(result.artifactUrl)
+          }
+          if (result.artifactId) {
+            setArtifactId(result.artifactId)
+          }
+        } else if (result.status === 'failed') {
+          setTerminalLogs(prev => [...prev, "Build failed. Check GitHub Actions for details"])
+          setIsBuilding(false)
+        } else {
+          const elapsedMinutes = Math.floor((Date.now() - buildStartTime) / 60000)
+          if (pollCount % 6 === 0) {
+            setTerminalLogs(prev => [...prev, `building... (${elapsedMinutes}m elapsed)`])
+          }
+          setTimeout(pollBuildStatus, 5000)
+        }
+      } catch (error) {
+        console.error('Error polling GitHub status:', error)
+        setTimeout(pollBuildStatus, 5000)
+      }
+    }
+
+    pollBuildStatus()
+
+    return () => {
+      pollCount = maxPolls
+    }
+  }, [isBuilding, githubRunId, buildStartTime])
+
+  const checkBuildStatus = async (runId: string): Promise<BuildStatus> => {
+    const token = getGitHubToken()
+    if (!token) {
+      throw new Error('GitHub token not configured')
+    }
     
     try {
-      const response = await fetch('/api/save-manifest', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: uuid,
-          filename: fileName,
-          manifest_data: manifestData,
-        }),
-      });
+      const runResponse = await fetch(
+        `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/actions/runs/${runId}`,
+        {
+          headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        }
+      )
+      
+      if (!runResponse.ok) {
+        throw new Error(`GitHub API error: ${runResponse.status}`)
+      }
+      
+      const runData = await runResponse.json()
+      
+      if (runData.status === 'completed') {
+        if (runData.conclusion === 'success') {
+          const artifactsResponse = await fetch(
+            `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/actions/runs/${runId}/artifacts`,
+            {
+              headers: {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            }
+          )
+          
+          if (artifactsResponse.ok) {
+            const artifactsData = await artifactsResponse.json()
+            if (artifactsData.artifacts && artifactsData.artifacts.length > 0) {
+              const artifact = artifactsData.artifacts[0]
+              const artifactDownloadUrl = artifact.archive_download_url
+              return { 
+                status: 'success', 
+                artifactUrl: artifactDownloadUrl,
+                artifactId: artifact.id.toString()
+              }
+            }
+          }
+          
+          return { status: 'success' }
+        } else {
+          return { status: 'failed' }
+        }
+      }
+      
+      return { status: 'pending' }
+    } catch (error) {
+      console.error('Error checking build status:', error)
+      throw error
+    }
+  }
+      
+  const validateWebsite = async (url: string): Promise<boolean> => {
+    try {
+      const urlObj = new URL(url)
+      return !!(urlObj.hostname && urlObj.protocol.startsWith('http') && urlObj.hostname.includes('.'))
+    } catch (e) {
+      return false
+    }
+  }
+
+  const triggerGitHubAction = async (buildData: BuildData): Promise<string | null> => {
+    const token = getGitHubToken()
+    if (!token) {
+      throw new Error('GitHub token not configured. Please check your environment variables.')
+    }
+
+    try {
+      const response = await fetch(
+        `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/dispatches`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            event_type: 'apk_build',
+            client_payload: buildData
+          })
+        }
+      )
 
       if (!response.ok) {
-        throw new Error(`Failed to save manifest: ${response.statusText}`);
+        const errorText = await response.text()
+        if (response.status === 404) {
+          throw new Error('GitHub repository not found or access denied')
+        } else if (response.status === 403) {
+          throw new Error('GitHub token invalid or missing permissions')
+        } else {
+          throw new Error(`GitHub API error: ${response.status} - ${response.statusText}`)
+        }
       }
 
-      const data = await response.json();
-      return data.url || `${baseUrl}/api/manifests/${fileName}`;
-      
+      await new Promise(resolve => setTimeout(resolve, 5000))
+
+      const runsResponse = await fetch(
+        `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/actions/runs?event=repository_dispatch&per_page=10`,
+        {
+          headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        }
+      )
+
+      if (runsResponse.ok) {
+        const runsData = await runsResponse.json()
+        if (runsData.workflow_runs && runsData.workflow_runs.length > 0) {
+          const recentRun = runsData.workflow_runs[0]
+          return recentRun.id.toString()
+        }
+      }
+
+      return null
+
     } catch (error) {
-      console.error('Error saving to Turso:', error);
-      const blob = new Blob([JSON.stringify(manifestData, null, 2)], { type: 'application/json' });
-      return URL.createObjectURL(blob);
+      console.error('Error triggering GitHub action:', error)
+      throw error
     }
-  };
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     
-    if (!formData.name.trim()) {
-      setErrorMsg('Please enter an app name');
-      setStatus('error');
-      return;
+    if (!getGitHubToken()) {
+      setError('GitHub token not configured. Please check your environment setup.')
+      return
     }
     
-    if (!formData.short_name.trim()) {
-      setErrorMsg('Please enter a short name');
-      setStatus('error');
-      return;
-    }
-
-    setIsLoading(true);
-    setStatus('building');
-    setErrorMsg('');
-
-    try {
-      const manifestData = generateManifest();
-      const manifestString = JSON.stringify(manifestData, null, 2);
-      setManifestContent(manifestString);
-      
-      if (formData.includeServiceWorker) {
-        const swContent = generateServiceWorker();
-        setServiceWorkerContent(swContent);
+    if (url && appName && hostName) {
+      const isValidWebsite = await validateWebsite(url)
+      if (!isValidWebsite) {
+        setError("Invalid website URL format. Please include http:// or https:// and a valid domain.")
+        return
       }
-      
-      const url = await saveToTurso(manifestData);
-      setManifestUrl(url);
-      
-      const blob = new Blob([manifestString], { type: 'application/json' });
-      const urlBlob = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = urlBlob;
-      a.download = 'manifest.json';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(urlBlob);
-      
-      setStatus('success');
-      
-    } catch (error) {
-      console.error('Error generating manifest:', error);
-      setErrorMsg('Error generating manifest. Please try again.');
-      setStatus('error');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
-  const copyToClipboard = async (content: string, itemName: string) => {
+      setIsBuilding(true)
+      setError(null)
+      setTerminalLogs([])
+      setGithubRunId(null)
+      setArtifactUrl(null)
+      setArtifactId(null)
+      setBuildStartTime(Date.now())
+      setShowAppKey(false)
+
+      try {
+        const buildId = `build_${Date.now()}`
+        setBuildId(buildId)
+
+        const cleanHostName = url
+          .replace(/^https?:\/\//, '')
+          .replace(/^www\./, '')
+          .replace(/\/$/, '')
+        
+        const buildData: BuildData = {
+          buildId,
+          hostName: cleanHostName,
+          launchUrl: '/',
+          name: appName,
+          launcherName: appName,
+          themeColor: themeColor,
+          themeColorDark: themeColorDark,
+          backgroundColor: backgroundColor,
+          iconChoice: iconChoice
+        }
+        
+        setTerminalLogs([
+          "building apk...",
+          `${appName}`,
+          `${cleanHostName}`,
+          `${themeColor}`,
+          `${iconChoice}`,
+          `ID: ${buildId}`,
+          "actions yml...",
+          ""
+        ])
+
+        const runId = await triggerGitHubAction(buildData)
+        
+        if (runId) {
+          setGithubRunId(runId)
+          setTerminalLogs(prev => [
+            ...prev,
+            `Linux Gradle...`,
+            `Run ID: ${runId}`,
+            "build in progress",
+            "creating artifact",
+            ""
+          ])
+        } else {
+          throw new Error('Failed to get GitHub Actions run ID. The build may have started - check GitHub Actions.')
+        }
+
+      } catch (error: any) {
+        console.error('Build error:', error)
+        const errorMessage = error.message || 'Unknown error occurred'
+        setTerminalLogs(prev => [...prev, `Build failed: ${errorMessage}`])
+        setError(errorMessage)
+        setIsBuilding(false)
+      }
+    }
+  }
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })
+  }
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+  }
+
+  const downloadAPK = async () => {
     try {
-      await navigator.clipboard.writeText(content);
-      setCopiedItem(itemName);
-      setTimeout(() => setCopiedItem(null), 2000);
-    } catch (err) {
-      console.error('Failed to copy: ', err);
-    }
-  };
+      if (artifactId) {
+        const token = getGitHubToken()
+        if (!token) {
+          setError('GitHub token required for download')
+          return
+        }
 
-  const insertManifest = async () => {
-    if (!onInsert) return;
+        const downloadUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/actions/artifacts/${artifactId}/zip`
+        
+        const iframe = document.createElement('iframe')
+        iframe.style.display = 'none'
+        iframe.src = downloadUrl
+        document.body.appendChild(iframe)
+        
+        setTimeout(() => {
+          document.body.removeChild(iframe)
+        }, 5000)
+        
+      } else if (githubRunId) {
+        window.open(`https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/actions/runs/${githubRunId}`, '_blank')
+      } else if (artifactUrl) {
+        window.open(artifactUrl, '_blank')
+      }
+    } catch (error: any) {
+      console.error('Download error:', error)
+      setError(`Download failed: ${error.message}`)
+      
+      if (githubRunId) {
+        window.open(`https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/actions/runs/${githubRunId}`, '_blank')
+      }
+    }
+  }
+
+  const copyAppKey = async () => {
+    const keyInfo = `Alias: android\nPassword: 123321\n\nYou will need this key to publish changes to your app.`
     
-    setIsLoading(true);
     try {
-      const manifestData = generateManifest();
-      const manifestString = JSON.stringify(manifestData, null, 2);
-      onInsert(manifestString);
-      
-      await new Promise(resolve => setTimeout(resolve, 500));
-    } finally {
-      setIsLoading(false);
+      await navigator.clipboard.writeText(keyInfo)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      const textArea = document.createElement('textarea')
+      textArea.value = keyInfo
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textArea)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
     }
-  };
+  }
 
-  const downloadManifestFile = () => {
-    const blob = new Blob([manifestContent], { type: 'application/json' });
-    const urlBlob = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = urlBlob;
-    a.download = 'manifest.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(urlBlob);
-  };
-
-  const downloadServiceWorkerFile = () => {
-    const blob = new Blob([serviceWorkerContent], { type: 'application/javascript' });
-    const urlBlob = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = urlBlob;
-    a.download = 'sw.js';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(urlBlob);
-  };
+  const resetForm = () => {
+    setIsComplete(false)
+    setIsBuilding(false)
+    setUrl("")
+    setAppName("")
+    setHostName("")
+    setThemeColor("#3b82f6")
+    setThemeColorDark("#1e40af")
+    setBackgroundColor("#ffffff")
+    setIconChoice("phone")
+    setTerminalLogs([])
+    setBuildId(null)
+    setGithubRunId(null)
+    setArtifactUrl(null)
+    setArtifactId(null)
+    setBuildStartTime(0)
+    setShowAppKey(false)
+    setCopied(false)
+    setShowAdvanced(false)
+    setError(null)
+  }
 
   return (
-    <div style={{
-      backgroundColor: 'var(--surface-card)',
-      borderRadius: 'var(--radius-xl)',
-      border: '1px solid var(--border-primary)',
-      padding: '24px',
-      fontFamily: 'var(--font-sans)'
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-        <div style={{
-          padding: '12px',
-          backgroundColor: 'var(--interactive-accent)',
-          borderRadius: 'var(--radius-xl)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          <FileJson style={{ width: '24px', height: '24px', color: 'var(--text-inverse)' }} />
-        </div>
-        <h2 style={{
-          fontSize: '20px',
-          fontWeight: 600,
-          color: 'var(--text-primary)',
-          margin: 0
-        }}>
-          Manifest Generator
-        </h2>
-        <span style={{
-          fontSize: '12px',
-          color: 'var(--text-muted)',
-          backgroundColor: 'var(--surface-tertiary)',
-          padding: '4px 8px',
-          borderRadius: 'var(--radius-md)',
-          border: '1px solid var(--border-primary)'
-        }}>
-          PWA
-        </span>
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <div style={{
-          padding: '20px',
-          borderRadius: 'var(--radius-lg)',
-          border: '1px solid var(--border-primary)',
-          backgroundColor: 'var(--surface-secondary)'
-        }}>
-          <form onSubmit={handleSubmit}>
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{
-                display: 'flex',
-                marginBottom: '8px',
-                fontWeight: 600,
-                fontSize: '14px',
-                color: 'var(--text-primary)',
-                fontFamily: 'var(--font-sans)',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                <FileJson style={{ width: '16px', height: '16px' }} />
-                App Name *
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                placeholder="Enter app name"
-                disabled={isLoading}
-                required
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: '1.5px solid var(--border-primary)',
-                  borderRadius: 'var(--radius-lg)',
-                  backgroundColor: 'var(--surface-primary)',
-                  color: 'var(--text-primary)',
-                  fontFamily: 'var(--font-sans)',
-                  fontSize: '14px',
-                  transition: 'all var(--transition-normal)',
-                  outline: 'none',
-                  opacity: isLoading ? 0.6 : 1
-                }}
-              />
-            </div>
-
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{
-                display: 'flex',
-                marginBottom: '8px',
-                fontWeight: 600,
-                fontSize: '14px',
-                color: 'var(--text-primary)',
-                fontFamily: 'var(--font-sans)',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                <FileJson style={{ width: '16px', height: '16px' }} />
-                Short Name (displayed on homescreen) *
-              </label>
-              <input
-                type="text"
-                name="short_name"
-                value={formData.short_name}
-                onChange={handleInputChange}
-                placeholder="Enter short name"
-                disabled={isLoading}
-                required
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: '1.5px solid var(--border-primary)',
-                  borderRadius: 'var(--radius-lg)',
-                  backgroundColor: 'var(--surface-primary)',
-                  color: 'var(--text-primary)',
-                  fontFamily: 'var(--font-sans)',
-                  fontSize: '14px',
-                  transition: 'all var(--transition-normal)',
-                  outline: 'none',
-                  opacity: isLoading ? 0.6 : 1
-                }}
-              />
-            </div>
-
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{
-                display: 'flex',
-                marginBottom: '8px',
-                fontWeight: 600,
-                fontSize: '14px',
-                color: 'var(--text-primary)',
-                fontFamily: 'var(--font-sans)',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                <Globe style={{ width: '16px', height: '16px' }} />
-                Start URL (optional)
-              </label>
-              <input
-                type="text"
-                name="start_url"
-                value={formData.start_url}
-                onChange={handleInputChange}
-                placeholder="/"
-                disabled={isLoading}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: '1.5px solid var(--border-primary)',
-                  borderRadius: 'var(--radius-lg)',
-                  backgroundColor: 'var(--surface-primary)',
-                  color: 'var(--text-primary)',
-                  fontFamily: 'var(--font-sans)',
-                  fontSize: '14px',
-                  transition: 'all var(--transition-normal)',
-                  outline: 'none',
-                  opacity: isLoading ? 0.6 : 1
-                }}
-              />
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
-              <div>
-                <label style={{
-                  display: 'flex',
-                  marginBottom: '8px',
-                  fontWeight: 600,
-                  fontSize: '14px',
-                  color: 'var(--text-primary)',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}>
-                  <Palette style={{ width: '16px', height: '16px' }} />
-                  Background Color
-                </label>
-                <input
-                  type="color"
-                  name="background_color"
-                  value={formData.background_color}
-                  onChange={handleInputChange}
-                  disabled={isLoading}
-                  style={{
-                    width: '100%',
-                    height: '44px',
-                    border: '1.5px solid var(--border-primary)',
-                    borderRadius: 'var(--radius-lg)',
-                    cursor: isLoading ? 'not-allowed' : 'pointer',
-                    opacity: isLoading ? 0.6 : 1
-                  }}
-                />
-              </div>
-              <div>
-                <label style={{
-                  display: 'flex',
-                  marginBottom: '8px',
-                  fontWeight: 600,
-                  fontSize: '14px',
-                  color: 'var(--text-primary)',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}>
-                  <Palette style={{ width: '16px', height: '16px' }} />
-                  Theme Color
-                </label>
-                <input
-                  type="color"
-                  name="theme_color"
-                  value={formData.theme_color}
-                  onChange={handleInputChange}
-                  disabled={isLoading}
-                  style={{
-                    width: '100%',
-                    height: '44px',
-                    border: '1.5px solid var(--border-primary)',
-                    borderRadius: 'var(--radius-lg)',
-                    cursor: isLoading ? 'not-allowed' : 'pointer',
-                    opacity: isLoading ? 0.6 : 1
-                  }}
-                />
+    <div className="min-h-screen bg-gradient-to-br from-gray-800 via-gray-900 to-black flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <div 
+          className="relative mx-auto w-[340px] h-[680px] bg-black rounded-[3rem] shadow-2xl border-8 border-transparent overflow-hidden p-0.5"
+          style={{
+            backgroundImage: 'linear-gradient(black, black), linear-gradient(to bottom, #6b7280, #7e22ce, #3b82f6, #06b6d4)',
+            backgroundOrigin: 'border-box',
+            backgroundClip: 'content-box, border-box',
+            backgroundSize: '100% 100%'
+          }}
+        >
+          {error && !isBuilding && (
+            <div className="absolute top-4 left-4 right-4 bg-red-500 text-white p-3 rounded-lg z-20 animate-in fade-in">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4" />
+                <span className="text-sm font-medium">{error}</span>
               </div>
             </div>
+          )}
+          
+          {!hasGitHubToken && (
+            <div className="absolute top-4 left-4 right-4 bg-yellow-500 text-white p-3 rounded-lg z-20 animate-in fade-in">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4" />
+                <span className="text-sm font-medium">GitHub token not configured</span>
+              </div>
+            </div>
+          )}
 
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{
-                display: 'flex',
-                marginBottom: '12px',
-                fontWeight: 600,
-                fontSize: '14px',
-                color: 'var(--text-primary)',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                <Image style={{ width: '16px', height: '16px' }} />
-                Select Icon
-              </label>
-              
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>
-                {defaultIcons.map((icon) => (
-                  <div
-                    key={icon.src}
-                    onClick={() => !isLoading && handleIconSelect(icon.src)}
-                    style={{
-                      padding: '12px',
-                      border: formData.selectedIcon === icon.src && !formData.customIcon ? '2px solid var(--interactive-accent)' : '1px solid var(--border-primary)',
-                      borderRadius: 'var(--radius-lg)',
-                      backgroundColor: formData.selectedIcon === icon.src && !formData.customIcon ? 'var(--surface-accent)' : 'var(--surface-primary)',
-                      cursor: isLoading ? 'not-allowed' : 'pointer',
-                      textAlign: 'center',
-                      transition: 'all var(--transition-normal)',
-                      opacity: isLoading ? 0.6 : 1
-                    }}
+          <div className={`absolute inset-[6px] rounded-[2.5rem] overflow-hidden transition-colors ${
+            isDarkMode ? "bg-black" : "bg-gradient-to-b from-slate-50 to-slate-100"
+          }`}>     
+            {showBootScreen ? (
+              <div className="h-full bg-black flex flex-col items-center justify-center rounded-[2.5rem]">
+                <div className="animate-in fade-in zoom-in duration-1000">
+                  <img 
+                    src="./droiddroid.svg" 
+                    alt="Android Logo"
+                    className="w-28 h-28 mb-8"
+                  />
+                </div>
+                <div className="flex gap-2 mb-4">
+                  <div className="w-3 h-3 bg-[#3DDC84] rounded-full animate-bounce [animation-delay:-0.3s]" />
+                  <div className="w-3 h-3 bg-[#3DDC84] rounded-full animate-bounce [animation-delay:-0.15s]" />
+                  <div className="w-3 h-3 bg-[#3DDC84] rounded-full animate-bounce" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <p className="text-[#3DDC84] text-md font-medium animate-pulse">A N D R O I D</p>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div
+                  className={`h-12 flex items-center justify-between px-8 text-xs rounded-t-[2.5rem] ${
+                    isDarkMode ? "bg-slate-950 text-white" : "bg-slate-900 text-white"
+                  }`}
+                >
+                  <div className="flex items-center gap-3 text-[#3DDC84]">
+                    <span className="font-semibold">{formatTime(currentTime)}</span>
+                    <span className="opacity-80">{formatDate(currentTime)}</span>
+                  </div>
+
+                  <div className="flex gap-4 items-center text-[#3DDC84]">
+                    <a
+                      href="https://github.com/sudo-self/apk-builder-actions/actions/workflows/apk-builder.yml"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:opacity-80 transition-opacity"
+                    >
+                      <img
+                        src="https://img.shields.io/github/actions/workflow/status/sudo-self/apk-builder-actions/apk-builder.yml?color=green&style=plastic"
+                        alt="APK Builder Workflow Status"
+                        className="h-5"
+                      />
+                    </a>
+
+                    <button
+                      onClick={() => setIsDarkMode(!isDarkMode)}
+                      className="hover:opacity-70 transition-opacity"
+                      aria-label="Toggle theme"
+                    >
+                      {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="h-[calc(100%-3rem-24px)] overflow-y-auto p-6">
+                  {isBuilding || isComplete ? (
+                    <div className="h-full bg-black rounded-xl p-4 overflow-y-auto font-mono">
+                      <div className="flex items-center gap-2 mb-4 text-green-400 text-sm">
+                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                        <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                        <span className="ml-2">Command Line</span>
+                      </div>
+
+                      <div className="space-y-2">
+                        {terminalLogs.map((log, index) => (
+                          <div key={index} className="text-green-400 text-sm animate-in fade-in slide-in-from-left-2">
+                            <span className="text-cyan-600 mr-2">$</span> {log}
+                          </div>
+                        ))}
+                        
+                        {isBuilding && (
+                          <div className="flex items-center gap-2 text-green-400 text-sm">
+                            <span className="text-green-600">$</span>
+                            <div className="flex gap-1">
+                              <div className="w-1 h-3 bg-gray-400 rounded-full animate-pulse"></div>
+                              <div className="w-1 h-3 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '0.1s' }}></div>
+                              <div className="w-1 h-3 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+                            </div>
+                            <span>_</span>
+                          </div>
+                        )}
+
+                        {isComplete && (
+                          <div className="mt-4 pt-4 border-t border-slate-700 space-y-3">
+                            <Button
+                              onClick={downloadAPK}
+                              className="w-full bg-green-600 hover:bg-green-700 text-white"
+                            >
+                              <Download className="w-4 h-4 mr-2" />
+                              Download APK
+                            </Button>
+                            
+                            {githubRunId && (
+                              <Button
+                                onClick={() => window.open(`https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/actions/runs/${githubRunId}`, '_blank')}
+                                variant="outline"
+                                className="w-full text-green-400 border-green-400 hover:bg-green-400 hover:text-black"
+                              >
+                                <Github className="w-4 h-4 mr-2" />
+                                View Build Details
+                              </Button>
+                            )}
+                            
+                            <Button
+                              onClick={resetForm}
+                              variant="ghost"
+                              className="w-full text-gray-400 hover:text-white"
+                            >
+                              <RefreshCw className="w-4 h-4 mr-2" />
+                              Build Another APK
+                            </Button>
+                          </div>
+                        )}
+
+                        {githubRunId && isBuilding && (
+                          <div className="text-gray-400 text-xs text-center mt-4 pt-2 border-t border-slate-700">
+                            <a 
+                              href={`https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/actions/runs/${githubRunId}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="underline hover:no-underline hover:text-blue-400"
+                            >
+                              View live build on GitHub
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                      <div className="text-center mb-6">
+                        <div 
+                          className="inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-3 shadow-lg border-2"
+                          style={{
+                            backgroundColor: backgroundColor,
+                            borderColor: themeColor
+                          }}
+                        >
+                          <img 
+                            src={selectedIcon.url} 
+                            alt="App Icon Preview"
+                            className="w-12 h-12 object-contain"
+                            style={{
+                              filter: `drop-shadow(0 2px 4px ${themeColor}40)`
+                            }}
+                          />
+                        </div>
+                        <h1 
+                          className="text-xl font-bold mb-1 truncate max-w-[200px] mx-auto"
+                          style={{ color: themeColor }}
+                        >
+                          {appName || "YourApp"}
+                        </h1>
+                        <p 
+                          className="text-xs opacity-75"
+                          style={{ color: themeColor }}
+                        >
+                          {hostName || "yourapp.com"}
+                        </p>
+                        <p className={`text-xs mt-2 ${isDarkMode ? "text-slate-400" : "text-slate-600"}`}>
+                          live preview
+                        </p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="url" className={`font-medium flex items-center gap-2 ${
+                          isDarkMode ? "text-white" : "text-slate-900"
+                        }`}>
+                          Website
+                        </Label>
+                        <Input
+                          id="url"
+                          type="url"
+                          placeholder="https://YourApp.com"
+                          value={url}
+                          onChange={(e) => setUrl(e.target.value)}
+                          className={isDarkMode
+                            ? "bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                            : "bg-white border-slate-300 text-slate-900 placeholder:text-slate-400"
+                          }
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="appName" className={`font-medium ${isDarkMode ? "text-white" : "text-slate-900"}`}>
+                          Name
+                        </Label>
+                        <Input
+                          id="appName"
+                          type="text"
+                          placeholder="YourApp Name"
+                          value={appName}
+                          onChange={(e) => setAppName(e.target.value)}
+                          className={isDarkMode
+                            ? "bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                            : "bg-white border-slate-300 text-slate-900 placeholder:text-slate-400"
+                          }
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="hostName" className={`font-medium ${isDarkMode ? "text-white" : "text-slate-900"}`}>
+                         Domain
+                        </Label>
+                        <Input
+                          id="hostName"
+                          type="text"
+                          placeholder="YourApp.com"
+                          value={hostName}
+                          onChange={(e) => setHostName(e.target.value)}
+                          className={isDarkMode
+                            ? "bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+                            : "bg-white border-slate-300 text-slate-900 placeholder:text-slate-400"
+                          }
+                          required
+                        />
+                        <p className={`text-xs text-center ${isDarkMode ? "text-slate-500" : "text-slate-400"}`}>
+                          apk build time approx 1-3 mins
+                        </p>
+                      </div>
+
+                      <Button
+                        type="button"
+                        onClick={() => setShowAdvanced(!showAdvanced)}
+                        variant="ghost"
+                        className={`w-full flex items-center justify-center gap-2 ${
+                          isDarkMode ? "text-slate-400" : "text-slate-600"
+                        }`}
+                      >
+                        <Palette className="w-4 h-4" />
+                        {showAdvanced ? "Hide" : "Show"} Advanced Options
+                      </Button>
+
+                      {showAdvanced && (
+                        <div className="space-y-4 p-4 rounded-lg border" style={{
+                          borderColor: isDarkMode ? '#334155' : '#e2e8f0',
+                          backgroundColor: isDarkMode ? '#1e293b' : '#f8fafc'
+                        }}>
+                          <div className="space-y-2">
+                            <Label htmlFor="iconChoice" className={`font-medium flex items-center gap-2 ${
+                              isDarkMode ? "text-white" : "text-slate-900"
+                            }`}>
+                              <Image className="w-4 h-4" />
+                              App Icon
+                            </Label>
+                            
+                            <div className="grid grid-cols-3 gap-3">
+                              {ICON_CHOICES.map((icon) => (
+                                <div
+                                  key={icon.value}
+                                  className={`flex flex-col items-center p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                                    iconChoice === icon.value
+                                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-900 dark:text-blue-100'
+                                      : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white'
+                                  }`}
+                                  onClick={() => setIconChoice(icon.value)}
+                                >
+                                  <img
+                                    src={icon.url}
+                                    alt={icon.label}
+                                    className="w-12 h-12 object-contain mb-2"
+                                  />
+                                  <span className="text-xs text-center font-medium">
+                                    {icon.label}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+
+                            <select
+                              id="iconChoice"
+                              value={iconChoice}
+                              onChange={(e) => setIconChoice(e.target.value)}
+                              className={`w-full p-2 rounded border mt-2 ${
+                                isDarkMode
+                                  ? "bg-slate-800 border-slate-700 text-white"
+                                  : "bg-white border-slate-300 text-slate-900"
+                              }`}
+                            >
+                              {ICON_CHOICES.map((icon) => (
+                                <option key={icon.value} value={icon.value}>
+                                  {icon.label}
+                                </option>
+                              ))}
+                            </select>
+                            
+                            <p className={`text-xs ${isDarkMode ? "text-slate-300" : "text-slate-500"}`}>
+                              Choose the app icon style
+                            </p>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="themeColor" className={`font-medium flex items-center gap-2 ${
+                              isDarkMode ? "text-white" : "text-slate-900"
+                            }`}>
+                              Theme Color
+                            </Label>
+                            <div className="flex gap-2">
+                              <Input
+                                id="themeColor"
+                                type="color"
+                                value={themeColor}
+                                onChange={(e) => setThemeColor(e.target.value)}
+                                className="w-16 h-10 p-1 cursor-pointer"
+                              />
+                              <Input
+                                type="text"
+                                value={themeColor}
+                                onChange={(e) => setThemeColor(e.target.value)}
+                                className={isDarkMode
+                                  ? "flex-1 bg-slate-800 border-slate-700 text-white"
+                                  : "flex-1 bg-white border-slate-300 text-slate-900"
+                                }
+                              />
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="themeColorDark" className={`font-medium flex items-center gap-2 ${
+                              isDarkMode ? "text-white" : "text-slate-900"
+                            }`}>
+                              Theme Color (Dark Mode)
+                            </Label>
+                            <div className="flex gap-2">
+                              <Input
+                                id="themeColorDark"
+                                type="color"
+                                value={themeColorDark}
+                                onChange={(e) => setThemeColorDark(e.target.value)}
+                                className="w-16 h-10 p-1 cursor-pointer"
+                              />
+                              <Input
+                                type="text"
+                                value={themeColorDark}
+                                onChange={(e) => setThemeColorDark(e.target.value)}
+                                className={isDarkMode
+                                  ? "flex-1 bg-slate-800 border-slate-700 text-white"
+                                  : "flex-1 bg-white border-slate-300 text-slate-900"
+                                }
+                              />
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="backgroundColor" className={`font-medium flex items-center gap-2 ${
+                              isDarkMode ? "text-white" : "text-slate-900"
+                            }`}>
+                              Background Color
+                            </Label>
+                            <div className="flex gap-2">
+                              <Input
+                                id="backgroundColor"
+                                type="color"
+                                value={backgroundColor}
+                                onChange={(e) => setBackgroundColor(e.target.value)}
+                                className="w-16 h-10 p-1 cursor-pointer"
+                              />
+                              <Input
+                                type="text"
+                                value={backgroundColor}
+                                onChange={(e) => setBackgroundColor(e.target.value)}
+                                className={isDarkMode
+                                  ? "flex-1 bg-slate-800 border-slate-700 text-white"
+                                  : "flex-1 bg-white border-slate-300 text-slate-900"
+                                }
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      <p
+                        className={`text-xs text-center ${isDarkMode ? "text-slate-400" : "text-slate-600"}`}
+                      >
+                        <a
+                          href="https://JesseJesse.com"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline hover:text-pink-500"
+                        >
+                          JesseJesse.com
+                        </a>
+                      </p>
+
+                      <Button
+                        type="submit"
+                        className="w-full bg-gradient-to-r from-indigo-500 to-cyan-500 hover:from-indigo-700 hover:to-cyan-800 text-white py-6 rounded-xl text-base font-semibold shadow-lg transition-all hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={!url || !appName || !hostName}
+                      >
+                        <Github className="w-5 h-5 mr-2" />
+                        Build APK
+                      </Button>
+                    </form>
+                  )}
+                </div>
+
+                <div
+                  className={`h-8 flex items-center justify-center gap-2 border-t ${
+                    isDarkMode
+                      ? "bg-slate-900 border-slate-800"
+                      : "bg-slate-100 border-slate-300"
+                  } rounded-b-[2.5rem]`}
+                >
+                  <a
+                    href="https://github.com/sudo-self/apk-builder-actions"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:opacity-80 transition-opacity"
                   >
                     <img
-                      src={icon.src}
-                      alt={icon.name}
-                      style={{
-                        width: '48px',
-                        height: '48px',
-                        objectFit: 'contain',
-                        marginBottom: '6px',
-                        borderRadius: '8px'
-                      }}
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = fallbackIcon;
-                      }}
+                      src="https://img.shields.io/badge/Actions-yml-blue?style=plastic&logo=github"
+                      alt="APK Builder"
+                      className="h-4"
                     />
-                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{icon.name}</div>
-                  </div>
-                ))}
-              </div>
-
-              <div>
-                <label style={{
-                  display: 'block',
-                  marginBottom: '8px',
-                  fontWeight: 600,
-                  fontSize: '14px',
-                  color: 'var(--text-primary)'
-                }}>
-                  Or Upload Custom Icon:
-                </label>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileUpload}
-                  accept="image/png, image/jpeg, image/webp, image/svg+xml"
-                  disabled={isLoading}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    border: '1.5px solid var(--border-primary)',
-                    borderRadius: 'var(--radius-lg)',
-                    backgroundColor: 'var(--surface-primary)',
-                    color: 'var(--text-primary)',
-                    fontFamily: 'var(--font-sans)',
-                    fontSize: '14px',
-                    opacity: isLoading ? 0.6 : 1
-                  }}
-                />
-                {formData.customIcon && (
-                  <div style={{ marginTop: '8px', fontSize: '14px', color: 'var(--text-muted)' }}>
-                    Selected: {formData.customIcon.name}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                color: 'var(--text-primary)',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: 500
-              }}>
-                <input
-                  type="checkbox"
-                  name="includeServiceWorker"
-                  checked={formData.includeServiceWorker}
-                  onChange={handleInputChange}
-                  disabled={isLoading}
-                  style={{
-                    width: '16px',
-                    height: '16px',
-                    borderRadius: '4px',
-                    opacity: isLoading ? 0.6 : 1
-                  }}
-                />
-                <Cpu style={{ width: '16px', height: '16px' }} />
-                Include Service Worker (Offline Support)
-              </label>
-              <p style={{
-                color: 'var(--text-muted)',
-                fontSize: '12px',
-                marginTop: '4px',
-                marginLeft: '24px'
-              }}>
-                Adds offline caching and push notification support
-              </p>
-            </div>
-
-            {formData.includeServiceWorker && (
-              <div style={{
-                padding: '16px',
-                borderRadius: 'var(--radius-lg)',
-                border: '1px solid var(--border-primary)',
-                backgroundColor: 'var(--surface-primary)',
-                marginBottom: '16px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '12px'
-              }}>
-                <div>
-                  <label style={{
-                    display: 'block',
-                    marginBottom: '8px',
-                    fontWeight: 600,
-                    fontSize: '14px',
-                    color: 'var(--text-primary)'
-                  }}>
-                    Service Worker URL
-                  </label>
-                  <input
-                    type="text"
-                    name="serviceWorkerUrl"
-                    value={formData.serviceWorkerUrl}
-                    onChange={handleInputChange}
-                    placeholder="/sw.js"
-                    disabled={isLoading}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '1.5px solid var(--border-primary)',
-                      borderRadius: 'var(--radius-lg)',
-                      backgroundColor: 'var(--surface-secondary)',
-                      color: 'var(--text-primary)',
-                      fontFamily: 'var(--font-sans)',
-                      fontSize: '14px',
-                      opacity: isLoading ? 0.6 : 1
-                    }}
-                  />
+                  </a>
                 </div>
-                
-                <div>
-                  <label style={{
-                    display: 'block',
-                    marginBottom: '8px',
-                    fontWeight: 600,
-                    fontSize: '14px',
-                    color: 'var(--text-primary)'
-                  }}>
-                    Service Worker Scope
-                  </label>
-                  <input
-                    type="text"
-                    name="serviceWorkerScope"
-                    value={formData.serviceWorkerScope}
-                    onChange={handleInputChange}
-                    placeholder="/"
-                    disabled={isLoading}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '1.5px solid var(--border-primary)',
-                      borderRadius: 'var(--radius-lg)',
-                      backgroundColor: 'var(--surface-secondary)',
-                      color: 'var(--text-primary)',
-                      fontFamily: 'var(--font-sans)',
-                      fontSize: '14px',
-                      opacity: isLoading ? 0.6 : 1
-                    }}
-                  />
-                </div>
-              </div>
+              </>
             )}
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              style={{
-                width: '100%',
-                padding: '14px 20px',
-                background: 'linear-gradient(135deg, var(--interactive-accent), var(--interactive-accent-hover))',
-                color: 'var(--text-inverse)',
-                border: 'none',
-                borderRadius: 'var(--radius-lg)',
-                fontWeight: 600,
-                fontSize: '15px',
-                cursor: isLoading ? 'not-allowed' : 'pointer',
-                opacity: isLoading ? 0.7 : 1,
-                transition: 'all var(--transition-normal)',
-                fontFamily: 'inherit',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px'
-              }}
-            >
-              {isLoading ? (
-                <>
-                  <Loader style={{ width: '18px', height: '18px', animation: 'spin 1s linear infinite' }} />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Download style={{ width: '18px', height: '18px' }} />
-                  Generate & Download Manifest
-                </>
-              )}
-            </button>
-          </form>
-
-          {status === 'error' && (
-            <div style={{
-              marginTop: '16px',
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: '8px',
-              color: 'var(--interactive-error)',
-              backgroundColor: 'var(--surface-error)',
-              padding: '12px 16px',
-              borderRadius: 'var(--radius-lg)',
-              border: '1px solid var(--border-error)'
-            }}>
-              <AlertCircle style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '2px' }} />
-              <div>
-                <div style={{ fontSize: '14px', fontWeight: 600, marginBottom: '4px' }}>Generation Failed</div>
-                <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{errorMsg}</div>
-              </div>
-            </div>
-          )}
-
-          {status === 'success' && manifestUrl && (
-            <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                color: 'var(--interactive-success)',
-                backgroundColor: 'var(--surface-success)',
-                padding: '12px 16px',
-                borderRadius: 'var(--radius-lg)',
-                border: '1px solid var(--border-success)'
-              }}>
-                <CheckCircle style={{ width: '16px', height: '16px' }} />
-                <span style={{ fontSize: '14px', fontWeight: '600' }}>Manifest generated successfully!</span>
-              </div>
-
-              <div style={{
-                padding: '16px',
-                borderRadius: 'var(--radius-lg)',
-                border: '1px solid var(--border-primary)',
-                backgroundColor: 'var(--surface-primary)'
-              }}>
-                <h4 style={{
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  color: 'var(--text-primary)',
-                  margin: '0 0 8px 0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}>
-                  <Globe style={{ width: '14px', height: '14px' }} />
-                  Your Hosted Manifest URL
-                </h4>
-                <div style={{
-                  backgroundColor: 'var(--surface-secondary)',
-                  padding: '12px',
-                  borderRadius: 'var(--radius-md)',
-                  fontFamily: 'monospace',
-                  color: 'var(--text-primary)',
-                  fontSize: '13px',
-                  wordBreak: 'break-all',
-                  marginBottom: '8px',
-                  border: '1px solid var(--border-primary)'
-                }}>
-                  {manifestUrl}
-                </div>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                  <button
-                    onClick={() => copyToClipboard(manifestUrl, 'manifest-url')}
-                    style={{
-                      padding: '8px 12px',
-                      borderRadius: 'var(--radius-md)',
-                      fontWeight: 600,
-                      fontSize: '12px',
-                      border: '1px solid var(--border-primary)',
-                      backgroundColor: 'transparent',
-                      color: 'var(--text-primary)',
-                      cursor: 'pointer',
-                      fontFamily: 'inherit',
-                      transition: 'all var(--transition-normal)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px'
-                    }}
-                  >
-                    <Copy style={{ width: '12px', height: '12px' }} />
-                    Copy URL
-                  </button>
-                  <button
-                    onClick={downloadManifestFile}
-                    style={{
-                      padding: '8px 12px',
-                      borderRadius: 'var(--radius-md)',
-                      fontWeight: 600,
-                      fontSize: '12px',
-                      border: '1px solid var(--border-primary)',
-                      backgroundColor: 'transparent',
-                      color: 'var(--text-primary)',
-                      cursor: 'pointer',
-                      fontFamily: 'inherit',
-                      transition: 'all var(--transition-normal)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px'
-                    }}
-                  >
-                    <Download style={{ width: '12px', height: '12px' }} />
-                    Download File
-                  </button>
-                </div>
-              </div>
-
-              {formData.includeServiceWorker && serviceWorkerContent && (
-                <div style={{
-                  padding: '16px',
-                  borderRadius: 'var(--radius-lg)',
-                  border: '1px solid var(--border-warning)',
-                  backgroundColor: 'var(--surface-warning)'
-                }}>
-                  <h4 style={{
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    color: 'var(--text-primary)',
-                    margin: '0 0 8px 0',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}>
-                    <Cpu style={{ width: '14px', height: '14px' }} />
-                    Service Worker Generated
-                  </h4>
-                  <p style={{
-                    color: 'var(--text-secondary)',
-                    fontSize: '13px',
-                    lineHeight: '1.5',
-                    margin: '0 0 12px 0'
-                  }}>
-                    Download the service worker file and place it in your app's root directory.
-                  </p>
-                  <button
-                    onClick={downloadServiceWorkerFile}
-                    style={{
-                      padding: '8px 12px',
-                      borderRadius: 'var(--radius-md)',
-                      fontWeight: 600,
-                      fontSize: '12px',
-                      border: '1px solid var(--border-primary)',
-                      backgroundColor: 'transparent',
-                      color: 'var(--text-primary)',
-                      cursor: 'pointer',
-                      fontFamily: 'inherit',
-                      transition: 'all var(--transition-normal)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px'
-                    }}
-                  >
-                    <Download style={{ width: '12px', height: '12px' }} />
-                    Download Service Worker
-                  </button>
-                </div>
-              )}
-
-              <div style={{
-                padding: '16px',
-                borderRadius: 'var(--radius-lg)',
-                border: '1px solid var(--border-info)',
-                backgroundColor: 'var(--surface-info)'
-              }}>
-                <h4 style={{
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  color: 'var(--text-primary)',
-                  margin: '0 0 8px 0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}>
-                  <Package style={{ width: '14px', height: '14px' }} />
-                  For Bubblewrap Usage
-                </h4>
-                <p style={{
-                  color: 'var(--text-secondary)',
-                  fontSize: '13px',
-                  lineHeight: '1.5',
-                  margin: '0 0 12px 0'
-                }}>
-                  Use the hosted URL with Bubblewrap:
-                </p>
-                <div style={{
-                  backgroundColor: 'var(--surface-primary)',
-                  padding: '12px',
-                  borderRadius: 'var(--radius-md)',
-                  fontFamily: 'monospace',
-                  color: 'var(--text-primary)',
-                  fontSize: '13px',
-                  wordBreak: 'break-all',
-                  marginBottom: '8px',
-                  border: '1px solid var(--border-primary)'
-                }}>
-                  bubblewrap init --manifest {manifestUrl}
-                </div>
-              </div>
-
-              {onInsert && (
-                <button
-                  onClick={insertManifest}
-                  disabled={isLoading}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    background: 'linear-gradient(135deg, var(--interactive-info), var(--interactive-info-hover))',
-                    color: 'var(--text-inverse)',
-                    border: 'none',
-                    borderRadius: 'var(--radius-lg)',
-                    fontWeight: 600,
-                    fontSize: '14px',
-                    cursor: isLoading ? 'not-allowed' : 'pointer',
-                    opacity: isLoading ? 0.7 : 1,
-                    transition: 'all var(--transition-normal)',
-                    fontFamily: 'inherit',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px'
-                  }}
-                >
-                  <FileJson style={{ width: '16px', height: '16px' }} />
-                  {isLoading ? 'Inserting...' : 'Insert Manifest to Editor'}
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div style={{
-          padding: '20px',
-          borderRadius: 'var(--radius-lg)',
-          border: '1px solid var(--border-primary)',
-          backgroundColor: 'var(--surface-secondary)'
-        }}>
-          <h3 style={{
-            fontSize: '16px',
-            fontWeight: 600,
-            color: 'var(--text-primary)',
-            margin: '0 0 12px 0',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            <FileJson style={{ width: '16px', height: '16px' }} />
-            Command Line
-          </h3>
-          <ul style={{
-            color: 'var(--text-secondary)',
-            fontSize: '13px',
-            lineHeight: '1.6',
-            margin: 0,
-            paddingLeft: '20px'
-          }}>
-            <li>npm i @bubblewrap/core</li>
-            <li>bubblewrap init --manifest YOUR_MANIFEST_URL</li>
-            <li>bubblewrap build</li>
-            <li>SHA-256</li>
-            <li>keytool -list -v -keystore android.keystore</li>
-          </ul>
+          </div>
         </div>
       </div>
-
-      {copiedItem && (
-        <div style={{
-          position: 'fixed',
-          bottom: '20px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          backgroundColor: 'var(--interactive-success)',
-          color: 'var(--text-inverse)',
-          padding: '12px 20px',
-          borderRadius: 'var(--radius-lg)',
-          boxShadow: 'var(--shadow-xl)',
-          animation: 'fadeIn 0.4s ease-out',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          zIndex: 50,
-          fontSize: '14px',
-          fontWeight: 600
-        }}>
-          <CheckCircle style={{ width: '16px', height: '16px' }} />
-          {copiedItem === 'manifest-url'
-            ? 'Manifest URL copied!'
-            : 'Copied to clipboard!'}
-        </div>
-      )}
-
-      <style jsx>{`
-        @keyframes fadeIn {
-          0% { 
-            opacity: 0; 
-            transform: translate(-50%, 20px) scale(0.9);
-          }
-          100% { 
-            opacity: 1; 
-            transform: translate(-50%, 0) scale(1);
-          }
-        }
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </div>
-  );
+  )
 }
